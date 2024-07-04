@@ -160,12 +160,3 @@ a:hover, a:focus {
     color: #b0b0b0; /* Darker silver for hover and focus states */
     text-decoration: underline; /* Add underline on hover and focus */
 }
-
-/* Additional specificity for .btn class links */
-a.btn {
-    color: silver; /* Set link color to silver */
-}
-
-a.btn:hover, a.btn:focus {
-    color: #b0b0b0; /* Darker silver for hover and focus states */
-}
