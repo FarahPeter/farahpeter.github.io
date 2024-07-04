@@ -150,4 +150,14 @@ li {
     animation: gradient 10s ease infinite;
 }
 
+a {
+    color: silver; /* Set link color to silver */
+    text-decoration: none; /* Remove underline */
+    transition: color 0.3s ease; /* Smooth transition for color change */
+}
+
+a:hover, a:focus {
+    color: #b0b0b0; /* Darker silver for hover and focus states */
+    text-decoration: underline; /* Add underline on hover and focus */
+}
 
