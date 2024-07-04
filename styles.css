@@ -23,7 +23,7 @@ header h1 {
 }
 
 header h1:hover {
-    text-shadow: 0 0 10px #007bff, 0 0 20px #007bff, 0 0 30px #007bff, 0 0 40px #007bff, 0 0 50px #007bff;
+    text-shadow: 0 0 10px silver, 0 0 20px silver, 0 0 30px silver, 0 0 40px silver, 0 0 50px silver;
 }
 
 nav ul {
