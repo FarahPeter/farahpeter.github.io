@@ -142,7 +142,7 @@ li {
 #title {
     font-size: 1.5em;
     background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
-    background-size: 1400% 1400%;
+    background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: gradient 10s ease infinite;
