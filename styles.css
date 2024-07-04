@@ -177,6 +177,12 @@ img {
     display: block;
 }
 
+/* Profile image specific styles */
+#profile-image {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* Ensure parent containers are flexible */
 .project img {
     width: 100%;
