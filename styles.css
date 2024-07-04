@@ -169,3 +169,32 @@ a:hover, a:focus {
 .project a:hover, .project a:focus {
     color: #b0b0b0; /* Darker silver for hover and focus states */
 }
+
+/* Make images responsive */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Ensure parent containers are flexible */
+.project img {
+    width: 100%;
+    height: auto;
+}
+
+/* Adjusting images for different screen sizes */
+@media (max-width: 768px) {
+    .project img {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .project img {
+        width: 100%;
+    }
+}
+
