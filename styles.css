@@ -183,21 +183,25 @@ img {
     width: 60%;
     margin-left: auto;
     margin-right: auto;
-    animation: glow 2s infinite;
+    animation: rotate-glow 3s linear infinite;
+    box-shadow: 0 0 15px black;
 }
 
-@keyframes glow {
+@keyframes rotate-glow {
     0% {
-        border-color: black;
-        box-shadow: 0 0 10px black, 0 0 20px black, 0 0 30px black, 0 0 40px black, 0 0 50px black;
+        box-shadow: 0 0 15px black, 0 0 30px black, 0 0 45px silver, 0 0 60px silver;
+    }
+    25% {
+        box-shadow: 0 0 15px silver, 0 0 30px silver, 0 0 45px black, 0 0 60px black;
     }
     50% {
-        border-color: silver;
-        box-shadow: 0 0 10px silver, 0 0 20px silver, 0 0 30px silver, 0 0 40px silver, 0 0 50px silver;
+        box-shadow: 0 0 15px black, 0 0 30px black, 0 0 45px silver, 0 0 60px silver;
+    }
+    75% {
+        box-shadow: 0 0 15px silver, 0 0 30px silver, 0 0 45px black, 0 0 60px black;
     }
     100% {
-        border-color: black;
-        box-shadow: 0 0 10px black, 0 0 20px black, 0 0 30px black, 0 0 40px black, 0 0 50px black;
+        box-shadow: 0 0 15px black, 0 0 30px black, 0 0 45px silver, 0 0 60px silver;
     }
 }
 
