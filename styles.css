@@ -175,6 +175,7 @@ img {
     max-width: 100%;
     height: auto;
     display: block;
+    border: 5px solid transparent;
 }
 
 /* Profile image specific styles */
@@ -182,6 +183,22 @@ img {
     width: 60%;
     margin-left: auto;
     margin-right: auto;
+    animation: glow 2s infinite;
+}
+
+@keyframes glow {
+    0% {
+        border-color: black;
+        box-shadow: 0 0 10px black, 0 0 20px black, 0 0 30px black, 0 0 40px black, 0 0 50px black;
+    }
+    50% {
+        border-color: silver;
+        box-shadow: 0 0 10px silver, 0 0 20px silver, 0 0 30px silver, 0 0 40px silver, 0 0 50px silver;
+    }
+    100% {
+        border-color: black;
+        box-shadow: 0 0 10px black, 0 0 20px black, 0 0 30px black, 0 0 40px black, 0 0 50px black;
+    }
 }
 
 /* Ensure parent containers are flexible */
