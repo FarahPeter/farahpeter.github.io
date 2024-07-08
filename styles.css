@@ -184,7 +184,6 @@ img {
     margin-left: auto;
     margin-right: auto;
     animation: rotate-glow 3s linear infinite;
-    box-shadow: 0 0 15px black;
 }
 
 @keyframes rotate-glow {
