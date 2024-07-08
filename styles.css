@@ -203,13 +203,3 @@ img {
         width: 100%;
     }
 }
-
-/* Apply gradient text color to all elements */
-body, h1, h2, h3, h4, h5, h6, p, a, span, li, .project-description, .experience-details, .education-details, .certificates-details, .honors-details {
-    color: transparent;
-    background: linear-gradient(to right, black, silver);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-fill-color: transparent;
-}
