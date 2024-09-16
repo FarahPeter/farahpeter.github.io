@@ -175,6 +175,7 @@ img {
     max-width: 100%;
     height: auto;
     display: block;
+    border: 5px solid transparent;
 }
 
 /* Profile image specific styles */
@@ -202,4 +203,3 @@ img {
         width: 100%;
     }
 }
-
