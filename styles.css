@@ -203,3 +203,23 @@ img {
         width: 100%;
     }
 }
+.section-title {
+    font-size: 1.5em;
+    background: linear-gradient(270deg, #505050, #696969, #4D4D4D, #333333, #5A5A5A, #707070, #505050);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 10s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
