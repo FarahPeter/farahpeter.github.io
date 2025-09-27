@@ -235,7 +235,7 @@ h2.section-title {
         0 0 10px #999,
         0 0 15px #666,
         0 0 20px #333;
-    animation: silverGlow 10s ease-in-out infinite alternate;
+    animation: silverGlow 1s ease-in-out infinite alternate;
 }
 
 /* Smooth glowing animation */
@@ -249,7 +249,7 @@ h2.section-title {
             0 0 15px #666,
             0 0 20px #333;
     }
-    50% {
+    100% {
         color: #e0e0e0; /* Brighter silver */
         text-shadow:
             0 0 3px #fff,
@@ -257,15 +257,6 @@ h2.section-title {
             0 0 12px #aaa,
             0 0 18px #888,
             0 0 25px #555;
-    }
-    100% {
-        color: #444; /* Dark metallic */
-        text-shadow:
-            0 0 1px #666,
-            0 0 3px #555,
-            0 0 7px #333,
-            0 0 12px #222,
-            0 0 18px #111;
     }
 }
 
