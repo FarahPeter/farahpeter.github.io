@@ -305,7 +305,7 @@ header { position: relative; overflow: hidden; }
   bottom: 0;
   background-image:
     radial-gradient(circle, rgba(188,198,204,0.95) 1.2px, transparent 1.3px);
-  background-size: 80px 80px, 100px 100px;
+  background-size: 160px 160px, 200px 200px;
   animation: snow-wave 20s linear infinite alternate;
 }
 
