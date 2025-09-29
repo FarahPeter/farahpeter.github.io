@@ -268,3 +268,52 @@ section:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0,0,0,0.25);
 }
+
+/* header must be positioned to contain the snow layer */
+header { position: relative; overflow: hidden; }
+
+/* keep profile above the snow so it appears "around" the image */
+.profile { position: relative; z-index: 2; }
+
+/* snow layer fills header, does not block clicks */
+.snow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+  will-change: background-position;
+}
+
+/* two layered dot patterns for depth */
+.snow::before,
+.snow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  opacity: 0.9;
+}
+
+/* wave pattern instead of falling snow */
+.snow::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle, rgba(188,198,204,0.95) 1.2px, transparent 1.3px);
+  background-size: 80px 80px, 100px 100px;
+  animation: snow-wave 20s linear infinite alternate;
+}
+
+/* diagonal movement looping to simulate wave */
+@keyframes snow-wave {
+  0%   { background-position:   0px   0px,   9px   0px; }
+  25%  { background-position:  40px  20px,  49px  20px; }
+  50%  { background-position:  80px   0px,  89px   0px; }
+  75%  { background-position: 120px -20px, 129px -20px; }
+  100% { background-position: 160px   0px, 169px   0px; }
+}
