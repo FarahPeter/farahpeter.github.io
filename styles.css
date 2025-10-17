@@ -295,7 +295,10 @@ header { position: relative; overflow: hidden; }
   opacity: 0.9;
 }
 
+
+
 /* wave pattern instead of falling snow */
+/*
 .snow::before {
   content: "";
   position: absolute;
@@ -308,8 +311,9 @@ header { position: relative; overflow: hidden; }
   background-size: 160px 160px, 200px 200px;
   animation: snow-wave 20s linear infinite alternate;
 }
-
+*/
 /* diagonal movement looping to simulate wave */
+/*
 @keyframes snow-wave {
   0%   { background-position:   0px   0px,   9px   0px; }
   25%  { background-position:  40px  20px,  49px  20px; }
@@ -317,3 +321,4 @@ header { position: relative; overflow: hidden; }
   75%  { background-position: 120px -20px, 129px -20px; }
   100% { background-position: 160px   0px, 169px   0px; }
 }
+*/
