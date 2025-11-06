@@ -175,15 +175,26 @@
     </p>
 
 
-    <h3>Conclusion</h3>
-    <p>
-      This project demonstrated the feasibility of <b>AQM classification</b> using only end-to-end measurements.
-      By combining low-level packet generation, kernel-level queue configuration, and DTW-based classification,
-      the framework can infer the queue management technique used in a bottleneck router without direct access to its configuration.
-      The research provides a foundation for advanced traffic analysis, fairness verification, and congestion behavior studies.
-    </p>
+  <h3>Conclusion</h3>
+  <p>
+    This project represents a <b>state-of-the-art framework</b> for the identification and analysis of Active Queue Management (AQM) algorithms using only end-to-end network measurements.
+    By integrating <b>C-based traffic generation</b>, <b>precise RTT collection</b>, <b>kernel-level AQM configuration</b>, and <b>Dynamic Time Warping (DTW)-based classification</b>, it achieves an unprecedented level of accuracy and automation in recognizing queue management behavior without requiring any access to routers.
+  </p>
+  <p>
+    The system goes beyond traditional traffic analysis approaches by correlating time-domain RTT dynamics with underlying queue control logic, allowing fine-grained differentiation between AQMs such as CoDel, PIE, RED, Cake, FQ-CoDel, FQ, and FIFO.
+    Its modular and fully automated design makes it adaptable to both controlled research environments and real-world network scenarios.
+  </p>
+  <p>
+    The resulting framework demonstrates that <b>passive AQM classification is both feasible and practical</b>—a significant advancement in network diagnostics and congestion research.
+    It establishes a foundation for future intelligent systems capable of autonomously identifying, simulating, and optimizing queue management strategies in next-generation networks.
+  </p>
+  <p>
+  Beyond classification, the system increases visibility into bottleneck behavior, enabling network operators to identify the active AQM and adapt congestion control algorithms accordingly for tangible performance gains.
+  This capability also has <b>dual security implications</b>: while identifying the AQM can be leveraged by attackers as a reconnaissance step to craft targeted strategies, it equally empowers defenders.
+  Knowing the active AQM allows adaptive congestion control mechanisms to respond effectively under attack or in hostile conditions, preserving network stability and throughput.
+  </p>
+  <p><i>Future extensions</i> include integrating reinforcement learning to predict queue type adaptively and simulation all AQMs to generate on the fly perfect templates given network parameters.</p>
 
-    <p><i>Future extensions</i> include integrating reinforcement learning to predict queue type adaptively and simulation all AQMs to generate on the fly perfect templates given network parameters.</p>
   </section>
 
   <footer>
