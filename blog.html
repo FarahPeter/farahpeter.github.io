@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peter Farah - Blog | Active Queue Management Research</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="profile">
+      <h1>Peter Farah</h1>
+      <h2 id="title">Cybersecurity and Network Engineer</h2>
+    </div>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="blog.html" class="active">Blog</a></li>
+    </ul>
+  </nav>
+
+  <section id="aqm-research">
+    <h2 class="section-title">Research on Active Queue Management (AQM) Classification and Analysis</h2>
+
+    <p>
+      During my research internship at <b>Institut Polytechnique de Paris</b> and later at <b>Telecom Sud-Paris</b>, I developed a
+      full testbed and classification framework capable of identifying which <b>Active Queue Management (AQM)</b> algorithm
+      is running in a bottleneck router. The system was designed to distinguish between algorithms such as
+      <b>CoDel</b>, <b>FQ-CoDel</b>, <b>Cake</b>, <b>PIE</b>, <b>RED</b>, <b>FIFO</b>, and <b>FQ</b>.
+      The ultimate goal was to analyze how these queue disciplines affect congestion, latency, and fairness, and to
+      build a detection system that operates without privileged access to the router.
+    </p>
+
+    <h3>Objective</h3>
+    <p>
+      The main objective was to identify the AQM algorithm active in a network bottleneck using only <b>RTT traces</b> collected
+      from UDP traffic. This required creating an experimental framework that generated, captured, analyzed, and compared
+      large quantities of network data automatically. The classification needed to remain accurate across varying link speeds,
+      queue lengths, and packet sizes.
+    </p>
+
+    <h3>Architecture Overview</h3>
+    <p>
+      The system was structured around three main machines forming a <b>controlled testbed</b>:
+    </p>
+    <ul>
+      <li><b>Client:</b> Responsible for generating UDP traffic and recording RTT measurements in real time.</li>
+      <li><b>Router:</b> Configured with different AQM algorithms via Linux’s <code>tc qdisc</code> system
+        (CoDel, FQ-CoDel, PIE, RED, Cake, FIFO, and FQ). This device acted as the network bottleneck, enforcing queuing delay and packet drops.</li>
+      <li><b>Server:</b> Received packets and sent acknowledgments back to the client, closing the feedback loop.</li>
+    </ul>
+
+    <p>
+      Each component interacted through a <b>Python-based orchestration layer</b> that coordinated configuration, data collection,
+      and experiment timing. The design allowed repeatable testing under controlled parameters such as bitrate, queue size,
+      and packet interval.
+    </p>
+      <div style="text-align:center; margin: 25px 0;">
+      <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" alt="AQM Research Architecture Diagram" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+      <p style="font-size:0.9em; color:#666; margin-top:8px;">
+        Figure 1 – Overall architecture of the AQM classification and analysis framework.
+      </p>
+      </div>
+
+    <h3>Detailed Architecture Components</h3>
+
+    <h4>1. Traffic Generation and RTT Measurement</h4>
+    <p>
+      I implemented multiple <b>C programs</b> that used both <b>raw UDP sockets</b> and <b>standard UDP sockets</b> to simulate various traffic flows with high timing accuracy.
+      Instead of relying on <code>usleep()</code> or fixed sleep intervals, the sender dynamically tracked the elapsed time since the start of transmission and computed how many packets <i>should</i> have been sent by that point in time.
+      If the actual number of sent packets lagged behind the theoretical rate, the sender immediately sent the necessary packets to catch up.
+    </p>
+
+    <p>
+      This timing control approach ensured consistent and precise bitrate regulation without cumulative drift caused by system-level sleep inaccuracies.
+      Each sender operated based on a defined target bitrate, allowing accurate reproduction of network load at different transmission speeds.
+    </p>
+
+    <ul>
+      <li>Bitrate-based pacing by calculating expected packet count from elapsed time since start.</li>
+      <li>Configurable payload size and total packet count per experiment.</li>
+      <li>Support for concurrent sender threads to simulate multiple independent flows.</li>
+    </ul>
+
+    <p>
+      Round-Trip Times (RTTs) were measured at the client side by timestamping outgoing packets and matching them with acknowledgment timestamps received from the server.
+      The resulting RTT traces were stored as time-series datasets, capturing queue buildup, delay oscillations, and congestion patterns under each tested AQM discipline.
+    </p>
+
+
+    <h4>2. Router Configuration and AQM Control</h4>
+    <p>
+      The router (a Linux system acting as a virtual bottleneck) was configured using <b>tc qdisc</b> commands.
+      A shell-based configuration script applied the desired AQM discipline on the egress interface:
+    </p>
+    <ul>
+      <li><code>tc qdisc add dev eth0 root codel limit 1000 target 5ms interval 100ms</code></li>
+      <li><code>tc qdisc add dev eth0 root pie limit 1000 target 20ms tupdate 15ms</code></li>
+      <li><code>tc qdisc add dev eth0 root fq_codel</code>, etc.</li>
+    </ul>
+    <p>
+      Additional scripts removed qdiscs cleanly after each experiment.
+    </p>
+
+    <h4>3. Bottleneck Analysis and Pre-Processing</h4>
+    <ul>
+      <li><b>Bottleneck Bitrate Estimation:</b> A C program transmitted UDP packets and the server approximated the link’s maximum sustainable rate by looking at the maximum received rate.</li>
+      <li><b>Queue Length Estimation:</b> Another C program measured queue buildup time to calculate queue depth (queue length).</li>
+      <li><b>CPU Bottleneck Detection:</b> Another C program ensured that the observed delay was due to link capacity, not processor limitations.</li>
+    </ul>
+
+    <h4>4. CoDel Simulation</h4>
+    <p>
+      I implemented a <b>Python simulation of the CoDel algorithm</b> faithfully based on the Linux kernel’s CoDel implementation.
+      This simulation was used to study how network parameters such as bottleneck bitrate,packet size, queue length, and added bitrate influence
+      delay control behavior. It also provided a reference RTT pattern used to calculate the needed total test time and that can be used for classification comparisons in the future.
+    </p>
+
+    <h4>5. Data Collection and Storage</h4>
+    <p>
+      Each experiment produced multiple CSV trace files:
+    </p>
+    <ul>
+      <li>Per-packet RTT measurements (timestamp, RTT value, sequence number).</li>
+      <li>Metadata files containing AQM type, bitrate, queue length, and parameters.</li>
+    </ul>
+    <p>
+      All data was organized hierarchically by AQM type and bitrate for structured post-processing.
+    </p>
+
+    <h4>6. Classification and Analysis Engine</h4>
+    <p>
+      The classifier was implemented in Python using <b>Dynamic Time Warping (DTW)</b> to measure similarity between new RTT traces
+      and pre-recorded template traces of each AQM type. Two classification stages were applied:
+    </p>
+    <ul>
+      <li><b>Stage 1:</b> Distinguish between fair-queuing AQMs (like FQ-CoDel, FQ, Cake) and non-fair-queuing ones (like CoDel, PIE, RED, FIFO).</li>
+      <li><b>Stage 2:</b> Perform fine-grained classification within each group using normalized DTW distance metrics and flow correlation behavior.</li>
+    </ul>
+
+    <h3>Automation Framework</h3>
+    <p>
+      A central Python orchestration script handled:
+    </p>
+    <ul>
+      <li>SSH-based remote control of client, router, and server machines.</li>
+      <li>Automated setup and teardown of AQM configurations.</li>
+      <li>Timed execution of traffic experiments and collection of logs.</li>
+      <li>Computation of DTW similarity matrices and accuracy statistics.</li>
+    </ul>
+
+    <h3>Results</h3>
+    <p>
+      The developed framework achieved <b>high classification accuracy</b> under a wide range of network conditions, including variations in bitrate, queue length, and packet size.
+      In controlled testbed environments, the system consistently distinguished between all tested AQM algorithms with strong separation in their RTT profiles.
+      When evaluated in a real-world scenario involving a live client and router over an operational network, the classifier maintained an overall accuracy of <b>87%</b>,
+      demonstrating its robustness outside laboratory conditions.
+    </p>
+
+    <p>
+      Each AQM exhibited a distinct temporal signature in the RTT traces:
+    </p>
+    <ul>
+      <li><b>CoDel</b> and <b>PIE</b> displayed highly recognizable periodic delay oscillations corresponding to their active queue control cycles, making them the most easily distinguishable algorithms.</li>
+      <li><b>RED</b> showed probabilistic yet smoother delay variations resulting from its random early drop mechanism, producing moderate oscillations without strict periodicity.</li>
+      <li><b>FQ-CoDel</b>, <b>Cake</b>, and <b>FQ</b> each displayed their own characteristic RTT signatures in single-flow conditions. All three demonstrated clear evidence of per-flow fairness and reduced inter-flow interference, with RTTs remaining stable and well-isolated between flows.</li>
+      <li><b>FIFO</b> traces were dominated by congestion plateaus and sharp delay spikes, reflecting unregulated queue buildup and absence of any active queue control.</li>
+    </ul>
+
+    <p>
+      These results confirm that end-to-end RTT measurements carry sufficient information to infer the active queue management policy at a bottleneck router.
+      The classification performance validates the effectiveness of combining precise C-level traffic generation, kernel-level AQM configuration, and DTW-based pattern matching for automated queue behavior identification.
+    </p>
+
+
+    <h3>Conclusion</h3>
+    <p>
+      This project demonstrated the feasibility of <b>AQM classification</b> using only end-to-end measurements.
+      By combining low-level packet generation, kernel-level queue configuration, and DTW-based classification,
+      the framework can infer the queue management technique used in a bottleneck router without direct access to its configuration.
+      The research provides a foundation for advanced traffic analysis, fairness verification, and congestion behavior studies.
+    </p>
+
+    <p><i>Future extensions</i> include integrating reinforcement learning to predict queue type adaptively and simulation all AQMs to generate on the fly perfect templates given network parameters.</p>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Peter Farah. All rights reserved.</p>
+  </footer>
+</body>
+</html>
