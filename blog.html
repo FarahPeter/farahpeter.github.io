@@ -57,6 +57,79 @@
       and experiment timing. The design allowed repeatable testing under controlled parameters such as bitrate, queue size,
       and packet interval.
     </p>
+
+      <h3>Workflow</h3>
+  <ol>
+    <li><b>Connection Establishment</b>
+      <ul>
+        <li>The master client connects to the master server over TCP.</li>
+      </ul>
+    </li>
+
+    <li><b>Bottleneck Measurement (1)</b>
+      <ul>
+        <li>The server runs the bitrate measurement server binary.</li>
+        <li>The client runs the corresponding measurement client binary and extracts the bottleneck bitrate.</li>
+      </ul>
+    </li>
+
+    <li><b>Bottleneck Type Verification (2)</b>
+      <ul>
+        <li>The server runs the bottleneck type checker binary.</li>
+        <li>The client runs the corresponding type checker client binary at the measured bitrate + 2 Mbit/s.</li>
+        <li>If throughput increases significantly, the bottleneck may be CPU or another factor; otherwise, it is confirmed to be the interface speed.</li>
+      </ul>
+    </li>
+
+    <li><b>Queue Size Measurement (3)</b>
+      <ul>
+        <li>The server runs the queue measurement server binary.</li>
+        <li>The client runs the corresponding queue measurement client binary and extracts the queue length in packets.</li>
+      </ul>
+    </li>
+
+    <li><b>Queue Consistency Check</b>
+      <ul>
+        <li>The client estimates queuing delay based on bitrate, packet size, and measured queue length.</li>
+        <li>If the estimated sojourn time is very small, the client raises a warning (possible misconfiguration, RED behavior, or background traffic) but continues the experiment.</li>
+      </ul>
+    </li>
+
+    <li><b>Simulation-Based Test Time Estimation (4)</b>
+      <ul>
+        <li>The client runs a CoDel simulation using the measured bitrate, added bitrate, queue size, and packet size.</li>
+        <li>The simulation suggests an experiment duration; if invalid, a default of 30 seconds is used.</li>
+        <li>Final test time is set to simulation time + 1 second.</li>
+      </ul>
+    </li>
+
+    <li><b>AQM/FQ Measurement (5)</b>
+      <ul>
+        <li>The server starts the AQM/FQ measurement binary.</li>
+        <li>The client launches the classification measurement tool, tuned with adjusted bitrate, packet size, and estimated test time.</li>
+        <li>RTT traces are collected.</li>
+      </ul>
+    </li>
+
+    <li><b>File Transfer</b>
+      <ul>
+        <li>The client sends all generated CSV files to the server.</li>
+      </ul>
+    </li>
+
+    <li><b>Classification (6)</b>
+      <ul>
+        <li>The server runs the Python classifier with the correct template family.</li>
+        <li>The classification result is sent back to the client and logged.</li>
+      </ul>
+    </li>
+
+    <li><b>Completion</b>
+      <ul>
+        <li>Both sides close the connection.</li>
+      </ul>
+    </li>
+  </ol>
       <div style="text-align:center; margin: 25px 0;">
       <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" alt="AQM Research Architecture Diagram" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
       <p style="font-size:0.9em; color:#666; margin-top:8px;">
