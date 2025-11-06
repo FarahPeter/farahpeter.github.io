@@ -322,3 +322,24 @@ header { position: relative; overflow: hidden; }
   100% { background-position: 160px   0px, 169px   0px; }
 }
 */
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.contact-form input,
+.contact-form textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-family: inherit;
+}
+
+.contact-form button {
+  align-self: flex-start;
+  cursor: pointer;
+}
