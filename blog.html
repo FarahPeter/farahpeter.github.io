@@ -161,6 +161,7 @@
       Round-Trip Times (RTTs) were measured at the client side by timestamping outgoing packets and matching them with acknowledgment timestamps received from the server.
       The resulting RTT traces were stored as time-series datasets, capturing queue buildup, delay oscillations, and congestion patterns under each tested AQM discipline.
     </p>
+    <img src="Files/images/Blog/AQMResearche/RTTtracesAQMs.jpg" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
 
 
     <h4>2. Router Configuration and AQM Control</h4>
@@ -253,6 +254,8 @@
 
 
   <h3>Conclusion</h3>
+
+    <img src="Files/images/Blog/AQMResearche/realLifeExample.JPG" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
   <p>
     This project represents a <b>state-of-the-art framework</b> for the identification and analysis of Active Queue Management (AQM) algorithms using only end-to-end network measurements.
     By integrating <b>C-based traffic generation</b>, <b>precise RTT collection</b>, <b>kernel-level AQM configuration</b>, and <b>Dynamic Time Warping (DTW)-based classification</b>, it achieves an unprecedented level of accuracy and automation in recognizing queue management behavior without requiring any access to routers.
