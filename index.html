@@ -71,6 +71,22 @@
             height: 40px;
             fill: silver;
         }
+
+
+        .qr-box {
+            padding: 10px;
+            background: #222;
+            border-radius: 8px;
+            display: inline-block;
+            box-shadow: 0 0 10px #000;
+        }
+
+        .qr-img {
+            width: 200px;   /* Force visible size */
+            height: 200px;  /* Force visible size */
+        }
+
+
     </style>
 </head>
 <body>
@@ -101,6 +117,20 @@
                 </svg>
             </a>
         </div>
+
+        <div class="qr-section">
+            <!--<h3>Scan to visit my website</h3>-->
+            <h3></h3>
+            <div class="qr-box">
+                <img
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=https://peterfarah.com"
+                    alt="QR Code"
+                    class="qr-img"
+                >
+            </div>
+        </div>
+
+
     </div>
 </body>
 </html>
