@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah - Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+</head>
+<body>
+    <header>
+        <div class="snow" aria-hidden="true"></div>
+        <div class="profile">
+            <img id="profile-image" src="Files/images/profile/profile_old.jpg" alt="Profile Image" class="profile-image">
+            <h1>Peter Farah</h1>
+            <h2 id="title">Cybersecurity and Network Engineer</h2>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#education">Education</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#certificates">Certificates and Tests</a></li>
+            <li><a href="#honors">Honors and Awards</a></li>
+            <li><a href="#languages">Languages</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="Landing.html">Home</a></li>
+            <li><a href="blog.html">Blog</a></li>
+
+
+        </ul>
+    </nav>
+
+    <section id="about">
+        <h2 class="section-title">About</h2>
+        <p>
+I am a cybersecurity and network engineer with a strong passion for advancing technology and fostering innovation. With a Bachelor's in Computer and Communication Engineering from the American University of Beirut and a Master's in Cybersecurity from the prestigious Institut Polytechnique de Paris, where I graduated with the highest distinction, I am driven by my dedication to continuous learning and staying at the forefront of technological advancements.<br><br>
+My professional experience includes working at Dar, where I played a key role in managing Cisco switches, automating security processes, and ensuring robust network operations. I have also honed my skills during internships at Exeo and POTECH, where I integrated diverse systems to enhance network security and developed web scraping tools to automate reconnaissance tasks.<br><br>
+Most recently, I completed a research internship where I developed a state-of-the-art classification framework for identifying Active Queue Management (AQM) algorithms in bottleneck routers. This project consisted of multiple C programs for generating UDP traffic and capturing RTT traces, combined with Python scripts for orchestration, coordination, simulation, and classification. The framework used Dynamic Time Warping (DTW) and advanced comparison techniques to accurately distinguish between algorithms such as CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, and FQ. In addition, I implemented a Python-based simulation of the CoDel algorithm to study the impact of network parameters and estimate total experiment durations. Together, these components formed a comprehensive system that advanced the understanding and detection of traffic management techniques in real-world networks.<br><br>
+I am particularly passionate about leveraging technology to build secure and resilient networks. I thrive in environments that encourage collaboration and innovation, constantly seeking to expand my knowledge and contribute to meaningful advancements in the field of cybersecurity. My commitment to education and staying ahead of emerging threats enables me to develop solutions that address both current and future challenges in network and information security.
+</p>
+        <!--<a href="Files/CV-Peter_Farah.pdf" download class="cv-button">Download CV</a>-->
+        <!--<button id="download-portfolio" class="cv-button">Download Portfolio</button>-->
+    </section>
+
+    <section id="experience">
+        <h2 class="section-title">Experience</h2>
+        <div class="job">
+            <h3>Telecom Sud-Paris - Researcher R&D | Intern</h3>
+            <p>Mar 2025 - Sep 2025 | Evry, France / Palaiseau, France </p>
+            <ul>
+                <li>Research Focus: Investigating protection mechanisms in routers against fairness attacks in TCP, focusing on queue management technique and Active Queue Management (AQM) algorithms such as CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, and FQ.</li>
+                <li>Classification Goal: Identifying active AQM algorithms in real-world networks on the bottleneck router between two endpoints by analyzing and comparing network traces generated from custom writen C and python codes.</li>
+                <li>Testbed: A setup consisting of a client, a router with an AQM-enabled bottleneck link, and a server. RTT traces are captured from UDP traffic generated in C, and classification is performed using Dynamic Time Warping (DTW) and advanced comparison methods in python.</li>
+                <li>Research Architecture: <br>
+                Bottleneck Bitrate Measurement: C code sending raw UDP packets to estimate the bottleneck link’s capacity.<br>
+                Bottleneck Type Verification: C code ensuring the bottleneck was due to link speed and not CPU or other factors.<br>
+                Queue Length Estimation: C code measuring the router’s queue length for template matching and total test time calculation.<br>
+                CoDel Simulation: Python simulation of CoDel, parameterized with measured values (packet size, bitrate, queue length) to determine the impact of network parameters and compute total experiment duration.<br>
+                Measurement Logic: C code generating UDP traffic and capturing RTT traces for analysis.<br>
+                Two-Stage Classifier: Python-based classifier first distinguishing fair queuing vs. non-fair queuing, then performing final AQM classification using Dynamic Time Warping (DTW) and advanced comparison techniques.</li>
+                <li>Achievements: Successfully developed a state-of-the-art classification system for identifying AQMs in bottleneck routers on real-world networks with high accuracy. The framework integrates traffic generation, bottleneck analysis, queue measurement, CoDel simulation, and a robust two-stage classifier, advancing the detection and understanding of traffic management techniques in complex environments.</li>
+
+            </ul>
+            <!--<img src="path/to/your/certificate-image.jpg" alt="Internship certificate">-->
+        </div>
+
+        <div class="job">
+            <h3>Institut Polytechnique de Paris - Researcher R&D | Student researcher</h3>
+            <p>Sep 2024 - Mar 2025 | Palaiseau, France </p>
+            <ul>
+                <li>Research Focus: Investigating protection mechanisms in routers against fairness attacks in TCP, focusing on queue management technique and Active Queue Management (AQM) algorithms such as CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, and FQ.</li>
+                <li>Classification Goal: Identifying active AQM algorithms in real-world networks on the bottleneck router between two endpoints by analyzing and comparing network traces generated from custom written C and Python codes.</li>
+                <li>Testbed: A setup consisting of a client, a router with an AQM-enabled bottleneck link, and a server. RTT traces are captured, and classification is performed using Dynamic Time Warping (DTW) and advanced comparison methods.</li>
+                <li>Achievements: Classification of AQMs generated in a testbed.</li>
+
+            </ul>
+            <!--<img src="path/to/your/certificate-image.jpg" alt="Internship certificate">-->
+        </div>
+
+        <div class="job">
+            <h3>Exeo - SOC R&D | Intern</h3>
+            <p>Apr 2024 - Jul 2024 | Paris, France / Mkalles, Lebanon</p>
+            <ul>
+                <li>Bitdefender and Grafana integration via python and SQL for visualization of security posture</li>
+                <li>Grafana alerting and ticket creation in Autotask automation via Python web-hook</li>
+                <li>Wazuh and Autotask integration via python for automated alert management</li>
+                <li>Integration of Grafana, Prometheus and its agents, SNMP devices, and various APIs</li>
+                <li>Grafana dashboards development with custom alerts and detailed overviews.</li>
+                <li>Full vertical integration of Grafana prometheus and prometheus windows and linux agents, snmp enabled devices such as cisco switches and firewalls , SQL server, microsoft graph api, Autotask api, bitdefender api via python scripting, Fortigate api to give full visibility for client over their network, endpoints, servers, and report their security posture and alert them via smtp and ticket creation about anomalies </li>
+
+            </ul>
+            <!--<img src="path/to/your/certificate-image.jpg" alt="Internship certificate">-->
+        </div>
+        <div class="job">
+            <h3>Dar - Cybersecurity and Network Engineer | Full Time</h3>
+            <p>Mar 2023 - Aug 2023 | Verdun, Lebanon</p>
+            <ul>
+                <li>Managed around 100 access layer cisco switches</li>
+                <li>Created hardened configuration for new cisco switch models to be implemented across all switches and then deployed all switches (physically and their configuration) making the internal network faster and safer</li>
+                <li>Resolved network issues involving switches, PCs, and Wake-on-LAN features affecting over 300 new laptops, ensuring seamless operation.</li>
+                <li>Troubleshooted problems with CUCM deployment</li>
+                <li>Created a MikroTik lab to simulate real-world networks and supervised interns in Lebanon and Egypt, providing guidance and support as well as deployed a fully configured MikroTik into production environment.</li>
+                <li>Troubleshooted endpoint network and security issues</li>
+                <li>Tasked with configuring a layer 3 Fortiswitch and report back on findings to compare with Cisco switches to choose the better upgrade path for the company</li>
+                <li>Managed Omada access point controller</li>
+                <li>Attended meetings with cisco regional partners</li>
+                <li>Maintained and automated Fortigate firewall and proxy operations to enhance security</li>
+                <li>Developed migration plan to secure cipher suite for VPN connections</li>
+                <li>Created a thorough document of hardened configuration of new cisco switch explaining clearly the goals of each configuration line for all offices around the world to use</li>
+                <li>Managed and patched vulnerabilities generated by Nexpose to protect the network infrastructure</li>
+                <li>Represented the company at a Fortinet workshop, gaining insights and sharing expertise</li>
+            </ul>
+        </div>
+        <div class="job">
+            <h3>POTECH  - Cyber Threat Intelligence Officer intern | Intern</h3>
+            <p>Jun 2022 - Dec 2022 | Beirut, Lebanon</p>
+            <ul>
+                <li>Developed Python scripts (under NDA) to automate reconnaissance through web scraping and orchestrate takedown operations via interactions with APIs and web bots.</li>
+                <li>Participated in a comprehensive passive reconnaissance exercise to enhance threat intelligence</li>
+            </ul>
+            <!--<img src="Files/images/potech.PNG" alt="Internship certificate">-->
+        </div>
+        <div class="job">
+            <h3>American University of Beirut  - Researcher | intern</h3>
+            <p>Jun 2021 - Aug 2021 | Beirut, Lebanon</p>
+            <ul>
+                <li>Inter-Disciplinary Practice Program (IDPP)</li>
+                <li>Engaged in activities focused on human-centered design and user research to create solutions that are both innovative and user-friendly</li>
+            </ul>
+            <!-- <img src="Files/images/IDPP.PNG" alt="Internship certificate"> -->
+        </div>
+        <div class="job">
+            <h3>Self-employed - Tutor</h3>
+            <p>Sep 2015 - Jun 2018 | Matn, Lebanon</p>
+            <ul>
+                <li>Mathematics, physics, and chemistry tutor</li>
+            </ul>
+        </div>
+        <!-- Add more job sections as needed -->
+    </section>
+
+    <section id="education">
+        <h2 class="section-title">Education</h2>
+        <div class="education-item">
+            <h3>Institut Polytechnique de Paris</h3>
+            <p>Master of Computer Science, Cybersecurity | Sep 2023 - Aug 2025</p>
+            <p>Master’s degree in Cybersecurity with highest distinction in M2. <br>
+                Notable course taken:<br>
+                 <b>At Ecole Polytechnique: </b> Modern networking, Network security, Internet protocols, Data Bases, Computer architecture, Computer system security.<br>
+                 <b>At Telecom Paris/Sud-Paris </b>: Security oriented programing, Secure protocols, Risk modeling and analysis in complex systems, Embedded systems security, Advanced network filtering architecture, Risk analysis <br></p>
+           <!-- <img src="path/to/your/education-image.jpg" alt="Diploma"> -->
+        </div>
+        <div class="education-item">
+            <h3>American University of Beirut</h3>
+            <p>Bachelor of Engineering - BE, Computer and communication Engineering | Oct 2018 - Dec 2022</p>
+            <p>Notable courses taken: Software Eng. I & II,
+                Cryptography, Internet Security, Computer Networks, Internetworking Lab, Mobile Networks, Data
+                Centers, Data Structures and Algorithms.</p>
+            <!-- <img src="Files/images/AUB.PNG" alt="Diploma"> -->
+        </div>
+        <div class="education-item">
+            <h3>College Mariste Champville</h3>
+            <p>Lebanese Baccalaureate in General Sciences: distinction | Sep 2003 - jun 2018</p>
+            <p>Ranked 1 in Math, physics, and chemistry</p>
+            <!-- <img src="Files/images/champville.PNG" alt="Diploma"> -->
+        </div>
+    </section>
+
+    <section id="skills">
+        <h2 class="section-title">Skills</h2>
+        <ul>
+            <li> Software: Python, Java, C++, C, Django, SQL</li>
+            <li> Cybersecurity: Wireshark, Nmap, Burp Suite, Fortinet FortiGate, Nexpose, Bitdefender</li>
+            <li> Networking: Cisco switches and routers, Mikrotic, FortiSwitch, extended knowledge of OSI layers</li>
+            <li> Hardware: CPU and ALU design, Finite state machines, CPU undervolting and overclocking, Full PC build, maintenance, and customisation</li>
+            <li> Languages: Fluent in English, French, and Arabic</li>
+            <!-- Add more skills as needed -->
+        </ul>
+    </section>
+
+    <section id="projects">
+        <h2 class="section-title">Projects</h2>
+        <div class="project">
+            <h3>Client-Server Secure Connection</h3>
+            <p>Exchange of symmetric key with asymmetric keys for file transfer. Supports custom certificate exchange signed by custom certificate authority.</p>
+            <p><a href="https://github.com/FarahPeter/Certificate" target="_blank">View on GitHub</a></p>
+        </div>
+        <div class="project">
+            <h3>DNS Spoofing</h3>
+            <p>Send Spoofed response to DNS query.</p>
+            <p><a href="https://github.com/FarahPeter/DNSspoof" target="_blank">View on GitHub</a></p>
+        </div>
+         <div class="project">
+        <h3>Galois Field Arithmetic Calculator</h3>
+        <p>Instant results for non-trivial arithmetic computations in Galois Fields reaching GF(2^571).</p>
+        <p><a href="https://github.com/FarahPeter/EECE455Project-3" target="_blank">View on GitHub</a></p>
+        </div>
+        <div class="project">
+            <h3>ICMP Quench Local Network Attack</h3>
+            <p>Find active local IPs and send ICMP quench to all.</p>
+            <p><a href="https://github.com/FarahPeter/ICMP_Quench" target="_blank">View on GitHub</a></p>
+        </div>
+        <div class="project">
+            <h3>TCP SYN Flood Attack</h3>
+            <p>Flood user-inputted IP with TCP SYN packets.</p>
+            <p><a href="https://github.com/FarahPeter/EECE-655-Assignment-1" target="_blank">View on GitHub</a></p>
+        </div>
+        <div class="project">
+            <h3>TCP SYN Flood Detection</h3>
+            <p>Detect TCP flood attack based on a threshold.</p>
+            <a href="https://github.com/FarahPeter/TCP-SYN-Detector" target="_blank">View on GitHub</a>
+        </div>
+        <div class="project">
+            <h3>TCP Injection</h3>
+            <p>Track TCP flow and inject HTTP response before server.</p>
+            <a href="https://github.com/FarahPeter/TCPinjection" target="_blank">View on GitHub</a>
+        </div>
+    <div class="project">
+        <h3>Covid-19 Tracker</h3>
+        <p>Automatically update database and generate statistics and graphs.</p>
+        <a href="https://github.com/FarahPeter/Covid-19_Lebanon" target="_blank">View on GitHub</a>
+    </div>
+    <div class="project">
+        <h3>Network cell analyzer for android smart phones</h3>
+        <p>Shows Carrier name, network types, dBm, SNR, Frequency Band. Made using Java and SQL.</p>
+        <a href="https://github.com/FarahPeter/NetworkAnalyzer" target="_blank">View on GitHub</a>
+    </div>
+    <div class="project">
+        <h3>PHYS210L Calculator</h3>
+        <p>Special calculator for PHYS210L AUB course that can calculate scientific rounding, error propagation, efficient statistical way of checking if a number is prime, keep notes, include cheat sheets, and more.</p>
+        <a href="https://github.com/FarahPeter/Phys210L-APP" target="_blank">View on GitHub</a>
+    </div>
+    <div class="project">
+        <h3>Network Checker</h3>
+        <p>Continously pings google and generate statistics of network status such as packet loss and average ping delay.</p>
+        <a href="https://github.com/FarahPeter/NetCheck" target="_blank">View on GitHub</a>
+    </div>
+    <div class="project">
+        <h3>Access Point clients checker</h3>
+        <p>Display all clients on access point with their utilization and can assigne names to each mac address seen</p>
+        <a href="https://github.com/FarahPeter/Netis_AccessPoint_monitor" target="_blank">View on GitHub</a>
+    </div>
+    <div class="project">
+        <h3>LaLiga AI match prediction</h3>
+        <p>Three AI models for predicting football match results</p>
+        <a href="https://github.com/FarahPeter/EECE490Project" target="_blank">View on GitHub</a>
+    </div>
+
+        <!-- Add more project sections as needed -->
+    </section>
+
+    <section id="certificates">
+        <h2 class="section-title">Certificates and Tests</h2>
+        <div class="certificate">
+            <h3>IELTS</h3>
+            <p>British Council - Nov 2022</p>
+            <p>CEFR level C1</p>
+            <!--<img src="Files/images/ilets.PNG" alt="Certificate">-->
+        </div>
+        <div class="certificate">
+            <h3>Fortinet workshop</h3>
+            <p>Fortinet</p>
+            <p> Security Driven Networking workshop, course completion</p>
+            <!--<img src="Files/images/ilets.PNG" alt="Certificate">-->
+        </div>
+        <div class="certificate">
+            <h3>Bitdefender Certified</h3>
+            <p>Bitdefender - July 2024</p>
+            <p>Certified sales specialist</p>
+            <p>Certified MSP technical specialist</p>
+            <p>Certified technical solutions professional</p>
+            <!--<img src="Files/images/ilets.PNG" alt="Certificate">-->
+        </div>
+        <!-- Add more certificate sections as needed -->
+    </section>
+
+    <section id="honors">
+        <h2 class="section-title">Honors and Awards</h2>
+        <div class="honor">
+            <h3>AUB Dean’s Honor List</h3>
+            <p>American University of Beirut</p>
+            <p>Placed multiple times on the Dean’s Honor List</p>
+
+            <h3>Polytechnique Honor</h3>
+            <p>Institut Polytechnique de Paris</p>
+            <p>Graduated with the highest honors from Polytechnique</p>
+        </div>
+        <!-- Add more honor sections as needed -->
+    </section>
+
+    <section id="languages">
+        <h2 class="section-title">Languages</h2>
+        <ul>
+            <li>Arabic: Native or bilingual proficiency</li>
+            <li>English: Native or bilingual proficiency</li>
+            <li>French: Native or bilingual proficiency</li>
+        </ul>
+    </section>
+
+    <section id="contact">
+        <h2 class="section-title">Contact</h2>
+        <p>Personal Email: <a href="mailto:peter@peterfarah.com">peter@peterfarah.com</a></p>
+        <p>AUB Email: <a href="mailto:psf04@mail.aub.edu">psf04@mail.aub.edu</a></p>
+        <p>Ecole Polytechnique Email: <a href="mailto:peter.farah@polytechnique.edu">peter.farah@polytechnique.edu</a></p>
+        <!--<p>Permanent TSP Email: <a href="mailto:peter.farah@telecom-sudparis.org">peter.farah@telecom-sudparis.org</a></p>-->
+        <p>LinkedIn: <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank">My linkdin</a></p>
+        <p>GitHub: <a href="https://github.com/FarahPeter" target="_blank">My Github</a></p>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

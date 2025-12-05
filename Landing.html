@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Links – Peter Farah</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #111;
+            color: white;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: silver;
+            text-shadow: 0 0 10px #555;
+        }
+
+        .btn {
+            display: block;
+            background: silver;
+            color: black;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            text-decoration: none;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #d0d0d0;
+            transform: translateY(-3px);
+        }
+
+        .icons {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .icon-link {
+            width: 40px;
+            height: 40px;
+            display: inline-block;
+            transition: 0.3s;
+        }
+
+        .icon-link:hover {
+            transform: scale(1.15);
+            opacity: 0.7;
+        }
+
+        svg {
+            width: 40px;
+            height: 40px;
+            fill: silver;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Peter Farah</h1>
+        <a class="btn" href="profile.html">Profile</a>
+        <a class="btn" href="blog.html">Blog</a>
+
+        <div class="icons">
+            <!-- LinkedIn -->
+            <a class="icon-link" href="https://www.linkedin.com/in/peter-farah-i" target="_blank">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.8v2.2h.1c.5-1 1.8-2.2 3.8-2.2 4 0 4.8 2.6 4.8 6V24h-4v-7.7c0-1.8 0-4-2.5-4s-3 2-3 3.9V24h-4V8z"/>
+                </svg>
+            </a>
+
+            <!-- GitHub -->
+            <a class="icon-link" href="https://github.com/FarahPeter" target="_blank">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.69-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.11-.75.41-1.27.75-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.3 1.19-3.11-.12-.29-.52-1.45.11-3.02 0 0 .97-.31 3.18 1.19a11.1 11.1 0 0 1 5.8 0c2.2-1.5 3.17-1.19 3.17-1.19.63 1.57.23 2.73.11 3.02.74.81 1.18 1.85 1.18 3.11 0 4.44-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18 0 1.57-.01 2.84-.01 3.22 0 .31.21.68.8.56A10.99 10.99 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+                </svg>
+            </a>
+
+            <!-- Email -->
+            <a class="icon-link" href="mailto:peter@peterfarah.com">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2v.01L12 13 4 6.01V6h16zM4 18V8l8 5 8-5v10H4z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
