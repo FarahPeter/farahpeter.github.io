@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peter Farah – Simplified Profile</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { max-width: 900px; margin: auto; }
+    header { text-align: center; padding: 40px 20px; }
+    header h1 { font-size: 2.6rem; }
+    header h2 { font-weight: normal; color: #aaa; }
+    .tagline { margin-top: 15px; font-size: 1.1rem; color: #ddd; }
+
+    section { margin: 50px 20px; }
+    .section-title { border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 25px; }
+
+    ul { line-height: 1.6; }
+
+    .highlight { background: #1b1b1b; padding: 20px; border-left: 4px solid #888; margin: 25px 0; }
+
+    .projects li { margin-bottom: 15px; }
+
+    footer { text-align: center; color: #777; margin: 60px 0 30px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Peter Farah</h1>
+  <h2>Cybersecurity & Network Research Engineer</h2>
+  <p class="tagline">
+    I specialize in networking, network automation, and security, building systems that measure, control, and analyze network behavior through automated experimentation.
+  </p>
+</header>
+
+
+ <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+        </ul>
+ </nav>
+
+
+
+<section id="about">
+  <h2 class="section-title">Profile</h2>
+  <p>
+    Network and cybersecurity engineer with a strong research background in congestion control,
+    Active Queue Management (AQM), and low‑level network measurement. Experienced in building
+    end‑to‑end experimental testbeds combining C‑based traffic generators, Linux kernel queue
+    disciplines, and Python automation for data analysis and classification.
+  </p>
+  <p>
+    Graduated with highest honors from Institut Polytechnique de Paris (Master’s in Cybersecurity)
+    with prior industry experience in network operations, security monitoring, and automation.
+  </p>
+</section>
+
+<section id="what-i-build">
+  <h2 class="section-title">What I Build</h2>
+  <ul>
+    <li>End‑to‑end network measurement and experimentation frameworks</li>
+    <li>Deterministic traffic generators using raw and standard UDP sockets (C)</li>
+    <li>Automated router configuration and test orchestration (tc, SSH, Python)</li>
+    <li>RTT‑based inference systems for bottleneck and AQM identification</li>
+    <li>Simulation tools for congestion control and queue behavior analysis</li>
+  </ul>
+</section>
+
+<section id="selected-work">
+<h2 class="section-title">Selected Work</h2>
+
+
+
+<h3>Passive Identification of Active Queue Management Algorithms</h3>
+<p>
+Designed and implemented a research-grade framework capable of identifying the AQM
+algorithm deployed on a bottleneck router using only end-to-end RTT traces.
+</p>
+<ul class="projects">
+<li>Custom UDP traffic generation and RTT capture in C</li>
+<li>Linux router configured with CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, and FQ</li>
+<li>Python-based automation, CoDel simulation, and Dynamic Time Warping classification</li>
+<li>Achieved 87% classification accuracy in real-world network conditions</li>
+</ul>
+<p><a href="blog.html">→ Detailed technical write-up</a></p>
+
+
+
+<h3>Galois Field Arithmetic Calculator</h3>
+<p>
+Implemented a high-performance arithmetic engine for computations in Galois Fields up to GF(2<sup>571</sup>),
+enabling instant evaluation of non-trivial finite-field operations.
+</p>
+<ul class="projects">
+<li>Supports large finite fields used in cryptography and error-correcting codes</li>
+<li>Optimized algorithms for field arithmetic and exponentiation</li>
+<li>Designed for correctness, performance, and numerical robustness</li>
+</ul>
+<p><a href="https://github.com/FarahPeter/EECE455Project-3" target="_blank">→ GitHub repository</a></p>
+
+
+
+<h3>Network Attack Implementation and Detection Projects</h3>
+<p>
+Developed multiple low-level network attack and detection tools to study protocol weaknesses,
+traffic manipulation, and defensive mechanisms.
+</p>
+<ul class="projects">
+<li>TCP SYN flood generation and threshold-based detection</li>
+<li>DNS spoofing via crafted response injection</li>
+<li>TCP injection by tracking live flows and injecting forged packets</li>
+<li>ICMP-based local network disruption experiments</li>
+</ul>
+<p><a href="https://github.com/FarahPeter" target="_blank">→ Selected repositories on GitHub</a></p>
+
+
+
+<h3>Secure Certificate Generation and Verification System</h3>
+<p>
+Built a client-server system implementing secure key exchange and certificate-based authentication
+for protected file transfer.
+</p>
+<ul class="projects">
+<li>Asymmetric key exchange with symmetric session encryption</li>
+<li>Custom certificate authority and certificate validation logic</li>
+<li>Protection against man-in-the-middle and replay attacks</li>
+</ul>
+<p><a href="https://github.com/FarahPeter/Certificate" target="_blank">→ GitHub repository</a></p>
+</section>
+
+<section id="experience">
+  <h2 class="section-title">Experience (Condensed)</h2>
+  <ul>
+    <li><b>Institut Polytechnique de Paris</b> – Research R&D<br>
+        Research on congestion control, fairness, and AQM classification in real networks.</li>
+    <li><b>Exeo</b> – SOC R&D <br>
+        Built security monitoring and alerting pipelines integrating Grafana, Prometheus, SNMP,
+        SQL, and security APIs.</li>
+    <li><b>Dar</b> – Cybersecurity & Network Engineer<br>
+        Managed and hardened large‑scale Cisco switch deployments and firewall infrastructure.</li>
+    <li><b>POTECH</b> – Cyber Threat Intelligence Officer<br>
+        Automated reconnaissance through web scraping and orchestrated takedown operations.</li>
+  </ul>
+</section>
+
+<section id="tools">
+  <h2 class="section-title">Core Tools & Technologies</h2>
+  <ul>
+    <li><b>Languages:</b> C, Python, C++, SQL</li>
+    <li><b>Networking:</b> Linux tc/qdisc, raw sockets, Cisco, MikroTik, FortiGate</li>
+    <li><b>Analysis:</b> Dynamic Time Warping, time‑series analysis, simulation</li>
+    <li><b>Security:</b> Wireshark, Nmap, Burp Suite, Bitdefender, Nexpose</li>
+  </ul>
+</section>
+
+<section id="contact">
+  <h2 class="section-title">Contact</h2>
+  <p>Email: <a href="mailto:peter@peterfarah.com">peter@peterfarah.com</a></p>
+  <p>GitHub: <a href="https://github.com/FarahPeter" target="_blank">github.com/FarahPeter</a></p>
+  <p>LinkedIn: <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank">linkedin.com/in/peter-farah-i</a></p>
+</section>
+
+<footer>
+  <p>&copy; 2026 Peter Farah</p>
+</footer>
+
+</body>
+</html>
