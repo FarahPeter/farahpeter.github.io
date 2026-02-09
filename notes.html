@@ -25,33 +25,43 @@ The computer has internet connectivity.<br>
 <br>
 5)AQM research automation part<br>
 {
-  "router": {
-    "AQM": {"codel":"TC_Configs_remote-server/Router/tc_configs/codel-tc-config.sh" ,"fq-codel": "TC_Configs_remote-server/Router/tc_configs/fq-codel-tc-config.sh","red":"TC_Configs_remote-server/Router/tc_configs/red-tc-config.sh","pie":"TC_Configs_remote-server/Router/tc_configs/pie-tc-config.sh","fifo":"TC_Configs_remote-server/Router/tc_configs/fifo-tc-config.sh","fq-":"TC_Configs_remote-server/Router/tc_configs/fq-tc-config.sh","cake":"TC_Configs_remote-server/Router/tc_configs/cake-tc-config.sh"},
-    "DEL": "TC_Configs_remote-server/Router/tc_configs/del-tc-config.sh",
-    "Bitrates": [5,10,30,50,100,200,300,400,500]
+  "router": {<br>
+    "AQM": {"codel":"TC_Configs_remote-server/Router/tc_configs/codel-tc-config.sh" ,"fq-codel": "TC_Configs_remote-server/Router/tc_configs/fq-codel-tc-config.sh","red":"TC_Configs_remote-server/Router/tc_configs/red-tc-config.sh","pie":"TC_Configs_remote-server/Router/tc_configs/pie-tc-config.sh","fifo":"TC_Configs_remote-server/Router/tc_configs/fifo-tc-config.sh","fq-":"TC_Configs_remote-server/Router/tc_configs/fq-tc-config.sh","cake":"TC_Configs_remote-server/Router/tc_configs/cake-tc-config.sh"},<br>
+    "DEL": "TC_Configs_remote-server/Router/tc_configs/del-tc-config.sh",<br>
+    "Bitrates": [5,10,30,50,100,200,300,400,500]<br>
   },
 <br>
 <br>
-  "server": {
-    "Tc_config":"TC_Configs_remote-server/Server/tc_config/tc-config.sh",
-    "DEL": "TC_Configs_remote-server/Server/tc_config/del-tc-config.sh",
-    "Rtt": [1,10,50]
+  "server": {<br>
+    "Tc_config":"TC_Configs_remote-server/Server/tc_config/tc-config.sh",<br>
+    "DEL": "TC_Configs_remote-server/Server/tc_config/del-tc-config.sh",<br>
+    "Rtt": [1,10,50]<br>
   },
 <br>
 <br>
-  "client":{
-    "outputFile":["allNewOutput205"]
+  "client":{<br>
+    "outputFile":["allNewOutput205"]<br>
   },
 <br>
 <br>
-  "ssh":{
-    "Server":{"host": "123", "username": "debian", "password": "123"},
-    "Client":{"host": "123", "username": "user", "password": "123"},
-    "Router":{"host": "123", "username": "user", "password": "123"}
+  "ssh":{<br>
+    "Server":{"host": "123", "username": "debian", "password": "123"},<br>
+    "Client":{"host": "123", "username": "user", "password": "123"},<br>
+    "Router":{"host": "123", "username": "user", "password": "123"}<br>
   }
 }
 <br>
 <br>
 <img id="aqm_config" src="Files/images/Notes/img.png" alt="Image" class="profile-image">
+
+<br>
+<br>
+ssh from workstation to client router server and configure them and run codes
+
+<br>
+<br>
+final deployment:
+<br>
+<img id="aqm_ddeployed" src="Files/images/Notes/ALL_deployed_V4.drawio.png" alt="Image" class="profile-image">
 </body>
 </html>
