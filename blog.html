@@ -276,59 +276,135 @@
 
   </section>
 
-  <section id="home-server">
-  <h2 class="section-title">Home Server Infrastructure, Automation & Monitoring</h2>
+<section id="home-server">
+  <h2 class="section-title">Home Server Infrastructure, Automation & Observability Platform</h2>
 
   <p>
-    In parallel with my networking research work, I designed and deployed a
-    <b>self-hosted Ubuntu home server</b> running production-grade Python services,
-    full observability tooling, and secure remote access through a Zero Trust architecture.
-    The system operates as a personal cloud, automation engine, and monitoring platform.
+    I designed and deployed a self-hosted Ubuntu server environment operating as a
+    personal cloud, automation engine, and monitoring platform. The system runs
+    continuously and hosts multiple production-grade Python services, supported by
+    a full observability stack and secured through a Zero Trust architecture.
   </p>
 
-  <h3>System Overview</h3>
+  <h3>Infrastructure Architecture</h3>
   <ul>
-    <li><b>Ubuntu Server (VM-based):</b> Hosts all services and monitoring components.</li>
-    <li><b>Automated YouTube Pipeline:</b> Python-based system that generates, processes, and uploads videos without manual intervention.</li>
-    <li><b>Custom Python FTP Server:</b> Secure media ingestion service used to transfer images and videos directly from my phone to the server.</li>
+    <li><b>Ubuntu Server (VM-based):</b> Centralized host running all automation and monitoring services.</li>
+    <li><b>Systemd-managed services:</b> All Python applications run as managed services with automatic restart policies and failure handling.</li>
+    <li><b>Isolated Python virtual environments:</b> Dependency separation for reliability and maintainability.</li>
+    <li><b>Structured logging:</b> JSON-based logs for automation tasks and service health tracking.</li>
   </ul>
 
-  <h3>Monitoring & Observability Stack</h3>
+  <h3>Fully Automated YouTube Content Pipeline</h3>
   <p>
-    A full monitoring pipeline was implemented to ensure reliability and visibility
-    at both system and application levels.
+    I developed a complete end-to-end automated YouTube publishing system that
+    generates content, converts it to media, assembles the final video, and uploads it —
+    without manual intervention.
+  </p>
+
+  <h4>1. Content Generation Layer</h4>
+  <ul>
+    <li>Integration with the <b>Google Gemini API</b> for automated script generation.</li>
+    <li>Automatic fallback to an older Gemini model when API rate limits or quota limits are reached.</li>
+    <li>Structured JSON parsing to extract titles, descriptions, and script bodies reliably.</li>
+  </ul>
+
+  <h4>2. Media Processing Pipeline</h4>
+  <ul>
+    <li>Text-to-Speech generation using API-based voice synthesis.</li>
+    <li>Automated audio normalization and processing.</li>
+    <li>Video rendering using programmatic video assembly.</li>
+    <li>Dynamic audio overlay and synchronization between narration and visuals.</li>
+    <li>FFmpeg-based encoding and final export pipeline.</li>
+  </ul>
+
+  <h4>3. YouTube Integration</h4>
+  <ul>
+    <li>Secure OAuth-based integration with the YouTube Data API.</li>
+    <li>Automated upload with metadata injection (title, description, tags, visibility).</li>
+    <li>Upload status monitoring and structured success/failure logging.</li>
+  </ul>
+
+  <p>
+    The entire pipeline is orchestrated through Python, with robust exception handling,
+    retry mechanisms, and logging to ensure resilience against API limits or transient failures.
+  </p>
+
+  <h3>Custom Media Ingestion Service (Python FTP Server)</h3>
+  <p>
+    To support content workflows, I implemented a lightweight Python-based FTP server
+    that enables secure transfer of media files from my mobile device directly to the server.
   </p>
   <ul>
-    <li><b>Prometheus:</b> Collects VM metrics (CPU, RAM, disk, network).</li>
-    <li><b>Grafana:</b> Provides real-time dashboards and historical visualization.</li>
-    <li><b>Custom Python Prometheus Exporter:</b> Exposes internal state, health status, and runtime metrics of the YouTube automation service and FTP server.</li>
-    <li><b>Uptime Kuma:</b> Monitors availability of the Ubuntu server and public websites (peterfarah.com).</li>
+    <li>Dedicated service for controlled upload of images and videos.</li>
+    <li>Directory-based separation for automated processing pipelines.</li>
+    <li>Runs as a managed background service with restart policies.</li>
+    <li>Monitored via Prometheus exporter for service health and activity metrics.</li>
   </ul>
 
-  <h3>Secure Remote Access</h3>
+  <h3>Observability & Monitoring Stack</h3>
   <p>
-    Instead of traditional port forwarding, I integrated <b>Cloudflare Zero Trust Tunnel</b>
-    to securely expose internal services while keeping the server protected behind NAT.
+    The server is instrumented with full-stack monitoring to ensure continuous
+    visibility into system performance and application health.
+  </p>
+
+  <h4>1. Infrastructure Monitoring</h4>
+  <ul>
+    <li><b>Prometheus</b> collects system-level metrics (CPU, RAM, disk I/O, network).</li>
+    <li><b>Grafana</b> dashboards provide real-time visualization and historical trend analysis.</li>
+  </ul>
+
+  <h4>2. Custom Application Metrics</h4>
+  <ul>
+    <li>Developed a custom Python Prometheus exporter.</li>
+    <li>Exposes service state (running, failed, restarting).</li>
+    <li>Exports task-level metrics such as upload success rate, processing duration, and error counters.</li>
+    <li>Tracks FTP server activity and connection statistics.</li>
+    <img src="Files/images/Blog/HomeServer/Grafana.JPG" alt="Grafana" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+  </ul>
+
+
+  <h4>3. Uptime Monitoring</h4>
+  <ul>
+    <li>Deployed Uptime Kuma to monitor:</li>
+    <ul>
+      <li>Ubuntu server availability</li>
+      <li>peterfarah.com</li>
+      <li>farmavetservices.com</li>
+    </ul>
+    <li>Alerting mechanisms for downtime detection.</li>
+    <img src="Files/images/Blog/HomeServer/Uptime.JPG" alt="Uptime Kuma" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+  </ul>
+
+  <h3>Zero Trust Remote Access Architecture</h3>
+  <p>
+    Instead of exposing services via port forwarding, I implemented
+    <b>Cloudflare Zero Trust Tunnel</b> to securely expose internal services while
+    keeping the server protected behind NAT.
   </p>
   <ul>
-    <li>SSH access via <code>ssh.peterfarah.com</code></li>
-    <li>Grafana dashboard via <code>grafana.peterfarah.com</code></li>
-    <li>Uptime dashboard via <code>up.peterfarah.com</code></li>
+    <li>Secure SSH access via <code>ssh.peterfarah.com</code>.</li>
+    <li>Grafana dashboard accessible at <code>grafana.peterfarah.com</code>.</li>
+    <li>Uptime dashboard accessible at <code>up.peterfarah.com</code>.</li>
+    <li>No inbound ports opened on the router.</li>
+    <li>Access control policies enforced at the Cloudflare layer.</li>
   </ul>
 
-  <h3>Engineering Focus</h3>
+  <h3>Engineering Principles Applied</h3>
   <ul>
-    <li>Automation-first infrastructure design</li>
-    <li>Secure remote access using Zero Trust principles</li>
-    <li>Custom metrics instrumentation and observability engineering</li>
-    <li>Self-hosted service reliability and uptime validation</li>
+    <li>Automation-first system design</li>
+    <li>Resilience through fallback mechanisms and service restart policies</li>
+    <li>Structured observability with custom instrumentation</li>
+    <li>Secure-by-design remote access using Zero Trust architecture</li>
+    <li>Production-style service orchestration in a self-hosted environment</li>
   </ul>
 
   <p>
-    This project demonstrates practical DevOps engineering, secure infrastructure exposure,
-    production-style monitoring, and real-world automation running continuously in a self-hosted environment.
+    This project demonstrates practical DevOps engineering, API integration,
+    automation pipelines, secure infrastructure exposure, and full observability —
+    all operating continuously in a real-world self-hosted production environment.
   </p>
 </section>
+
 
 
   <footer>
