@@ -276,6 +276,61 @@
 
   </section>
 
+  <section id="home-server">
+  <h2 class="section-title">Home Server Infrastructure, Automation & Monitoring</h2>
+
+  <p>
+    In parallel with my networking research work, I designed and deployed a
+    <b>self-hosted Ubuntu home server</b> running production-grade Python services,
+    full observability tooling, and secure remote access through a Zero Trust architecture.
+    The system operates as a personal cloud, automation engine, and monitoring platform.
+  </p>
+
+  <h3>System Overview</h3>
+  <ul>
+    <li><b>Ubuntu Server (VM-based):</b> Hosts all services and monitoring components.</li>
+    <li><b>Automated YouTube Pipeline:</b> Python-based system that generates, processes, and uploads videos without manual intervention.</li>
+    <li><b>Custom Python FTP Server:</b> Secure media ingestion service used to transfer images and videos directly from my phone to the server.</li>
+  </ul>
+
+  <h3>Monitoring & Observability Stack</h3>
+  <p>
+    A full monitoring pipeline was implemented to ensure reliability and visibility
+    at both system and application levels.
+  </p>
+  <ul>
+    <li><b>Prometheus:</b> Collects VM metrics (CPU, RAM, disk, network).</li>
+    <li><b>Grafana:</b> Provides real-time dashboards and historical visualization.</li>
+    <li><b>Custom Python Prometheus Exporter:</b> Exposes internal state, health status, and runtime metrics of the YouTube automation service and FTP server.</li>
+    <li><b>Uptime Kuma:</b> Monitors availability of the Ubuntu server and public websites (peterfarah.com).</li>
+  </ul>
+
+  <h3>Secure Remote Access</h3>
+  <p>
+    Instead of traditional port forwarding, I integrated <b>Cloudflare Zero Trust Tunnel</b>
+    to securely expose internal services while keeping the server protected behind NAT.
+  </p>
+  <ul>
+    <li>SSH access via <code>ssh.peterfarah.com</code></li>
+    <li>Grafana dashboard via <code>grafana.peterfarah.com</code></li>
+    <li>Uptime dashboard via <code>up.peterfarah.com</code></li>
+  </ul>
+
+  <h3>Engineering Focus</h3>
+  <ul>
+    <li>Automation-first infrastructure design</li>
+    <li>Secure remote access using Zero Trust principles</li>
+    <li>Custom metrics instrumentation and observability engineering</li>
+    <li>Self-hosted service reliability and uptime validation</li>
+  </ul>
+
+  <p>
+    This project demonstrates practical DevOps engineering, secure infrastructure exposure,
+    production-style monitoring, and real-world automation running continuously in a self-hosted environment.
+  </p>
+</section>
+
+
   <footer>
     <p>&copy; 2026 Peter Farah. All rights reserved.</p>
   </footer>
