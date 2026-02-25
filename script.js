@@ -51,13 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, {
-        rootMargin: "0px 0px -50px 0px", // Triggers slightly before the bottom of the screen
-        threshold: 0.1
+        rootMargin: "0px 0px -50px 0px", // Still waits until the element is 50px above the bottom of the screen
+        threshold: 0 // <--- CHANGED THIS FROM 0.1 TO 0
     });
 
     reveals.forEach(reveal => {
         revealObserver.observe(reveal);
     });
+
+    // Fallback: Manually trigger the reveal for elements already at the top of the page on load
+    setTimeout(() => {
+        reveals.forEach(reveal => {
+            const rect = reveal.getBoundingClientRect();
+            if (rect.top < window.innerHeight) {
+                reveal.classList.add('active');
+                revealObserver.unobserve(reveal);
+            }
+        });
+    }, 100);
 
 // --- Active Navigation Highlight ---
     const sections = document.querySelectorAll('section[id]');
