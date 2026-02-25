@@ -39,3 +39,52 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+// --- Scroll Reveal Logic ---
+    const reveals = document.querySelectorAll('.reveal');
+
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target); // Stop observing once revealed
+            }
+        });
+    }, {
+        rootMargin: "0px 0px -50px 0px", // Triggers slightly before the bottom of the screen
+        threshold: 0.1
+    });
+
+    reveals.forEach(reveal => {
+        revealObserver.observe(reveal);
+    });
+
+// --- Active Navigation Highlight ---
+    const sections = document.querySelectorAll('section[id]');
+    const navItems = document.querySelectorAll('nav ul li a[href^="#"]');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+
+        // Creates an imaginary activation line 1/3 of the way down the screen.
+        // If you want it to trigger exactly in the middle of the screen, change '3' to '2'.
+        const triggerPoint = window.scrollY + (window.innerHeight / 3);
+
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionBottom = sectionTop + section.offsetHeight;
+
+            // Check if the activation line is currently inside this section
+            if (triggerPoint >= sectionTop && triggerPoint < sectionBottom) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        // Update the navigation links
+        navItems.forEach(a => {
+            a.classList.remove('active-link');
+            if (current && a.getAttribute('href') === `#${current}`) {
+                a.classList.add('active-link');
+            }
+        });
+    });
