@@ -71,6 +71,52 @@ html {
   background: rgba(0, 0, 0, 0.05);
 }
 
+/* ===============================
+   Animated Theme Toggle Icon
+================================ */
+#theme-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px; /* Matches your other nav links */
+  width: 60px; /* Gives the icons room to spin */
+  overflow: hidden;
+}
+
+#theme-toggle svg {
+  /* Removed position: absolute from here */
+  width: 22px;
+  height: 22px;
+  transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.5s ease;
+}
+
+/* Default (Dark Mode) State */
+.sun-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+  /* The sun acts as the structural anchor, taking up space naturally */
+}
+
+.moon-icon {
+  position: absolute; /* Now only the moon floats on top of the sun */
+  opacity: 0;
+  transform: rotate(-90deg) scale(0);
+}
+
+/* Light Mode State */
+[data-theme="light"] .sun-icon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0);
+}
+
+[data-theme="light"] .moon-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+
+
 * {
   box-sizing: border-box;
   scroll-behavior: smooth;
@@ -518,5 +564,45 @@ footer {
   .job-header .text-muted {
     text-align: left;
     margin-top: 5px;
+  }
+}
+
+/* ===============================
+   Print Stylesheet
+================================ */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  nav, .menu-toggle, .btn, .btn-group, #back-to-top, .social-icons svg {
+    display: none !important;
+  }
+
+  section {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 0 20px 0 !important;
+    transform: none !important;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    color: #000 !important;
+    border-bottom: 1px solid #ccc !important;
+  }
+
+  a {
+    color: #000 !important;
+    text-decoration: underline;
+  }
+
+  /* ⬇️ The new fix ⬇️ */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
