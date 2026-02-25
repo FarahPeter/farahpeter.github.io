@@ -132,6 +132,33 @@ nav ul li a:hover {
   color: var(--primary-hover);
 }
 
+/* Special highlight for page navigation links */
+nav ul li a.nav-highlight {
+  color: var(--primary-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin: 6px 10px; /* Adjusts the spacing so it sits nicely next to text links */
+  padding: 8px 16px; /* Slightly tighter padding for a button feel */
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+nav ul li a.nav-highlight:hover {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Mobile adjustment for the highlighted links */
+@media (max-width: 768px) {
+  nav ul li a.nav-highlight {
+    margin: 10px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color); /* Override the standard mobile bottom border */
+  }
+}
+
 /* ===============================
    Sections & Layout
 ================================ */
