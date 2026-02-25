@@ -2,66 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Peter Farah Services</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Service Access Panel</title>
     <link rel="stylesheet" href="styles.css">
-
-<style>
-    body {
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #000000; /* Black background */
-        font-family: Arial, sans-serif;
-        color: white; /* Make text visible on black */
-    }
-
-    .container {
-        text-align: center;
-        width: 100%;
-        max-width: 400px;
-    }
-
-    h1 {
-        margin-bottom: 30px;
-        color: white; /* Ensure heading is white */
-    }
-
-    .btn {
-        display: block;
-        width: 100%;
-        max-width: 300px;
-        margin: 15px auto;
-        background: silver;
-        color: black;
-        padding: 15px 20px;
-        border-radius: 8px;
-        font-size: 1.3rem;
-        text-decoration: none;
-        transition: 0.3s;
-        font-weight: bold;
-    }
-
-    .btn:hover {
-        background: #d0d0d0;
-        transform: translateY(-3px);
-    }
-</style>
-
 </head>
-
 <body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home / Profile</a></li>
+            <li><a href="blog.html">Research & Blog</a></li>
+            <li><a href="server.html">Server Access</a></li>
+        </ul>
+    </nav>
 
-    <div class="container">
-        <h1>Service Access Panel</h1>
-        <a class="btn" href="index.html">Back Home</a>
+    <section class="server-panel">
+        <h2 class="section-title" style="text-align: center;">Service Access Panel</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">
+            Secured via Cloudflare Zero Trust architecture.
+        </p>
+
         <a class="btn" href="https://access.peterfarah.com" target="_blank">Request Access</a>
         <a class="btn" href="https://ssh.peterfarah.com" target="_blank">SSH Portal</a>
         <a class="btn" href="https://grafana.peterfarah.com" target="_blank">Grafana Dashboard</a>
         <a class="btn" href="https://up.peterfarah.com" target="_blank">Uptime Monitor</a>
+    </section>
 
-    </div>
-
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
 </body>
 </html>

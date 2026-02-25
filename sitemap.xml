@@ -7,12 +7,7 @@
   </url>
 
   <url>
-    <loc>https://peterfarah.com/simplifiedProfile.html</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://peterfarah.com/profile.html</loc>
+    <loc>https://peterfarah.com/index.html</loc>
     <priority>0.8</priority>
   </url>
 
@@ -23,7 +18,7 @@
 
   <url>
     <loc>https://peterfarah.com/server.html</loc>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
   </url>
 
 </urlset>

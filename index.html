@@ -3,164 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile – Peter Farah</title>
+    <title>Peter Farah | Cybersecurity & Network Engineer</title>
     <link rel="stylesheet" href="styles.css">
-
-    <style>
-        body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    text-align: center;
-    color: white;
-
-    background: linear-gradient(
-        -45deg,
-        #0f0f0f,
-        #1c1c1c,
-        #3a3a3a,
-        #6e6e6e,
-        #1a1a1a
-    );
-    background-size: 400% 400%;
-    animation: bgFlow 10s ease infinite;
-    }
-    @keyframes bgFlow {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-
-        .container {
-            max-width: 500px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 40px;
-            color: silver;
-            text-shadow: 0 0 10px #555;
-        }
-
-        .btn {
-            display: block;
-            background: silver;
-            color: black;
-            padding: 15px 20px;
-            margin: 15px 0;
-            border-radius: 8px;
-            font-size: 1.3rem;
-            text-decoration: none;
-            transition: 0.3s;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            background: #d0d0d0;
-            transform: translateY(-3px);
-        }
-
-        .icons {
-            margin-top: 30px;
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-        }
-
-        .icon-link {
-            width: 40px;
-            height: 40px;
-            display: inline-block;
-            transition: 0.3s;
-        }
-
-        .icon-link:hover {
-            transform: scale(1.15);
-            opacity: 0.7;
-        }
-
-        svg {
-            width: 40px;
-            height: 40px;
-            fill: silver;
-        }
-
-
-        .qr-box {
-            padding: 10px;
-            background: #222;
-            border-radius: 8px;
-            display: inline-block;
-            box-shadow: 0 0 10px #000;
-        }
-
-        .qr-img {
-            width: 200px;   /* Force visible size */
-            height: 200px;  /* Force visible size */
-        }
-
-        .profile-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-
-
-
-    </style>
-
 </head>
 <body>
-    <div class="container">
+    <header>
+        <img id="profile-image" src="Files/images/profile/profile_old.jpg" alt="Portrait of Peter Farah">
         <h1>Peter Farah</h1>
-        <div class="profile-buttons">
-        <a class="btn" href="simplifiedProfile.html">Simple Profile</a>
-        <a class="btn" href="profile.html">Full Profile</a>
-        </div>
+        <h2 id="title">Cybersecurity and Network Engineer</h2>
 
-        <a class="btn" href="blog.html">Blog</a>
-        <a class="btn" href="server.html">My Server</a>
-        <a class="btn" href="Files/CV/CV_V16/CV-Peter_Farah.pdf" download>Download CV</a>
-
-        <div class="icons">
-            <!-- LinkedIn -->
-            <a class="icon-link" href="https://www.linkedin.com/in/peter-farah-i" target="_blank">
-                <svg viewBox="0 0 24 24">
-                    <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.8v2.2h.1c.5-1 1.8-2.2 3.8-2.2 4 0 4.8 2.6 4.8 6V24h-4v-7.7c0-1.8 0-4-2.5-4s-3 2-3 3.9V24h-4V8z"/>
-                </svg>
+        <div class="social-icons">
+            <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.8v2.2h.1c.5-1 1.8-2.2 3.8-2.2 4 0 4.8 2.6 4.8 6V24h-4v-7.7c0-1.8 0-4-2.5-4s-3 2-3 3.9V24h-4V8z"/></svg>
             </a>
-
-            <!-- GitHub -->
-            <a class="icon-link" href="https://github.com/FarahPeter" target="_blank">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.69-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.11-.75.41-1.27.75-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.3 1.19-3.11-.12-.29-.52-1.45.11-3.02 0 0 .97-.31 3.18 1.19a11.1 11.1 0 0 1 5.8 0c2.2-1.5 3.17-1.19 3.17-1.19.63 1.57.23 2.73.11 3.02.74.81 1.18 1.85 1.18 3.11 0 4.44-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18 0 1.57-.01 2.84-.01 3.22 0 .31.21.68.8.56A10.99 10.99 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
-                </svg>
+            <a href="https://github.com/FarahPeter" target="_blank" aria-label="GitHub">
+                <svg viewBox="0 0 24 24"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.69-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.11-.75.41-1.27.75-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.3 1.19-3.11-.12-.29-.52-1.45.11-3.02 0 0 .97-.31 3.18 1.19a11.1 11.1 0 0 1 5.8 0c2.2-1.5 3.17-1.19 3.17-1.19.63 1.57.23 2.73.11 3.02.74.81 1.18 1.85 1.18 3.11 0 4.44-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18 0 1.57-.01 2.84-.01 3.22 0 .31.21.68.8.56A10.99 10.99 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>
             </a>
-
-            <!-- Email -->
-            <a class="icon-link" href="mailto:peter@peterfarah.com">
-                <svg viewBox="0 0 24 24">
-                    <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2v.01L12 13 4 6.01V6h16zM4 18V8l8 5 8-5v10H4z"/>
-                </svg>
+            <a href="mailto:peter@peterfarah.com" aria-label="Email">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2v.01L12 13 4 6.01V6h16zM4 18V8l8 5 8-5v10H4z"/></svg>
             </a>
         </div>
+    </header>
 
-        <div class="qr-section">
-            <!--<h3>Scan to visit my website</h3>-->
-            <h3></h3>
-            <div class="qr-box">
-                <img
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=https://peterfarah.com"
-                    alt="QR Code"
-                    class="qr-img"
-                >
-            </div>
+    <nav>
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#education">Education</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#certificates">Certificates & Honors</a></li>
+            <li><a href="blog.html">Research & Blog</a></li>
+            <li><a href="server.html">Server Access</a></li>
+            <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" target="_blank">Download CV</a></li>
+        </ul>
+    </nav>
+
+    <section id="about">
+        <h2 class="section-title">About</h2>
+        <p>
+            I am a cybersecurity and network engineer driven by a passion for advancing technology and building resilient networks. I hold a Master's in Cybersecurity from the Institut Polytechnique de Paris (graduated with highest distinction) and a Bachelor's in Computer and Communication Engineering from the American University of Beirut.
+        </p>
+        <p>
+            My experience spans managing enterprise network infrastructure at Dar, integrating automated security monitoring pipelines at Exeo, and developing advanced Active Queue Management (AQM) classification frameworks during my research internships. I specialize in low-level networking, automation, and threat intelligence, constantly seeking to solve complex infrastructure and security challenges.
+        </p>
+    </section>
+
+    <section id="experience">
+        <h2 class="section-title">Experience</h2>
+
+        <div class="job">
+            <h3>Django Web Developer | Freelance</h3>
+            <p class="text-muted">Nov 2025 - Feb 2026</p>
+            <ul>
+                <li>Developed and fully deployed the Farmavet Services e-commerce website using Django.</li>
+                <li>Built shopping cart and checkout functionality tailored for veterinary and farming products.</li>
+                <li>Purchased the domain and configured DNS settings through Cloudflare for reliable hosting and SSL management.</li>
+                <li>View live site: <a href="https://shop.farmavetservices.com" target="_blank">shop.farmavetservices.com</a></li>
+            </ul>
         </div>
 
+        <div class="job">
+            <h3>Network Security Researcher | Telecom Sud-Paris & IP Paris</h3>
+            <p class="text-muted">Sep 2024 - Sep 2025 | Evry & Palaiseau, France</p>
+            <ul>
+                <li><strong>Research Focus:</strong> Investigating protection mechanisms in routers against fairness attacks in TCP, focusing on Active Queue Management (AQM) algorithms (CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, and FQ).</li>
+                <li><strong>Architecture:</strong> Developed a testbed utilizing custom C code to measure bottleneck bitrates, verify bottleneck types, and generate UDP traffic to capture RTT traces.</li>
+                <li><strong>Classification:</strong> Built a Python-based two-stage classifier using Dynamic Time Warping (DTW) to successfully identify active AQM algorithms in real-world networks with high accuracy.</li>
+                <li><a href="blog.html">Read the full AQM Research Write-up</a></li>
+            </ul>
+        </div>
 
-    </div>
+        <div class="job">
+            <h3>SOC R&D Intern | Exeo</h3>
+            <p class="text-muted">Apr 2024 - Jul 2024 | Paris, France</p>
+            <ul>
+                <li>Integrated Bitdefender and Grafana via Python and SQL for security posture visualization.</li>
+                <li>Developed full vertical integration of Grafana, Prometheus, SNMP devices (Cisco/Fortigate), and various APIs to provide clients with full visibility over their network.</li>
+                <li>Automated alert management and ticket creation via Python webhooks into Autotask.</li>
+            </ul>
+        </div>
+
+        <div class="job">
+            <h3>Cybersecurity and Network Engineer | Dar</h3>
+            <p class="text-muted">Mar 2023 - Aug 2023 | Verdun, Lebanon</p>
+            <ul>
+                <li>Managed and deployed hardened configurations across 100+ access layer Cisco switches.</li>
+                <li>Maintained and automated Fortigate firewall and proxy operations to enhance security.</li>
+                <li>Managed and patched vulnerabilities generated by Nexpose to protect the network infrastructure.</li>
+                <li>Developed a migration plan to secure cipher suites for VPN connections.</li>
+            </ul>
+        </div>
+
+        <div class="job">
+            <h3>Cyber Threat Intelligence Officer Intern | POTECH</h3>
+            <p class="text-muted">Jun 2022 - Dec 2022 | Beirut, Lebanon</p>
+            <ul>
+                <li>Developed Python scripts (under NDA) to automate reconnaissance through web scraping.</li>
+                <li>Orchestrated takedown operations via interactions with APIs and web bots.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="education">
+        <h2 class="section-title">Education</h2>
+        <div class="education-item">
+            <h3>Institut Polytechnique de Paris</h3>
+            <p>Master of Computer Science, Cybersecurity | Sep 2023 - Aug 2025</p>
+            <p>Graduated with highest distinction in M2. Focused on secure protocols, network security, security oriented programing, and advanced network filtering.</p>
+        </div>
+        <div class="education-item">
+            <h3>American University of Beirut</h3>
+            <p>Bachelor of Engineering - BE, Computer and Communication Engineering | Oct 2018 - Dec 2022</p>
+            <p>Dean’s Honor List. Core coursework in cryptography, network security, and internet security.</p>
+        </div>
+    </section>
+
+    <section id="skills">
+        <h2 class="section-title">Skills</h2>
+        <ul>
+            <li><strong>Software & Automation:</strong> Python, C, Linux </li>
+            <li><strong>Cybersecurity:</strong> Wireshark, Nmap, Burp Suite, Nexpose, Bitdefender</li>
+            <li><strong>Networking:</strong> Cisco routing/switching, MikroTik, Fortinet FortiGate, FortiSwitch</li>
+            <li><strong>Languages:</strong> Fluent in English, French, and Arabic</li>
+        </ul>
+    </section>
+
+    <section id="projects">
+        <h2 class="section-title">Projects</h2>
+
+        <div class="project">
+            <h3>Home Lab Server & Monitoring Infrastructure</h3>
+            <ul>
+                <li>Designed and deployed a self-hosted Ubuntu server (VM-based) to run production-grade Python services.</li>
+                <li>Developed a fully automated Python pipeline for YouTube video generation and upload.</li>
+                <li>Built a custom Python-based FTP server to securely transfer media from mobile devices.</li>
+                <li>Implemented infrastructure monitoring using Prometheus and Grafana.</li>
+                <li>Integrated Cloudflare Zero Trust Tunnel to securely expose internal services without port forwarding.</li>
+                <li>Enabled secure SSH access via <a href="https://ssh.peterfarah.com" target="_blank">ssh.peterfarah.com</a>.</li>
+                <li>Exposed monitoring dashboards via <a href="https://grafana.peterfarah.com" target="_blank">grafana.peterfarah.com</a> and <a href="https://up.peterfarah.com" target="_blank">up.peterfarah.com</a>.</li>
+                <li>Request Limited access: <a href="https://access.peterfarah.com" target="_blank">Request Access</a>.</li>
+                <li><a href="blog.html#home-server">Read the full architecture breakdown</a>.</li>
+            </ul>
+        </div>
+
+        <div class="project">
+            <h3>Client-Server Secure Connection</h3>
+            <p>Exchange of symmetric key with asymmetric keys for file transfer. Supports custom certificate exchange signed by custom certificate authority.</p>
+            <a href="https://github.com/FarahPeter/Certificate" target="_blank">View on GitHub</a>
+        </div>
+
+        <div class="project">
+            <h3>Galois Field Arithmetic Calculator</h3>
+            <p>Instant results for non-trivial arithmetic computations in Galois Fields reaching GF(2^571).</p>
+            <a href="https://github.com/FarahPeter/EECE455Project-3" target="_blank">View on GitHub</a>
+        </div>
+
+        <div class="project">
+            <h3>Network Attack Implementation & Detection</h3>
+            <p>Developed multiple tools including DNS spoofing, TCP SYN flooding/detection, TCP flow injection, and ICMP quench local network attacks to study protocol weaknesses.</p>
+            <a href="https://github.com/FarahPeter" target="_blank">View on GitHub</a>
+        </div>
+    </section>
+
+    <section id="certificates">
+        <h2 class="section-title">Certificates & Honors</h2>
+        <ul>
+            <li><strong>Institut Polytechnique de Paris:</strong> Graduated with the highest honors</li>
+            <li><strong>American University of Beirut:</strong> Dean’s Honor List</li>
+            <li><strong>Bitdefender Certified:</strong> Sales Specialist, MSP Technical Specialist, Technical Solutions Professional (July 2024)</li>
+            <li><strong>Fortinet:</strong> Security Driven Networking Workshop Completion</li>
+            <li><strong>IELTS:</strong> CEFR level C1 (Nov 2022)</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>
