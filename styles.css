@@ -38,6 +38,39 @@ html {
   --shadow-hover: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
+/* ===============================
+   Light Theme Overrides
+================================ */
+[data-theme="light"] {
+  --bg-main: #f9fafb;
+  --bg-section: #ffffff;
+  --bg-nav: rgba(255, 255, 255, 0.95);
+  --primary: #4b5563;
+  --primary-hover: #000000;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Fixes for elements with hardcoded dark backgrounds */
+[data-theme="light"] .btn,
+[data-theme="light"] .skill-badge {
+  background: #f3f4f6;
+  color: var(--text-main);
+}
+
+[data-theme="light"] .btn:hover,
+[data-theme="light"] .skill-badge:hover {
+  background: #e5e7eb;
+  color: #000;
+}
+
+[data-theme="light"] nav ul li a.nav-highlight {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 * {
   box-sizing: border-box;
   scroll-behavior: smooth;

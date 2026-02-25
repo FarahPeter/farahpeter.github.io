@@ -88,3 +88,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+// --- Dark/Light Mode Toggle ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const rootElement = document.documentElement;
+
+    // 1. Check if the user already chose a theme in a previous session
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        rootElement.setAttribute('data-theme', 'light');
+    }
+
+    // 2. Handle the click event to swap themes
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent the link from jumping to the top of the page
+
+            const currentTheme = rootElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            rootElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme); // Save preference
+        });
+    }
