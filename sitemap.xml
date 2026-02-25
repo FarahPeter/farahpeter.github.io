@@ -3,21 +3,25 @@
 
   <url>
     <loc>https://peterfarah.com/</loc>
+    <lastmod>2026-02-25</lastmod>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/index.html</loc>
+    <lastmod>2026-02-25</lastmod>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/blog.html</loc>
+    <lastmod>2026-02-25</lastmod>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/server.html</loc>
+    <lastmod>2026-02-25</lastmod>
     <priority>0.6</priority>
   </url>
 

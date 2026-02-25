@@ -4,13 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peter Farah | Cybersecurity & Network Engineer</title>
+    <meta name="description" content="Portfolio of Peter Farah, Cybersecurity and Network Engineer specializing in AQM research, infrastructure automation, and threat intelligence.">
+    <meta property="og:title" content="Peter Farah | Cybersecurity & Network Engineer">
+    <meta property="og:description" content="Discover my research on AQM, home server architecture, and professional experience in network engineering.">
+    <meta property="og:image" content="https://peterfarah.com/Files/images/profile/profile_old.jpg">
+    <meta property="og:url" content="https://peterfarah.com/">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico"> ```
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <img id="profile-image" src="Files/images/profile/profile_old.jpg" alt="Portrait of Peter Farah">
         <h1>Peter Farah</h1>
-        <h2 id="title">Cybersecurity and Network Engineer</h2>
+        <h2 class="page-subtitle">Cybersecurity and Network Engineer</h2>
 
         <div class="social-icons">
             <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" aria-label="LinkedIn">
@@ -48,6 +57,10 @@
         <p>
             My experience spans managing enterprise network infrastructure at Dar, integrating automated security monitoring pipelines at Exeo, and developing advanced Active Queue Management (AQM) classification frameworks during my research internships. I specialize in low-level networking, automation, and threat intelligence, constantly seeking to solve complex infrastructure and security challenges.
         </p>
+        <div class="btn-group" style="justify-content: flex-start;">
+            <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="btn" target="_blank">Download Resume / CV</a>
+            <a href="mailto:peter@peterfarah.com" class="btn" style="background: transparent; border: 1px solid var(--primary);">Contact Me</a>
+        </div>
     </section>
 
     <section id="experience">
@@ -122,12 +135,45 @@
 
     <section id="skills">
         <h2 class="section-title">Skills</h2>
-        <ul>
-            <li><strong>Software & Automation:</strong> Python, C, Linux </li>
-            <li><strong>Cybersecurity:</strong> Wireshark, Nmap, Burp Suite, Nexpose, Bitdefender</li>
-            <li><strong>Networking:</strong> Cisco routing/switching, MikroTik, Fortinet FortiGate, FortiSwitch</li>
-            <li><strong>Languages:</strong> Fluent in English, French, and Arabic</li>
-        </ul>
+
+        <div class="skills-container">
+            <span class="skills-category">Software & Automation</span>
+            <div class="skills-list">
+                <span class="skill-badge">Python</span>
+                <span class="skill-badge">C</span>
+                <span class="skill-badge">Linux</span>
+            </div>
+        </div>
+
+        <div class="skills-container">
+            <span class="skills-category">Cybersecurity</span>
+            <div class="skills-list">
+                <span class="skill-badge">Wireshark</span>
+                <span class="skill-badge">Nmap</span>
+                <span class="skill-badge">Burp Suite</span>
+                <span class="skill-badge">Nexpose</span>
+                <span class="skill-badge">Bitdefender</span>
+            </div>
+        </div>
+
+        <div class="skills-container">
+            <span class="skills-category">Networking</span>
+            <div class="skills-list">
+                <span class="skill-badge">Cisco Routing/Switching</span>
+                <span class="skill-badge">MikroTik</span>
+                <span class="skill-badge">Fortinet FortiGate</span>
+                <span class="skill-badge">FortiSwitch</span>
+            </div>
+        </div>
+
+        <div class="skills-container">
+            <span class="skills-category">Languages</span>
+            <div class="skills-list">
+                <span class="skill-badge">English (Fluent)</span>
+                <span class="skill-badge">French (Fluent)</span>
+                <span class="skill-badge">Arabic (Fluent)</span>
+            </div>
+        </div>
     </section>
 
     <section id="projects">

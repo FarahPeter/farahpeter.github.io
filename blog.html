@@ -3,13 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta name="description" content="Portfolio of Peter Farah, Cybersecurity and Network Engineer specializing in AQM research, infrastructure automation, and threat intelligence.">
+    <meta property="og:title" content="Peter Farah | Cybersecurity & Network Engineer">
+    <meta property="og:description" content="Discover my research on AQM, home server architecture, and professional experience in network engineering.">
+    <meta property="og:image" content="https://peterfarah.com/Files/images/profile/profile_old.jpg">
+    <meta property="og:url" content="https://peterfarah.com/">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico"> ```
+
   <title>Peter Farah - Blog | Active Queue Management Research</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
     <h1>Research & Technical Blog</h1>
-    <h2 id="title">Deep dives into network analysis and automation</h2>
+    <h2 class="page-subtitle">Deep dives into network analysis and automation</h2>
   </header>
 
   <nav>
@@ -132,7 +142,7 @@
     </li>
   </ol>
       <div style="text-align:center; margin: 25px 0;">
-      <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" alt="AQM Research Architecture Diagram" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+      <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" loading="lazy" alt="AQM Research Architecture Diagram" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
       <p style="font-size:0.9em; color:#666; margin-top:8px;">
         Figure 1 – Overall architecture of the AQM classification and analysis framework.
       </p>
@@ -162,7 +172,7 @@
       Round-Trip Times (RTTs) were measured at the client side by timestamping outgoing packets and matching them with acknowledgment timestamps received from the server.
       The resulting RTT traces were stored as time-series datasets, capturing queue buildup, delay oscillations, and congestion patterns under each tested AQM discipline.
     </p>
-    <img src="Files/images/Blog/AQMResearche/RTTtracesAQMs.jpg" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+    <img src="Files/images/Blog/AQMResearche/RTTtracesAQMs.jpg" loading="lazy" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
 
 
     <h4>2. Router Configuration and AQM Control</h4>
@@ -230,7 +240,7 @@
     <p style="color: blue;">Ideal Testbench<p>
     <p style="color: darkorange;">Ideal Testbench with remote server<p>
     <p style="color: green;">Home network tests<p>
-    <img src="Files/images/Blog/AQMResearche/Results.jpg" alt="AQM Research Results" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+    <img src="Files/images/Blog/AQMResearche/Results.jpg" loading="lazy" alt="AQM Research Results" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
     <p>
       The developed framework achieved <b>high classification accuracy</b> under a wide range of network conditions, including variations in bitrate, queue length, and packet size.
       In controlled testbed environments, the system consistently distinguished between all tested AQM algorithms with strong separation in their RTT profiles.
@@ -256,7 +266,7 @@
 
   <h3>Conclusion</h3>
 
-    <img src="Files/images/Blog/AQMResearche/realLifeExample.JPG" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+    <img src="Files/images/Blog/AQMResearche/realLifeExample.JPG" loading="lazy" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
   <p>
     This project represents a <b>state-of-the-art framework</b> for the identification and analysis of Active Queue Management (AQM) algorithms using only end-to-end network measurements.
     By integrating <b>C-based traffic generation</b>, <b>precise RTT collection</b>, <b>kernel-level AQM configuration</b>, and <b>Dynamic Time Warping (DTW)-based classification</b>, it achieves an unprecedented level of accuracy and automation in recognizing queue management behavior without requiring any access to routers.
@@ -353,7 +363,7 @@
   <ul>
     <li><b>Prometheus</b> collects system-level metrics (CPU, RAM, disk I/O, network).</li>
     <li><b>Grafana</b> dashboards provide real-time visualization and historical trend analysis.</li>
-    <img src="Files/images/Blog/HomeServer/Grafana2.JPG" alt="Grafana2" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+    <img src="Files/images/Blog/HomeServer/Grafana2.JPG" loading="lazy" alt="Grafana2" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
   </ul>
 
   <h4>2. Custom Application Metrics</h4>
@@ -362,7 +372,7 @@
     <li>Exposes service state (running, failed, restarting).</li>
     <li>Exports task-level metrics such as upload success rate, processing duration, and error counters.</li>
     <li>Tracks FTP server activity and connection statistics.</li>
-    <img src="Files/images/Blog/HomeServer/Grafana.JPG" alt="Grafana" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+    <img src="Files/images/Blog/HomeServer/Grafana.JPG" loading="lazy" alt="Grafana" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
   </ul>
 
 
@@ -375,7 +385,7 @@
       <li>farmavetservices.com</li>
     </ul>
     <li>Alerting mechanisms for downtime detection.</li>
-    <img src="Files/images/Blog/HomeServer/Uptime.JPG" alt="Uptime Kuma" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+    <img src="Files/images/Blog/HomeServer/Uptime.JPG" loading="lazy" alt="Uptime Kuma" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
   </ul>
 
   <h3>Zero Trust Remote Access Architecture</h3>
@@ -384,7 +394,7 @@
     <b>Cloudflare Zero Trust Tunnel</b> to securely expose internal services while
     keeping the server protected behind NAT.
   </p>
-  <img src="Files/images/Blog/HomeServer/cloudflareAplications.JPG" alt="CLoudFlare" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+  <img src="Files/images/Blog/HomeServer/cloudflareAplications.JPG" loading="lazy" alt="CLoudFlare" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
 
   <ul>
     <li>Secure SSH access via <code>ssh.peterfarah.com</code>.</li>
