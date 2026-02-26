@@ -357,8 +357,8 @@ a:hover {
    Profile Elements & Specifics
 ================================ */
 #profile-image {
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
   margin: 0 auto;
   border-radius: 50%;
