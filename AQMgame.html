@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peter Farah | AQM Network Visualizer</title>
+  <meta name="description" content="Interactive live simulation of all 7 Active Queue Management algorithms: FIFO, RED, CoDel, PIE, FQ, FQ-CoDel, and Cake.">
+  <link rel="canonical" href="https://peterfarah.com/game.html">
+  <meta property="og:title" content="AQM Network Visualizer | Peter Farah">
+  <meta property="og:description" content="Live simulation of FIFO, RED, CoDel, PIE, FQ, FQ-CoDel, and Cake queue disciplines.">
+  <meta property="og:url" content="https://peterfarah.com/game.html">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Inline theme flash prevention ── */
+    :root { --mono: 'JetBrains Mono', monospace; }
+
+    /* ── Page layout ── */
+    .game-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* ── AQM tab selector ── */
+    .aqm-selector {
+      max-width: 1160px;
+      padding: 18px 24px;
+      margin: 30px auto 0;
+    }
+    .aqm-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .aqm-tab {
+      padding: 9px 18px;
+      background: var(--bg-main);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+    .aqm-tab:hover { color: var(--primary-hover); border-color: var(--primary); }
+    .aqm-tab.active {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+      box-shadow: 0 0 16px rgba(192,192,192,0.25);
+    }
+    [data-theme="light"] .aqm-tab.active { box-shadow: 0 0 12px rgba(0,0,0,0.2); }
+
+    /* ── Main two-column layout ── */
+    .viz-row {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      margin-top: 18px;
+    }
+    .viz-main { flex: 1; min-width: 0; }
+    .aqm-info-panel { width: 290px; flex-shrink: 0; }
+
+    /* ── Section cards ── */
+    .viz-card {
+      background: var(--bg-section);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .card-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .card-meta {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--primary);
+    }
+
+    /* ── Canvases ── */
+    #queue-canvas {
+      width: 100%;
+      height: 72px;
+      display: block;
+      border-radius: 6px;
+      background: #080808;
+    }
+    [data-theme="light"] #queue-canvas { background: #f0f0f0; }
+    #rtt-canvas {
+      width: 100%;
+      height: 240px;
+      display: block;
+      border-radius: 6px;
+      background: #060a06;
+    }
+    [data-theme="light"] #rtt-canvas { background: #f4f7f4; }
+
+    /* ── Flow legend ── */
+    .flow-legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 9px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stat-box {
+      background: var(--bg-section);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 1.55rem;
+      font-weight: 600;
+      color: var(--primary-hover);
+      line-height: 1;
+    }
+    .stat-unit {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-family: var(--mono);
+    }
+    .stat-box.warn .stat-value { color: #f97316; }
+    .stat-box.alert .stat-value { color: #ef4444; }
+
+    /* ── Controls ── */
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .control-row label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      min-width: 155px;
+    }
+    .control-row input[type="range"] {
+      flex: 1;
+      min-width: 120px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .control-val {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--primary);
+      min-width: 40px;
+      text-align: right;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .btn-row .btn { margin: 0; }
+
+    /* Active state for Burst Button */
+    .btn-burst-active {
+      color: #ef4444 !important;
+      border-color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.1) !important;
+    }
+
+    /* ── Info panel ── */
+    .aqm-description { position: sticky; top: 80px; }
+    .aqm-description .section-title { font-size: 1rem; margin-bottom: 14px; }
+    .aqm-description p {
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+      margin-bottom: 14px;
+    }
+    .param-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+    .param-table td:first-child {
+      font-family: var(--mono);
+      color: var(--primary);
+      white-space: nowrap;
+      padding-right: 10px;
+      width: 45%;
+    }
+    .observe-box {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-left: 3px solid var(--primary);
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .observe-box .obs-title {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 950px) {
+      .viz-row { flex-direction: column; }
+      .aqm-info-panel { width: 100%; }
+      .aqm-description { position: static; }
+    }
+    @media (max-width: 620px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 460px) {
+      .aqm-tab { padding: 7px 10px; font-size: 0.74rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+    <ul id="nav-menu">
+      <li>
+        <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </a>
+      </li>
+      <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
+      <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+    </ul>
+  </nav>
+
+  <header>
+    <h1>AQM Network Visualizer</h1>
+    <h2 class="page-subtitle">Live simulation — switch algorithms and watch the RTT signatures change in real time</h2>
+    <h2 class="page-subtitle">This is a very crude simulation just to show the shape</h2>
+  </header>
+
+  <div class="game-wrapper">
+
+    <section class="viz-card aqm-selector" style="padding:18px 24px;">
+      <div class="aqm-tabs">
+        <button class="aqm-tab active" data-aqm="FIFO">FIFO</button>
+        <button class="aqm-tab" data-aqm="RED">RED</button>
+        <button class="aqm-tab" data-aqm="CoDel">CoDel</button>
+        <button class="aqm-tab" data-aqm="PIE">PIE</button>
+        <button class="aqm-tab" data-aqm="FQ">FQ</button>
+        <button class="aqm-tab" data-aqm="FQ-CoDel">FQ-CoDel</button>
+        <button class="aqm-tab" data-aqm="Cake">Cake</button>
+      </div>
+    </section>
+
+    <div class="viz-row">
+      <div class="viz-main">
+
+        <div class="viz-card">
+          <div class="card-header">
+            <span class="card-label">Queue State</span>
+            <span class="card-meta" id="queue-meta">0 / 100 pkts &nbsp;|&nbsp; 0%</span>
+          </div>
+          <canvas id="queue-canvas"></canvas>
+          <div class="flow-legend">
+            <span class="legend-item"><span class="legend-dot" style="background:#4ade80"></span>Flow 1 — Main Traffic</span>
+          </div>
+        </div>
+
+        <div class="viz-card">
+          <div class="card-header">
+            <span class="card-label">RTT Trace — Last 20 s</span>
+            <span class="card-meta" id="rtt-meta">Avg 20.0 ms</span>
+          </div>
+          <canvas id="rtt-canvas"></canvas>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box" id="sb-queue">
+            <div class="stat-label">QUEUE</div>
+            <div class="stat-value" id="sv-queue">0</div>
+            <div class="stat-unit">packets</div>
+          </div>
+          <div class="stat-box" id="sb-rtt">
+            <div class="stat-label">AVG RTT</div>
+            <div class="stat-value" id="sv-rtt">20.0</div>
+            <div class="stat-unit">ms</div>
+          </div>
+          <div class="stat-box" id="sb-drop">
+            <div class="stat-label">DROP RATE</div>
+            <div class="stat-value" id="sv-drop">0.0</div>
+            <div class="stat-unit">%</div>
+          </div>
+          <div class="stat-box" id="sb-tput">
+            <div class="stat-label">THROUGHPUT</div>
+            <div class="stat-value" id="sv-tput">0.0</div>
+            <div class="stat-unit">Mbps</div>
+          </div>
+        </div>
+
+
+
+
+        <div class="viz-card">
+          <p style="font-family: var(--mono); font-size: 0.75rem; color: var(--text-muted); margin-bottom: 14px; text-align: center; font-style: italic;">
+            * Note: This is a very crude simulation just to show the shape. *
+          </p>
+
+          <div class="control-row">
+            <label>Traffic Load <span style="font-size:0.7em;opacity:0.6">(Locked)</span></label>
+            <input type="range" id="traffic-slider" min="50" max="200" value="102" step="1" disabled style="cursor: not-allowed; opacity: 0.6;">
+            <span class="control-val" id="traffic-val">102%</span>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn" id="btn-pause">⏸ Pause</button>
+            <button class="btn" id="btn-burst" disabled style="cursor: not-allowed; opacity: 0.6;">⚡ Burst: OFF (Locked)</button>
+            <button class="btn" id="btn-reset">↺ Reset</button>
+          </div>
+        </div>
+
+
+
+
+
+      </div><div class="aqm-info-panel">
+        <section class="viz-card aqm-description">
+          <h2 class="section-title" id="info-title">FIFO</h2>
+          <p id="info-desc"></p>
+          <table class="param-table" id="info-params"></table>
+          <div class="observe-box">
+            <span class="obs-title">WHAT TO WATCH</span>
+            <span id="info-observe"></span>
+          </div>
+        </section>
+      </div>
+
+    </div></div><footer>
+    <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+  </footer>
+
+  <script>
+  // ═══════════════════════════════════════════════════════════
+  //  CONSTANTS
+  // ═══════════════════════════════════════════════════════════
+  const LINK_BPS       = 2e6;           // 2 Mbps
+  const PKT_BYTES      = 1500;
+  const PKT_TX_MS      = PKT_BYTES * 8 / LINK_BPS * 1000;  // 6 ms per packet
+  const BASE_RTT_MS    = 0;            // 0 ms propagation
+  const RTT_WINDOW_MS  = 60000;         // 20 s window
+  const SIM_STEP_MS    = 1;
+  const STEPS_PER_FRM  = 15;
+  const FLOW_COLORS    = ['#4ade80'];   // Reduced to 1 flow color
+  const NUM_FLOWS      = 1;             // Changed from 3 to 1
+
+  // ═══════════════════════════════════════════════════════════
+  //  PACKET
+  // ═══════════════════════════════════════════════════════════
+  let _pkt_id = 0;
+  function mkPkt(flow_id, now) {
+    return { id: _pkt_id++, flow_id, size: PKT_BYTES, t: now };
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — FIFO
+  // ═══════════════════════════════════════════════════════════
+  class FIFO_AQM {
+    constructor() { this.q = []; this.LIM = 100; }
+    enqueue(p) { if (this.q.length >= this.LIM) return false; this.q.push(p); return true; }
+    dequeue(now) { if (!this.q.length) return null; return { pkt: this.q.shift(), dropped: false }; }
+    size() { return this.q.length; }
+    maxSize() { return this.LIM; }
+    reset() { this.q = []; }
+    contents() { return this.q.slice(0, 100).map(p => p.flow_id); }
+    targetDelay() { return null; }
+    update() {}
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — RED
+  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — RED
+  // ═══════════════════════════════════════════════════════════
+  class RED_AQM {
+    constructor() {
+      this.q = [];
+      this.LIM = 100;
+      this.avg = 0;
+
+      // New proportional RED parameters
+      this.MIN_TH = 20;  // Start dropping when avg queue > 20
+      this.MAX_TH = 80;  // Force drop when avg queue >= 80
+      this.MAX_P = 0.10; // Max probability of drop is 10%
+      this.WQ = 0.05;    // EWMA weight
+    }
+    enqueue(p) {
+      if (this.q.length >= this.LIM) return false; // Tail drop if strictly full
+
+      // 1. Calculate the new moving average
+      this.avg = (1 - this.WQ) * this.avg + this.WQ * this.q.length;
+
+      // 2. Apply RED drop logic
+      if (this.avg >= this.MAX_TH) {
+        return false; // Hard drop if we pass max threshold
+      } else if (this.avg > this.MIN_TH) {
+        // Linearly scale the drop probability between min_th and max_th
+        const pDrop = this.MAX_P * ((this.avg - this.MIN_TH) / (this.MAX_TH - this.MIN_TH));
+        if (Math.random() < pDrop) return false;
+      }
+
+      this.q.push(p);
+      return true;
+    }
+    dequeue(now) { if (!this.q.length) return null; return { pkt: this.q.shift(), dropped: false }; }
+    size() { return this.q.length; }
+    maxSize() { return this.LIM; }
+    reset() { this.q = []; this.avg = 0; }
+    contents() { return this.q.slice(0, 100).map(p => p.flow_id); }
+    targetDelay() { return null; }
+    update() {}
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — CoDel
+  // ═══════════════════════════════════════════════════════════
+  class CoDel_AQM {
+    constructor() {
+      this.q            = [];
+      this.LIM          = 100;
+      this.TARGET       = 5;
+      this.INTERVAL     = 1500;
+      this.first_above  = 0;
+      this.drop_next    = 0;
+      this.count        = 0;
+      this.dropping     = false;
+
+      // Custom tracking variables
+      this.was_above      = false;
+      this.below_count    = 0;
+      this.recorded_count = 0;
+      this.has_recorded   = false;
+    }
+    enqueue(p) { if (this.q.length >= this.LIM) return false; this.q.push(p); return true; }
+    dequeue(now) {
+      if (!this.q.length) { this.first_above = 0; return null; }
+      const pkt     = this.q[0];
+      const sojourn = now - pkt.t;
+      let ok_drop   = false;
+
+      if (sojourn < this.TARGET) {
+        this.first_above = 0;
+
+        if (this.was_above) {
+          this.was_above = false;
+
+          // 1. Record the peak count the VERY first time it drops below
+          if (!this.has_recorded) {
+            this.recorded_count = this.count;
+            this.has_recorded = true;
+          }
+
+          this.below_count++;
+
+          // 2. Every 2 cycles, reset to 10% of the RECORDED count
+          if (this.below_count >= 2) {
+            // Using 0.05 (5% of count) and Math.ceil so it doesn't bottom out at 1
+            this.count = Math.max(1, Math.ceil(this.recorded_count * 0.05));
+            this.below_count = 0;
+          }
+        }
+      } else {
+        this.was_above = true;
+
+        if (!this.first_above) this.first_above = now + this.INTERVAL;
+        else if (now >= this.first_above) ok_drop = true;
+      }
+
+      if (this.dropping) {
+        if (!ok_drop) {
+          this.dropping = false;
+        } else if (now >= this.drop_next) {
+          this.q.shift(); this.count++;
+          this.drop_next = now + this.INTERVAL / Math.sqrt(this.count);
+          return { pkt: null, dropped: true };
+        }
+      } else if (ok_drop) {
+        this.q.shift();
+        this.dropping   = true;
+        this.count      = Math.max(this.count - 2, 1);
+        this.drop_next  = now + this.INTERVAL / Math.sqrt(this.count);
+        return { pkt: null, dropped: true };
+      }
+
+      this.q.shift();
+      return { pkt, dropped: false };
+    }
+    size() { return this.q.length; }
+    maxSize() { return this.LIM; }
+    reset() {
+      this.q=[]; this.first_above=0; this.drop_next=0; this.count=0; this.dropping=false;
+      this.was_above=false; this.below_count=0; this.recorded_count=0; this.has_recorded=false;
+    }
+    contents() { return this.q.slice(0, 100).map(p => p.flow_id); }
+    targetDelay() { return this.TARGET + BASE_RTT_MS; }
+    update() {}
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — PIE
+  // ═══════════════════════════════════════════════════════════
+  class PIE_AQM {
+    constructor() {
+      this.q           = [];
+      this.LIM         = 10;
+      this.TARGET      = 15;
+      this.TUPDATE     = 30;
+      this.ALPHA       = 0.002;
+      this.BETA        = 0.02;
+      this.prob        = 0;
+      this.qdelay_old  = 0;
+      this.last_upd    = 0;
+    }
+    update(now) {
+      if (now - this.last_upd < this.TUPDATE) return;
+      this.last_upd = now;
+      let sojourn = this.q.length * 6;
+      let p = this.prob + this.ALPHA * (sojourn - this.TARGET) + this.BETA * (sojourn - this.qdelay_old);
+      this.prob = Math.max(0, Math.min(1, p));
+      this.qdelay_old = sojourn;
+    }
+    enqueue(p) {
+      if (Math.random() < this.prob) return false;
+      if (this.q.length >= this.LIM) return false;
+      this.q.push(p); return true;
+    }
+    dequeue(now) { if (!this.q.length) return null; return { pkt: this.q.shift(), dropped: false }; }
+    size() { return this.q.length; }
+    maxSize() { return this.LIM; }
+    reset() { this.q=[]; this.prob=0; this.qdelay_old=0; this.last_upd=0; }
+    contents() { return this.q.slice(0, 100).map(p => p.flow_id); }
+    targetDelay() { return this.TARGET + BASE_RTT_MS; }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — FQ
+  // ═══════════════════════════════════════════════════════════
+  class FQ_AQM {
+    constructor() {
+      this.qs  = Array.from({length: NUM_FLOWS}, () => []);
+      this.rr  = 0;
+      this.LIM = 100;
+    }
+    enqueue(p) {
+      if (this.qs[p.flow_id].length >= this.LIM) return false;
+      this.qs[p.flow_id].push(p); return true;
+    }
+    dequeue(now) {
+      for (let i = 0; i < NUM_FLOWS; i++) {
+        const idx = (this.rr + i) % NUM_FLOWS;
+        if (this.qs[idx].length) { this.rr = (idx + 1) % NUM_FLOWS; return { pkt: this.qs[idx].shift(), dropped: false }; }
+      }
+      return null;
+    }
+    size() { return this.qs.reduce((s, q) => s + q.length, 0); }
+    maxSize() { return this.LIM * NUM_FLOWS; }
+    reset() { this.qs = Array.from({length: NUM_FLOWS}, () => []); this.rr = 0; }
+    contents() {
+      const r = [];
+      const ml = Math.max(...this.qs.map(q => q.length));
+      for (let i = 0; i < ml && r.length < 100; i++)
+        for (let f = 0; f < NUM_FLOWS; f++)
+          if (this.qs[f][i]) r.push(f);
+      return r;
+    }
+    targetDelay() { return null; }
+    update() {}
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — FQ-CoDel
+  // ═══════════════════════════════════════════════════════════
+  class FQCoDel_AQM {
+    constructor() {
+      this.qs  = Array.from({length: NUM_FLOWS}, () => []);
+
+      this.cs  = Array.from({length: NUM_FLOWS}, () => ({
+        first_above: 0, drop_next: 0, count: 0, dropping: false,
+        was_above: false, below_count: 0, recorded_count: 0, has_recorded: false
+      }));
+
+      this.rr       = 0;
+      this.LIM      = 100;
+      this.TARGET   = 5;
+      this.INTERVAL = 1500;
+    }
+    enqueue(p) {
+      if (this.qs[p.flow_id].length >= this.LIM) return false;
+      this.qs[p.flow_id].push(p); return true;
+    }
+    dequeue(now) {
+      for (let i = 0; i < NUM_FLOWS; i++) {
+        const idx = (this.rr + i) % NUM_FLOWS;
+        const q = this.qs[idx], cs = this.cs[idx];
+        if (!q.length) continue;
+        this.rr = (idx + 1) % NUM_FLOWS;
+
+        const pkt     = q[0];
+        const sojourn = now - pkt.t;
+        let ok_drop   = false;
+
+        if (sojourn < this.TARGET) {
+          cs.first_above = 0;
+
+          if (cs.was_above) {
+            cs.was_above = false;
+
+            // 1. Record the peak count the VERY first time it drops below
+            if (!cs.has_recorded) {
+              cs.recorded_count = cs.count;
+              cs.has_recorded = true;
+            }
+
+            cs.below_count++;
+
+            // 2. Every 2 cycles, reset to 10% of the RECORDED count
+            if (cs.below_count >= 2) {
+              // Using 0.05 (5% of count) and Math.ceil so it doesn't bottom out at 1
+              cs.count = Math.max(1, Math.ceil(cs.recorded_count * 0.05));
+              cs.below_count = 0;
+            }
+          }
+        } else {
+          cs.was_above = true;
+
+          if (!cs.first_above) cs.first_above = now + this.INTERVAL;
+          else if (now >= cs.first_above) ok_drop = true;
+        }
+
+        if (cs.dropping) {
+          if (!ok_drop) {
+            cs.dropping = false;
+          } else if (now >= cs.drop_next) {
+            q.shift(); cs.count++;
+            cs.drop_next = now + this.INTERVAL / Math.sqrt(cs.count);
+            return { pkt: null, dropped: true };
+          }
+        } else if (ok_drop) {
+          q.shift(); cs.dropping = true;
+          cs.count    = Math.max(cs.count - 2, 1);
+          cs.drop_next = now + this.INTERVAL / Math.sqrt(cs.count);
+          return { pkt: null, dropped: true };
+        }
+
+        q.shift();
+        return { pkt, dropped: false };
+      }
+      return null;
+    }
+    size() { return this.qs.reduce((s, q) => s + q.length, 0); }
+    maxSize() { return this.LIM * NUM_FLOWS; }
+    reset() {
+      this.qs = Array.from({length: NUM_FLOWS}, () => []);
+      this.cs = Array.from({length: NUM_FLOWS}, () => ({
+        first_above:0, drop_next:0, count:0, dropping:false,
+        was_above:false, below_count:0, recorded_count:0, has_recorded:false
+      }));
+      this.rr = 0;
+    }
+    contents() {
+      const r = [];
+      const ml = Math.max(...this.qs.map(q => q.length));
+      for (let i = 0; i < ml && r.length < 100; i++)
+        for (let f = 0; f < NUM_FLOWS; f++)
+          if (this.qs[f][i]) r.push(f);
+      return r;
+    }
+    targetDelay() { return this.TARGET + BASE_RTT_MS; }
+    update() {}
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM — Cake
+  // ═══════════════════════════════════════════════════════════
+  class Cake_AQM {
+    constructor() {
+      // In single-flow mode, we just instantiate one tin to prevent array errors
+      this.tins = [{ q: Array.from({length: NUM_FLOWS}, () => []), rr: 0 }];
+      this.LIM = 100;
+      this.TARGET = 5;
+      this.p_drop = 0;
+      this.last_upd = 0;
+    }
+    update(now) {
+      if (now - this.last_upd >= 100) {
+        let qlen = this.size();
+        let sojourn = (qlen * 6) / 3;
+        if (sojourn > this.TARGET) {
+            this.p_drop += 0.0012;
+        } else if (sojourn < this.TARGET) {
+            this.p_drop -= 0.0005;
+        }
+        this.p_drop = Math.max(0, Math.min(1, this.p_drop));
+        this.last_upd = now;
+      }
+    }
+    enqueue(p) {
+      if (Math.random() < this.p_drop) return false;
+      const tin = this.tins[0]; // All goes to the single tin
+      if (tin.q[p.flow_id].length >= this.LIM) return false;
+      tin.q[p.flow_id].push(p);
+      return true;
+    }
+    dequeue(now) {
+      const tin = this.tins[0];
+      for (let i = 0; i < NUM_FLOWS; i++) {
+        const f  = (tin.rr + i) % NUM_FLOWS;
+        const q  = tin.q[f];
+        if (!q.length) continue;
+        tin.rr = (f + 1) % NUM_FLOWS;
+        const pkt = q.shift();
+        return { pkt, dropped: false };
+      }
+      return null;
+    }
+    size() { return this.tins[0].q.reduce((ss,q) => ss+q.length,0); }
+    maxSize() { return this.LIM * NUM_FLOWS; }
+    reset() {
+      this.tins = [{ q: Array.from({length: NUM_FLOWS}, () => []), rr: 0 }];
+      this.p_drop = 0;
+    }
+    contents() {
+      const r = [];
+      for (let f = 0; f < NUM_FLOWS; f++) {
+        for (const p of this.tins[0].q[f]) {
+          if (r.length < 100) r.push(p.flow_id);
+        }
+      }
+      return r;
+    }
+    targetDelay() { return this.TARGET + BASE_RTT_MS; }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  SIMULATION ENGINE
+  // ═══════════════════════════════════════════════════════════
+  const AQM_MAP = {
+    'FIFO': FIFO_AQM, 'RED': RED_AQM, 'CoDel': CoDel_AQM,
+    'PIE': PIE_AQM, 'FQ': FQ_AQM, 'FQ-CoDel': FQCoDel_AQM, 'Cake': Cake_AQM,
+  };
+
+  class Simulation {
+    constructor() {
+      this.time         = 0;
+      this.link_until   = 0;
+      this.paused       = false;
+      this.bursting     = false; // Tracks if burst toggle is active
+      this.aqm_name     = 'FIFO';
+      this.load_pct     = 102;
+      this.aqm          = new FIFO_AQM();
+
+      this.flows = Array.from({length: NUM_FLOWS}, (_, i) => ({
+        id: i, rate_bps: 0, acc: -(i * PKT_BYTES / NUM_FLOWS)
+      }));
+
+      this._setRates();
+      this.rtt_samples  = [];
+      this.total_tx     = 0;
+      this.total_drop   = 0;
+      this.win_tx       = 0;
+      this.win_drop     = 0;
+      this.win_start    = 0;
+      this.throughput   = 0;
+      this.drop_rate    = 0;
+    }
+
+    _setRates() {
+      // If bursting is true, we add 150% to whatever the slider is set at
+      let active_load = this.load_pct;
+      if (this.bursting) active_load += 150;
+
+      const per_flow = LINK_BPS * active_load / 100 / NUM_FLOWS;
+      for (const f of this.flows) f.rate_bps = per_flow;
+    }
+
+    setAQM(name) {
+      this.aqm_name = name;
+      this.aqm = new AQM_MAP[name]();
+      this._reset_counters();
+    }
+
+    setLoad(pct) {
+      this.load_pct = pct;
+      this._setRates();
+    }
+
+    toggleBurst() {
+      this.bursting = !this.bursting;
+      this._setRates();
+    }
+
+    _reset_counters() {
+      this.time = 0; this.link_until = 0;
+      this.rtt_samples = [];
+      this.total_tx = 0; this.total_drop = 0;
+      this.win_tx = 0; this.win_drop = 0;
+      this.win_start = 0; this.throughput = 0; this.drop_rate = 0;
+      for (let i = 0; i < NUM_FLOWS; i++) {
+          this.flows[i].acc = -(i * PKT_BYTES / NUM_FLOWS);
+      }
+      _pkt_id = 0;
+    }
+
+    reset() { this.aqm.reset(); this._reset_counters(); }
+
+    tick(dt) {
+      const now = this.time;
+      this.aqm.update(now);
+
+      for (const f of this.flows) {
+        f.acc += (dt / 1000) * (f.rate_bps) / 8;
+        while (f.acc >= PKT_BYTES) {
+          const ok = this.aqm.enqueue(mkPkt(f.id, now));
+          if (!ok) { this.total_drop++; this.win_drop++; }
+          f.acc -= PKT_BYTES;
+        }
+      }
+
+      if (this.link_until <= now) {
+        let drops = 0, result = this.aqm.dequeue(now);
+        while (result && result.dropped && drops < 20) {
+          this.total_drop++; this.win_drop++; drops++;
+          result = this.aqm.dequeue(now);
+        }
+        if (result && result.pkt) {
+          const p = result.pkt;
+          this.link_until = now + PKT_TX_MS;
+          const rtt = (now - p.t) + BASE_RTT_MS;
+          this.rtt_samples.push({ time: now, rtt, flow_id: p.flow_id });
+          this.total_tx++; this.win_tx++;
+        }
+      }
+
+      if (now - this.win_start >= 1000) {
+        this.throughput = (this.win_tx * PKT_BYTES * 8) / 1e6;
+        const tot = this.win_tx + this.win_drop;
+        this.drop_rate = tot > 0 ? (this.win_drop / tot) * 100 : 0;
+        this.win_tx = 0; this.win_drop = 0; this.win_start = now;
+      }
+
+      const cutoff = now - RTT_WINDOW_MS - 3000;
+      while (this.rtt_samples.length && this.rtt_samples[0].time < cutoff)
+        this.rtt_samples.shift();
+
+      this.time += dt;
+    }
+
+    avgRTT() {
+      const recent = this.rtt_samples.slice(-80);
+      if (!recent.length) return BASE_RTT_MS;
+      return recent.reduce((s, r) => s + r.rtt, 0) / recent.length;
+    }
+  }
+
+  const sim = new Simulation();
+
+  // ═══════════════════════════════════════════════════════════
+  //  RENDERING
+  // ═══════════════════════════════════════════════════════════
+  const qCvs = document.getElementById('queue-canvas');
+  const rCvs = document.getElementById('rtt-canvas');
+
+  function renderQueue() {
+    const W = qCvs.offsetWidth, H = qCvs.offsetHeight;
+    if (qCvs.width !== W) qCvs.width = W;
+    if (qCvs.height !== H) qCvs.height = H;
+    const ctx = qCvs.getContext('2d');
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = light ? '#f0f0f0' : '#080808';
+    ctx.fillRect(0, 0, W, H);
+
+    const contents = sim.aqm.contents();
+    const SLOTS  = 100;
+    const LBL    = 38;
+    const PAD    = 8;
+    const UW     = W - LBL * 2 - PAD * 2;
+    const SW     = UW / SLOTS;
+    const SH     = H * 0.52;
+    const SY     = (H - SH) / 2;
+    const SX     = PAD + LBL;
+
+    ctx.fillStyle = light ? '#9ca3af' : '#4b5563';
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('OUT ◄', SX - 4, H / 2 + 3);
+    ctx.textAlign = 'left';
+    ctx.fillText('► IN', SX + SLOTS * SW + 4, H / 2 + 3);
+
+    ctx.strokeStyle = light ? '#d1d5db' : '#262626';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(SX, SY - 2, SLOTS * SW, SH + 4);
+
+    for (let i = 0; i < SLOTS; i++) {
+      const x  = SX + i * SW;
+      const fid = contents[i];
+      ctx.fillStyle = fid !== undefined
+        ? FLOW_COLORS[fid] + (light ? 'cc' : 'dd')
+        : (light ? '#e5e7eb' : '#141414');
+      ctx.fillRect(x + 0.5, SY, SW - 1, SH);
+    }
+
+    const occ = contents.length / SLOTS;
+    ctx.fillStyle = occ > 0.85 ? '#ef4444' : occ > 0.5 ? '#f97316' : '#4ade80';
+    ctx.fillRect(SX, SY - 6, occ * SLOTS * SW, 3);
+  }
+
+function renderRTT() {
+    const W = rCvs.offsetWidth, H = rCvs.offsetHeight;
+    if (rCvs.width !== W) rCvs.width = W;
+    if (rCvs.height !== H) rCvs.height = H;
+    const ctx = rCvs.getContext('2d');
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = light ? '#f4f7f4' : '#060a06';
+    ctx.fillRect(0, 0, W, H);
+
+    const PL = 46, PR = 14, PT = 12, PB = 28;
+    const PW = W - PL - PR, PH = H - PT - PB;
+
+    const now = sim.time;
+    const t_end   = Math.max(now, RTT_WINDOW_MS);
+    const t_start = t_end - RTT_WINDOW_MS;
+
+    // 🛑 THIS IS THE KEY CHANGE 🛑
+    // We use ALL the samples here instead of slicing the last 800,
+    // which allows the line to span the full 60 seconds!
+    const recent = sim.rtt_samples;
+
+    let maxRTT = BASE_RTT_MS + 60;
+    if (recent.length) {
+      maxRTT = Math.max(...recent.map(r => r.rtt), BASE_RTT_MS + 20);
+      maxRTT = Math.ceil(maxRTT / 10) * 10 + 5;
+    }
+    const minRTT = Math.max(0, BASE_RTT_MS - 5);
+
+    const toX = t => PL + Math.max(0, Math.min(1, (t - t_start) / RTT_WINDOW_MS)) * PW;
+    const toY = v => PT + PH - Math.max(0, Math.min(1, (v - minRTT) / (maxRTT - minRTT))) * PH;
+
+    const gridColor = light ? 'rgba(0,80,0,0.08)' : 'rgba(0,80,0,0.25)';
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth   = 1;
+    const yRange = maxRTT - minRTT;
+    const yStep  = yRange <= 60 ? 10 : yRange <= 100 ? 20 : 25;
+    const yBase  = Math.ceil(minRTT / yStep) * yStep;
+    for (let v = yBase; v <= maxRTT; v += yStep) {
+      const y = toY(v);
+      ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(PL + PW, y); ctx.stroke();
+      ctx.fillStyle = light ? '#6b7280' : '#4b5563';
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(v, PL - 4, y + 3);
+    }
+
+    for (let i = 0; i <= 5; i++) {
+      const x       = PL + (i / 5) * PW;
+      const t_label = t_start + (i / 5) * RTT_WINDOW_MS;
+      const lbl     = (t_label / 1000).toFixed(0) + 's';
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth   = 1;
+      ctx.beginPath(); ctx.moveTo(x, PT); ctx.lineTo(x, PT + PH); ctx.stroke();
+      ctx.fillStyle   = light ? '#6b7280' : '#4b5563';
+      ctx.font        = '9px JetBrains Mono, monospace';
+      ctx.textAlign   = 'center';
+      ctx.fillText(lbl, x, H - 8);
+    }
+
+    if (now < RTT_WINDOW_MS) {
+      const nowX = toX(now);
+      ctx.strokeStyle = light ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(nowX, PT); ctx.lineTo(nowX, PT + PH); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const td = sim.aqm.targetDelay();
+    if (td !== null && td >= minRTT && td <= maxRTT) {
+      ctx.strokeStyle = light ? 'rgba(100,100,100,0.4)' : 'rgba(200,200,200,0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 5]);
+      const ty = toY(td);
+      ctx.beginPath(); ctx.moveTo(PL, ty); ctx.lineTo(PL + PW, ty); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = light ? '#9ca3af' : '#4b5563';
+      ctx.font = '8px JetBrains Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('target', PL + 4, ty - 3);
+    }
+
+    for (let fid = 0; fid < NUM_FLOWS; fid++) {
+      const pts = recent.filter(r => r.flow_id === fid && r.time >= t_start);
+      if (pts.length < 2) continue;
+
+      ctx.strokeStyle = FLOW_COLORS[fid];
+      ctx.lineWidth   = 1.4;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      let started = false;
+      for (const s of pts) {
+        const x = toX(s.time), y = toY(s.rtt);
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      const last = pts[pts.length - 1];
+      ctx.globalAlpha = 1;
+      ctx.fillStyle   = FLOW_COLORS[fid];
+      ctx.beginPath();
+      ctx.arc(toX(last.time), toY(last.rtt), 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = light ? '#d1d5db' : '#1a2a1a';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(PL, PT); ctx.lineTo(PL, PT + PH); ctx.lineTo(PL + PW, PT + PH);
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(10, H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = light ? '#9ca3af' : '#4b5563';
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('RTT (ms)', 0, 0);
+    ctx.restore();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  UI STATE
+  // ═══════════════════════════════════════════════════════════
+  function updateStats() {
+    const qsize = sim.aqm.size();
+    const qmax  = sim.aqm.maxSize();
+    const rtt   = sim.avgRTT();
+    const drop  = sim.drop_rate;
+    const tput  = sim.throughput;
+
+    document.getElementById('sv-queue').textContent = qsize;
+    document.getElementById('sv-rtt').textContent   = rtt.toFixed(1);
+    document.getElementById('sv-drop').textContent  = drop.toFixed(1);
+    document.getElementById('sv-tput').textContent  = tput.toFixed(1);
+    document.getElementById('queue-meta').textContent =
+      `${qsize} / ${qmax} pkts  |  ${Math.round(qsize/qmax*100)}%`;
+    document.getElementById('rtt-meta').textContent = `Avg ${rtt.toFixed(1)} ms`;
+
+    const sbQ = document.getElementById('sb-queue');
+    sbQ.className = 'stat-box' + (qsize/qmax > 0.85 ? ' alert' : qsize/qmax > 0.5 ? ' warn' : '');
+    const sbR = document.getElementById('sb-rtt');
+    sbR.className = 'stat-box' + (rtt > 80 ? ' alert' : rtt > 40 ? ' warn' : '');
+    const sbD = document.getElementById('sb-drop');
+    sbD.className = 'stat-box' + (drop > 10 ? ' alert' : drop > 3 ? ' warn' : '');
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  AQM INFO PANEL DATA
+  // ═══════════════════════════════════════════════════════════
+  const AQM_INFO = {
+    'FIFO': {
+      title: 'FIFO — Tail-Drop',
+      desc: 'The baseline: no active management. Packets queue in arrival order and are dropped when the buffer is full. Under overload, RTT grows linearly as the queue fills.',
+      params: [['Queue limit','100 packets'],['Drop policy','Tail-drop'],['AQM','None']],
+      obs: 'RTT climbs as the queue fills, then sawtooths when the buffer hits its limit.'
+    },
+    'RED': {
+      title: 'RED — Random Early Detection',
+      desc: 'Computes an EWMA of queue length. Drops packets probabilistically to signal congestion before the buffer fills. Prevents bufferbloat by acting early.',
+      params: [['min_th','20 pkts'],['max_th','80 pkts'],['max_p','10%'],['EWMA weight','0.05']],
+      obs: 'RTT stays lower than FIFO because RED prevents full queue fill. Traces are more erratic.'
+    },
+    'CoDel': {
+      title: 'CoDel — Controlled Delay',
+      desc: 'Measures sojourn time per packet. If sojourn exceeds TARGET for longer than INTERVAL, enters a drop state with accelerating drops until delay comes back down.',
+      params: [['TARGET','5 ms sojourn'],['INTERVAL','1500 ms'],['Control law','1/√n drops'],['Queue limit','100']],
+      obs: 'The signature CoDel sawtooth: RTT rises above TARGET, then CoDel drops packets, queue drains, RTT falls.'
+    },
+    'PIE': {
+      title: 'PIE — Proportional Integral Enhanced',
+      desc: 'Uses a PI controller to maintain a target queue delay. It computes the delay error to adjust drop probability smoothly.',
+      params: [['Target delay','15 ms'],['tupdate','30 ms'],['α (P-gain)','0.002'],['β (I-gain)','0.02']],
+      obs: 'Smoother oscillations than CoDel — RTT converges toward TARGET with gentle ripple.'
+    },
+    'FQ': {
+      title: 'FQ — Fair Queuing',
+      desc: 'Normally handles multiple flows via round-robin. In single flow mode, it operates like a strict tiny buffer with no AQM logic.',
+      params: [['Flows','1'],['Queue limit','100 packets'],['Scheduler','Round-robin'],['AQM','None']],
+      obs: 'RTT climbs as the queue fills, then sawtooths when the buffer hits its limit.'
+    },
+    'FQ-CoDel': {
+      title: 'FQ-CoDel — Fair Queuing + CoDel',
+      desc: 'Combines FQ\'s fairness with an independent CoDel instance. In single flow mode, it functions like standard CoDel but with a smaller limit.',
+      params: [['TARGET','5 ms'],['INTERVAL','1500 ms'],['Scheduler','Deficit RR'],['AQM','CoDel']],
+      obs: 'Watch the RTT adhere near TARGET as CoDel drops excess packets seamlessly.'
+    },
+    'Cake': {
+      title: 'Cake — Common Applications Kept Enhanced',
+      desc: 'Extends FQ-CoDel with priority tins and traffic shaping. (Currently visualizing in single-flow mode to show baseline COBALT AQM behavior).',
+      params: [['Active Tin','1'],['AQM','COBALT (CoDel variant)'],['Shaping','Off in viz']],
+      obs: 'Notice the highly smooth, tightly-controlled delay signature indicative of modern AQM.'
+    },
+  };
+
+  function loadInfo(name) {
+    const d = AQM_INFO[name];
+    document.getElementById('info-title').textContent = d.title;
+    document.getElementById('info-desc').textContent  = d.desc;
+    document.getElementById('info-params').innerHTML  = d.params
+      .map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+    document.getElementById('info-observe').textContent = d.obs;
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  MAIN LOOP
+  // ═══════════════════════════════════════════════════════════
+  function loop() {
+    if (!sim.paused) {
+      for (let i = 0; i < STEPS_PER_FRM; i++) sim.tick(SIM_STEP_MS);
+    }
+    renderQueue();
+    renderRTT();
+    updateStats();
+    requestAnimationFrame(loop);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  EVENT LISTENERS
+  // ═══════════════════════════════════════════════════════════
+  document.querySelectorAll('.aqm-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.aqm-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sim.setAQM(btn.dataset.aqm);
+      loadInfo(btn.dataset.aqm);
+    });
+  });
+
+  document.getElementById('traffic-slider').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    document.getElementById('traffic-val').textContent = v + '%';
+    sim.setLoad(v);
+  });
+
+  document.getElementById('btn-pause').addEventListener('click', function() {
+    sim.paused = !sim.paused;
+    this.textContent = sim.paused ? '▶ Resume' : '⏸ Pause';
+  });
+
+  // Burst Toggle logic
+  document.getElementById('btn-burst').addEventListener('click', function() {
+    sim.toggleBurst();
+    if(sim.bursting) {
+      this.textContent = '⚡ Burst: ON';
+      this.classList.add('btn-burst-active');
+    } else {
+      this.textContent = '⚡ Burst: OFF';
+      this.classList.remove('btn-burst-active');
+    }
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', () => sim.reset());
+
+  // Kick things off
+  loadInfo('FIFO');
+  loop();
+  </script>
+</body>
+</html>
