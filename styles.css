@@ -192,7 +192,7 @@ nav {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(17, 17, 17, 0.95);
+  background: var(--bg-nav);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
 }
@@ -434,7 +434,7 @@ footer {
     padding: 25px;
     margin: 20px 15px;
   }
-  
+
   .menu-toggle {
     display: block; /* Show the hamburger button on mobile */
   }
@@ -445,7 +445,7 @@ footer {
     max-height: 0; /* Hide menu by default */
     overflow: hidden;
     width: 100%;
-    background: rgba(17, 17, 17, 0.98);
+    background: var(--bg-nav);
   }
 
   nav ul.open {
@@ -644,5 +644,3 @@ footer {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
-
-
