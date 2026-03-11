@@ -28,7 +28,7 @@ html {
 :root {
   --bg-main: #0a0a0a;
   --bg-section: #141414;
-  --bg-nav: #111111;
+  --bg-nav: rgba(17, 17, 17, 0.95);
   --primary: #c0c0c0;
   --primary-hover: #ffffff;
   --text-main: #d1d5db;
@@ -573,6 +573,7 @@ footer {
 .job-header .text-muted {
   font-size: 0.9rem;
   text-align: right;
+  color: var(--text-muted);
 }
 
 @media (max-width: 768px) {
@@ -643,4 +644,17 @@ footer {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
+}
+
+
+/* ===============================
+   Code styling
+================================ */
+code {
+  background: var(--bg-main);
+  color: var(--primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.875em;
+  border: 1px solid var(--border-color);
 }
