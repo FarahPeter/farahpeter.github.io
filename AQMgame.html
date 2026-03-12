@@ -581,35 +581,84 @@
   // ═══════════════════════════════════════════════════════════
   class PIE_AQM {
     constructor() {
-      this.q           = [];
-      this.LIM         = 10;
-      this.TARGET      = 15;
-      this.TUPDATE     = 30;
-      this.ALPHA       = 0.002;
-      this.BETA        = 0.02;
-      this.prob        = 0;
-      this.qdelay_old  = 0;
-      this.last_upd    = 0;
+      this.q = [];
+      this.LIM = 100;
+
+      // We aim for 21 internally so the packet that actually passes is ~15ms
+      this.TARGET = 21;
+
+      this.wave_start = 0;
+      this.current_period = 20000;
+      this.current_amplitude = 8; // +/- 8ms wave internally
+
+      this.current_target = 21;
+      this.last_upd = 0;
     }
+
     update(now) {
-      if (now - this.last_upd < this.TUPDATE) return;
-      this.last_upd = now;
-      let sojourn = this.q.length * 6;
-      let p = this.prob + this.ALPHA * (sojourn - this.TARGET) + this.BETA * (sojourn - this.qdelay_old);
-      this.prob = Math.max(0, Math.min(1, p));
-      this.qdelay_old = sojourn;
+      if (now - this.last_upd >= 50) {
+        this.last_upd = now;
+
+        while (now - this.wave_start >= this.current_period && this.current_period > 0) {
+          this.wave_start += this.current_period;
+          this.current_period /= 2;
+          this.current_amplitude /= 1.5;
+
+          if (this.current_period <= 1250) {
+            this.current_amplitude = 0;
+            this.current_period = Infinity;
+          }
+        }
+
+        let sine_wave = 0;
+        if (this.current_amplitude > 0) {
+          const elapsed = now - this.wave_start;
+          sine_wave = Math.sin((elapsed / this.current_period) * 2 * Math.PI) * this.current_amplitude;
+        }
+
+        // Symmetric noise: [-5, +5] ms
+        const noise = (Math.random() * 10) - 5;
+
+        // Clamp at 14ms internally so the visual RTT never drops below ~8ms
+        this.current_target = Math.max(14, this.TARGET + sine_wave + noise);
+      }
     }
+
     enqueue(p) {
-      if (Math.random() < this.prob) return false;
       if (this.q.length >= this.LIM) return false;
-      this.q.push(p); return true;
+      this.q.push(p);
+      return true;
     }
-    dequeue(now) { if (!this.q.length) return null; return { pkt: this.q.shift(), dropped: false }; }
+
+    dequeue(now) {
+      if (!this.q.length) return null;
+
+      const pkt = this.q[0];
+      const sojourn = now - pkt.t;
+
+      if (sojourn > this.current_target) {
+        this.q.shift();
+        return { pkt: null, dropped: true };
+      } else {
+        this.q.shift();
+        return { pkt, dropped: false };
+      }
+    }
+
     size() { return this.q.length; }
     maxSize() { return this.LIM; }
-    reset() { this.q=[]; this.prob=0; this.qdelay_old=0; this.last_upd=0; }
+
+    reset() {
+      this.q = [];
+      this.wave_start = 0;
+      this.current_period = 20000;
+      this.current_amplitude = 8;
+      this.current_target = 21;
+      this.last_upd = 0;
+    }
+
     contents() { return this.q.slice(0, 100).map(p => p.flow_id); }
-    targetDelay() { return this.TARGET + BASE_RTT_MS; }
+    targetDelay() { return 15 + BASE_RTT_MS; } // Return 15 for the dotted target line
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -754,51 +803,123 @@
   // ═══════════════════════════════════════════════════════════
   class Cake_AQM {
     constructor() {
-      // In single-flow mode, we just instantiate one tin to prevent array errors
       this.tins = [{ q: Array.from({length: NUM_FLOWS}, () => []), rr: 0 }];
       this.LIM = 100;
       this.TARGET = 5;
-      this.p_drop = 0;
-      this.last_upd = 0;
+      this.INTERVAL = 1500; // CoDel wait interval
+
+      // State trackers
+      this.first_wave = true;
+      this.first_above = 0;
+      this.drop_next = 0;
+      this.count = 0;
+      this.dropping = false;
     }
+
     update(now) {
-      if (now - this.last_upd >= 100) {
-        let qlen = this.size();
-        let sojourn = (qlen * 6) / 3;
-        if (sojourn > this.TARGET) {
-            this.p_drop += 0.0012;
-        } else if (sojourn < this.TARGET) {
-            this.p_drop -= 0.0005;
-        }
-        this.p_drop = Math.max(0, Math.min(1, this.p_drop));
-        this.last_upd = now;
-      }
+      // Logic moved directly into dequeue; left empty to satisfy sim engine
     }
+
     enqueue(p) {
-      if (Math.random() < this.p_drop) return false;
-      const tin = this.tins[0]; // All goes to the single tin
+      const tin = this.tins[0];
       if (tin.q[p.flow_id].length >= this.LIM) return false;
       tin.q[p.flow_id].push(p);
       return true;
     }
+
     dequeue(now) {
       const tin = this.tins[0];
+
+      // Grab the next packet (simplistic round robin for 1 flow)
+      let q = null;
+      let pkt = null;
       for (let i = 0; i < NUM_FLOWS; i++) {
-        const f  = (tin.rr + i) % NUM_FLOWS;
-        const q  = tin.q[f];
-        if (!q.length) continue;
-        tin.rr = (f + 1) % NUM_FLOWS;
-        const pkt = q.shift();
+        const f = (tin.rr + i) % NUM_FLOWS;
+        if (tin.q[f].length) {
+          tin.rr = (f + 1) % NUM_FLOWS;
+          q = tin.q[f];
+          pkt = q[0];
+          break;
+        }
+      }
+
+      if (!pkt) {
+        this.first_above = 0;
+        return null;
+      }
+
+      const sojourn = now - pkt.t;
+
+      // ── PHASE 1: CoDel-like First Wave ──
+      if (this.first_wave) {
+        let ok_drop = false;
+
+        if (sojourn < this.TARGET) {
+          this.first_above = 0;
+          // If we were dropping and we just dipped below TARGET, Phase 1 is over!
+          if (this.dropping) {
+            this.first_wave = false;
+            this.dropping = false;
+          }
+        } else {
+          if (!this.first_above) {
+            this.first_above = now + this.INTERVAL;
+          } else if (now >= this.first_above) {
+            ok_drop = true;
+          }
+        }
+
+        if (this.dropping) {
+          if (!ok_drop) {
+            this.dropping = false;
+          } else if (now >= this.drop_next) {
+            q.shift();
+            this.count++;
+            this.drop_next = now + this.INTERVAL / Math.sqrt(this.count);
+            return { pkt: null, dropped: true };
+          }
+        } else if (ok_drop) {
+          q.shift();
+          this.dropping = true;
+          this.count = 1;
+          this.drop_next = now + this.INTERVAL / Math.sqrt(this.count);
+          return { pkt: null, dropped: true };
+        }
+
+        // Keep packet if not dropped
+        q.shift();
         return { pkt, dropped: false };
       }
-      return null;
+
+      // ── PHASE 2: Stabilization with +/- 2ms noise ──
+      else {
+        const noise = (Math.random() * 4) - 2; // Range: [-2, +2]
+        const noisy_target = this.TARGET + noise;
+
+        // Strictly enforce the noisy threshold
+        if (sojourn > noisy_target) {
+          q.shift();
+          return { pkt: null, dropped: true };
+        } else {
+          q.shift();
+          return { pkt, dropped: false };
+        }
+      }
     }
+
     size() { return this.tins[0].q.reduce((ss,q) => ss+q.length,0); }
+
     maxSize() { return this.LIM * NUM_FLOWS; }
+
     reset() {
       this.tins = [{ q: Array.from({length: NUM_FLOWS}, () => []), rr: 0 }];
-      this.p_drop = 0;
+      this.first_wave = true;
+      this.first_above = 0;
+      this.drop_next = 0;
+      this.count = 0;
+      this.dropping = false;
     }
+
     contents() {
       const r = [];
       for (let f = 0; f < NUM_FLOWS; f++) {
@@ -808,6 +929,7 @@
       }
       return r;
     }
+
     targetDelay() { return this.TARGET + BASE_RTT_MS; }
   }
 
