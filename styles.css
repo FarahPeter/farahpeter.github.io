@@ -668,13 +668,14 @@ code {
   position: relative;
   display: inline-block;
   padding: 12px 24px;
-  color: #ffffff; /* Text color */
+  color: var(--primary-hover); /* Fix: Uses your theme variable instead of hardcoded white */
   text-decoration: none;
   font-weight: bold;
   font-family: sans-serif;
-  border-radius: 8px; /* Rounds the corners of the button */
-  overflow: hidden;   /* Keeps the gradient from spilling outside */
-  z-index: 1;         /* Establishes a stacking context */
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.3s ease, text-shadow 0.3s ease; /* Smooth transition for hover */
 }
 
 /* The rotating rainbow gradient layer */
@@ -690,22 +691,24 @@ code {
     #0000ff, #4b0082, #9400d3, #ff0000
   );
   animation: spin 3s linear infinite;
-  z-index: -2; /* Puts the rainbow behind the inner background */
+  z-index: -2;
 }
 
 /* The inner background that hides the middle of the gradient */
 #rainbow-btn::after {
   content: '';
   position: absolute;
-  inset: 3px;         /* This controls the THICKNESS of your rainbow border */
-  background: #222;   /* The background color of the button (change to match your theme) */
-  border-radius: 5px; /* Slightly smaller than the parent's border-radius */
-  z-index: -1;        /* Puts the background behind the text, but above the rainbow */
+  inset: 3px;
+  background: var(--bg-nav);   /* Fix: Adapts to Light/Dark mode seamlessly */
+  border-radius: 5px;
+  z-index: -1;
+  transition: background 0.5s ease; /* Matches your theme toggle speed */
 }
 
-/* Hover effect (optional - makes the text glow slightly) */
+/* Hover effect */
 #rainbow-btn:hover {
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  /* Dynamic text shadow based on the current theme */
+  text-shadow: 0 0 8px var(--primary);
 }
 
 /* The animation that spins the gradient */
