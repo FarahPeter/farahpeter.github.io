@@ -281,6 +281,15 @@
   </style>
 </head>
 <body>
+  <div id="system-status">
+    <div class="status-dot"></div>
+    <span class="status-text">SYS</span>
+  </div>
+
+  <div id="vertical-scroll-track">
+    <div id="vertical-scroll-progress"></div>
+  </div>
+
   <nav>
     <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
     <ul id="nav-menu">
@@ -302,11 +311,6 @@
       <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
     </ul>
   </nav>
-
-  <div id="system-status">
-    <div class="status-dot"></div>
-    <span class="status-text">SYS</span>
-  </div>
 
   <header>
     <h1>AQM Network Visualizer</h1>
@@ -1374,5 +1378,6 @@ function renderRTT() {
   loadInfo('FIFO');
   loop();
   </script>
+  <script src="script.js"></script>
 </body>
 </html>
