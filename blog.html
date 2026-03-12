@@ -18,9 +18,15 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div id="system-status">
+    <div class="status-dot"></div>
+    <span class="status-text">SYS</span>
+  </div>
+
   <div id="vertical-scroll-track">
     <div id="vertical-scroll-progress"></div>
   </div>
+
   <header>
     <h1>Research & Technical Blog</h1>
     <h2 class="page-subtitle">Deep dives into network analysis and automation</h2>
@@ -203,11 +209,19 @@
       The router (a Linux system acting as a virtual bottleneck) was configured using <b>tc qdisc</b> commands.
       A shell-based configuration script applied the desired AQM discipline on the egress interface:
     </p>
-    <ul>
-      <li><code>tc qdisc add dev eth0 root codel limit 1000 target 5ms interval 100ms</code></li>
-      <li><code>tc qdisc add dev eth0 root pie limit 1000 target 20ms tupdate 15ms</code></li>
-      <li><code>tc qdisc add dev eth0 root fq_codel</code>, etc.</li>
-    </ul>
+    <div class="terminal-block">
+      <div class="terminal-header">
+        <div class="terminal-dot dot-close"></div>
+        <div class="terminal-dot dot-min"></div>
+        <div class="terminal-dot dot-max"></div>
+      </div>
+      <div class="terminal-body">
+        root@router:~# tc qdisc add dev eth0 root codel limit 1000 target 5ms interval 100ms<br>
+        root@router:~# tc qdisc add dev eth0 root pie limit 1000 target 20ms tupdate 15ms<br>
+        root@router:~# tc qdisc add dev eth0 root fq_codel<br>
+        # etc...
+      </div>
+    </div>
     <p>
       Additional scripts removed qdiscs cleanly after each experiment.
     </p>
