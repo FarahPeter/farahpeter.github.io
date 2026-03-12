@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 /* ===============================
    Nav Bar scroll adjustment
@@ -28,7 +28,7 @@ html {
 :root {
   --bg-main: #0a0a0a;
   --bg-section: #141414;
-  --bg-nav: rgba(17, 17, 17, 0.95);
+  --bg-nav: rgba(10, 10, 10, 0.75); /* Updated for better glassmorphism */
   --primary: #c0c0c0;
   --primary-hover: #ffffff;
   --text-main: #d1d5db;
@@ -44,7 +44,7 @@ html {
 [data-theme="light"] {
   --bg-main: #f9fafb;
   --bg-section: #ffffff;
-  --bg-nav: rgba(255, 255, 255, 0.95);
+  --bg-nav: rgba(255, 255, 255, 0.75); /* Updated for better glassmorphism */
   --primary: #4b5563;
   --primary-hover: #000000;
   --text-main: #1f2937;
@@ -79,13 +79,12 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 20px; /* Matches your other nav links */
-  width: 60px; /* Gives the icons room to spin */
+  padding: 16px 20px;
+  width: 60px;
   overflow: hidden;
 }
 
 #theme-toggle svg {
-  /* Removed position: absolute from here */
   width: 22px;
   height: 22px;
   transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.5s ease;
@@ -95,11 +94,10 @@ html {
 .sun-icon {
   opacity: 1;
   transform: rotate(0deg) scale(1);
-  /* The sun acts as the structural anchor, taking up space naturally */
 }
 
 .moon-icon {
-  position: absolute; /* Now only the moon floats on top of the sun */
+  position: absolute;
   opacity: 0;
   transform: rotate(-90deg) scale(0);
 }
@@ -115,8 +113,6 @@ html {
   transform: rotate(0deg) scale(1);
 }
 
-
-
 * {
   box-sizing: border-box;
   scroll-behavior: smooth;
@@ -130,6 +126,18 @@ body {
   background: var(--bg-main);
   color: var(--text-main);
   overflow-x: hidden;
+}
+
+/* ===============================
+   Custom Text Selection
+================================ */
+::selection {
+  background: var(--primary-hover);
+  color: var(--bg-main);
+}
+::-moz-selection { /* For Firefox compatibility */
+  background: var(--primary-hover);
+  color: var(--bg-main);
 }
 
 img {
@@ -154,8 +162,6 @@ header h1 {
   font-size: clamp(2rem, 5vw, 2.8rem);
   font-weight: 700;
   letter-spacing: -0.5px;
-
-  /* The new gradient effect */
   background: linear-gradient(135deg, var(--primary-hover) 0%, var(--text-muted) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -167,6 +173,42 @@ header h1 {
   font-weight: 400;
   color: var(--text-muted);
   margin: 0;
+}
+
+/* ===============================
+   Typing Animation Effect
+================================ */
+.typing-effect {
+  position: relative;
+  display: inline-block;
+  color: var(--text-muted);
+}
+
+/* The "cover" that hides the text and acts as the cursor */
+.typing-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-main); /* Matches the header background seamlessly */
+  border-left: 2px solid var(--primary-hover); /* The blinking cursor */
+  animation:
+    typing-reveal 2s steps(35) forwards, /* 35 steps for the 35 characters */
+    blink-cursor 0.8s step-end infinite;
+  animation-delay: 0.5s; /* Gives the page a half-second to load before typing starts */
+}
+
+/* Shrinks the cover to 0, revealing the text underneath */
+@keyframes typing-reveal {
+  to { width: 0%; }
+}
+
+/* Blinks the cursor */
+@keyframes blink-cursor {
+  from, to { border-color: transparent; }
+  50% { border-color: var(--primary-hover); }
 }
 
 .section-title {
@@ -194,11 +236,12 @@ nav {
   z-index: 1000;
   background: var(--bg-nav);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
 }
 
 .menu-toggle {
-  display: none; /* Hidden on desktop */
+  display: none;
   background: none;
   border: none;
   color: var(--primary);
@@ -243,8 +286,8 @@ nav ul li a.nav-highlight {
   color: var(--primary-hover);
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  margin: 6px 10px; /* Adjusts the spacing so it sits nicely next to text links */
-  padding: 8px 16px; /* Slightly tighter padding for a button feel */
+  margin: 6px 10px;
+  padding: 8px 16px;
   background: rgba(255, 255, 255, 0.05);
   transition: all 0.2s ease;
 }
@@ -262,13 +305,12 @@ nav ul li a.active-link {
   border-bottom: 2px solid var(--primary-hover);
 }
 
-
 /* Mobile adjustment for the highlighted links */
 @media (max-width: 768px) {
   nav ul li a.nav-highlight {
     margin: 10px 20px;
     text-align: center;
-    border-bottom: 1px solid var(--border-color); /* Override the standard mobile bottom border */
+    border-bottom: 1px solid var(--border-color);
   }
 }
 
@@ -291,16 +333,34 @@ section:hover {
   box-shadow: var(--shadow-hover);
 }
 
+/* ===============================
+   Modern Card Layouts for Content
+================================ */
 .job, .education-item, .project, .certificate, .honor {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.job:last-child, .education-item:last-child, .project:last-child {
-  border-bottom: none;
+[data-theme="light"] .job,
+[data-theme="light"] .education-item,
+[data-theme="light"] .project,
+[data-theme="light"] .certificate,
+[data-theme="light"] .honor {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.job:hover, .education-item:hover, .project:hover, .certificate:hover, .honor:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+.job:last-child, .education-item:last-child, .project:last-child, .certificate:last-child, .honor:last-child {
   margin-bottom: 0;
-  padding-bottom: 0;
 }
 
 ul {
@@ -362,20 +422,19 @@ a:hover {
   object-fit: cover;
   margin: 0 auto;
   border-radius: 50%;
-  border: 2px solid var(--border-color);
-  /* Add this transition line */
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+  padding: 4px; /* Creates the space for the glowing halo "border" */
+  background: linear-gradient(135deg, var(--text-muted) 0%, var(--primary-hover) 100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease, background 0.4s ease;
 }
 
-/* Add these new hover states */
 #profile-image:hover {
   transform: scale(1.05);
-  border-color: var(--primary);
-  box-shadow: 0 0 25px rgba(192, 192, 192, 0.15); /* Subtle light glow for dark mode */
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--text-muted) 100%);
+  box-shadow: 0 0 25px rgba(192, 192, 192, 0.15);
 }
 
 [data-theme="light"] #profile-image:hover {
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15); /* Subtle dark shadow for light mode */
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
 }
 
 .social-icons {
@@ -436,20 +495,20 @@ footer {
   }
 
   .menu-toggle {
-    display: block; /* Show the hamburger button on mobile */
+    display: block;
   }
 
   nav ul {
     flex-direction: column;
     text-align: center;
-    max-height: 0; /* Hide menu by default */
+    max-height: 0;
     overflow: hidden;
     width: 100%;
     background: var(--bg-nav);
   }
 
   nav ul.open {
-    max-height: 500px; /* Expand when the 'open' class is added */
+    max-height: 500px;
   }
 
   nav ul li a {
@@ -487,8 +546,11 @@ footer {
   background: #2a2a2a;
   color: var(--text-main);
   padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 6px; /* Squarer tech edges */
+  font-family: 'JetBrains Mono', monospace; /* Tech font */
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
 }
@@ -519,10 +581,9 @@ footer {
   visibility: hidden;
   transition: all 0.3s ease;
   box-shadow: var(--shadow-soft);
-  z-index: 999; /* Keeps it under your nav, which is 1000 */
+  z-index: 999;
 }
 
-/* Class toggled by JavaScript */
 #back-to-top.show {
   opacity: 1;
   visibility: visible;
@@ -545,7 +606,6 @@ footer {
   fill: #000;
 }
 
-/* Adjust position slightly for mobile */
 @media (max-width: 768px) {
   #back-to-top {
     bottom: 20px;
@@ -562,7 +622,7 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  flex-wrap: wrap; /* Ensures it stacks nicely on mobile */
+  flex-wrap: wrap;
   margin-bottom: 10px;
 }
 
@@ -618,7 +678,6 @@ footer {
     text-decoration: underline;
   }
 
-  /* ⬇️ The new fix ⬇️ */
   .reveal {
     opacity: 1 !important;
     transform: none !important;
@@ -646,7 +705,6 @@ footer {
   background: var(--primary);
 }
 
-
 /* ===============================
    Code styling
 ================================ */
@@ -659,26 +717,23 @@ code {
   border: 1px solid var(--border-color);
 }
 
-
 /* ===============================
-   AQMGame button styling
+   AQMGame button styling (Rainbow)
 ================================ */
-/* Main button container styling */
 #rainbow-btn {
   position: relative;
   display: inline-block;
   padding: 12px 24px;
-  color: var(--primary-hover); /* Fix: Uses your theme variable instead of hardcoded white */
+  color: var(--primary-hover); /* Fixed for theme adaptability */
   text-decoration: none;
   font-weight: bold;
   font-family: sans-serif;
   border-radius: 8px;
   overflow: hidden;
   z-index: 1;
-  transition: color 0.3s ease, text-shadow 0.3s ease; /* Smooth transition for hover */
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
-/* The rotating rainbow gradient layer */
 #rainbow-btn::before {
   content: '';
   position: absolute;
@@ -694,25 +749,69 @@ code {
   z-index: -2;
 }
 
-/* The inner background that hides the middle of the gradient */
 #rainbow-btn::after {
   content: '';
   position: absolute;
   inset: 3px;
-  background: var(--bg-nav);   /* Fix: Adapts to Light/Dark mode seamlessly */
+  background: var(--bg-nav);   /* Fixed for theme adaptability */
   border-radius: 5px;
   z-index: -1;
-  transition: background 0.5s ease; /* Matches your theme toggle speed */
+  transition: background 0.5s ease;
 }
 
-/* Hover effect */
 #rainbow-btn:hover {
-  /* Dynamic text shadow based on the current theme */
-  text-shadow: 0 0 8px var(--primary);
+  text-shadow: 0 0 8px var(--primary); /* Glowing text hover */
 }
 
-/* The animation that spins the gradient */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+
+/* ===============================
+   Vertical Scroll Progress Bar
+================================ */
+#vertical-scroll-track {
+  position: fixed;
+  top: 50%;
+  left: 20px; /* Floating on the left */
+  transform: translateY(-50%); /* Centers it perfectly vertically */
+  width: 6px; /* Width of the pill */
+  height: 15vh; /* Height of the track (15% of the viewport height) */
+  background: rgba(128, 128, 128, 0.15); /* Very subtle track background */
+  border-radius: 10px; /* Fully rounded caps */
+  z-index: 9999;
+
+  /* Hidden by default */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none; /* Prevents it from interfering with mouse clicks */
+}
+
+/* The class toggled by JS to make it pop up */
+#vertical-scroll-track.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+#vertical-scroll-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%; /* This gets updated by JS */
+  background: linear-gradient(180deg, var(--text-muted), var(--primary-hover));
+  border-radius: 10px; /* Keeps the fill rounded too */
+  transition: height 0.1s ease-out;
+}
+
+/* Make it slightly smaller and closer to the edge on mobile */
+@media (max-width: 768px) {
+  #vertical-scroll-track {
+    left: 8px;
+    width: 4px;
+    height: 10vh;
+  }
 }

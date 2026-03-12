@@ -122,3 +122,31 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('theme', newTheme); // Save preference
         });
     }
+
+// --- Vertical Scroll Progress Bar Logic ---
+const scrollTrack = document.getElementById('vertical-scroll-track');
+const scrollProgress = document.getElementById('vertical-scroll-progress');
+let scrollTimeout; // Variable to hold the timer
+
+if (scrollTrack && scrollProgress) {
+    window.addEventListener('scroll', () => {
+        // 1. Calculate the scroll percentage
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+
+        // Update the height of the inner progress pill
+        scrollProgress.style.height = scrolled + '%';
+
+        // 2. Show the progress bar while actively scrolling
+        scrollTrack.classList.add('is-visible');
+
+        // 3. Clear the timer every time the user scrolls
+        window.clearTimeout(scrollTimeout);
+
+        // 4. Set a timer to hide the bar after scrolling stops (e.g., 1.2 seconds)
+        scrollTimeout = setTimeout(() => {
+            scrollTrack.classList.remove('is-visible');
+        }, 1200);
+    });
+}
