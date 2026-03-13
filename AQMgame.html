@@ -386,8 +386,8 @@
           </p>
 
           <div class="control-row">
-            <label>Traffic Load <span style="font-size:0.7em;opacity:0.6">(Locked)</span></label>
-            <input type="range" id="traffic-slider" min="50" max="200" value="102" step="1" disabled style="cursor: not-allowed; opacity: 0.6;">
+            <label>Traffic Load <span style="font-size:0.7em;opacity:0.6"></span></label>
+            <input type="range" id="traffic-slider" min="50" max="120" value="102" step="1" style="opacity: 0.6;">
             <span class="control-val" id="traffic-val">102%</span>
           </div>
 
@@ -508,7 +508,7 @@
       this.q            = [];
       this.LIM          = 100;
       this.TARGET       = 5;
-      this.INTERVAL     = 1500;
+      this.INTERVAL     = 1000;
       this.first_above  = 0;
       this.drop_next    = 0;
       this.count        = 0;
@@ -520,7 +520,22 @@
       this.recorded_count = 0;
       this.has_recorded   = false;
     }
-    enqueue(p) { if (this.q.length >= this.LIM) return false; this.q.push(p); return true; }
+    enqueue(p) {
+      if (this.q.length >= this.LIM) {
+        // If the queue is full and CoDel is active, count the tail drop!
+        if (this.dropping) {
+          this.count++;
+          // Dynamically pull the next drop time closer based on the new count
+          const newWait = this.INTERVAL / Math.sqrt(this.count);
+          if (this.drop_next > p.t + newWait) {
+            this.drop_next = p.t + newWait;
+          }
+        }
+        return false;
+      }
+      this.q.push(p);
+      return true;
+    }
     dequeue(now) {
       if (!this.q.length) { this.first_above = 0; return null; }
       const pkt     = this.q[0];
@@ -543,8 +558,9 @@
 
           // 2. Every 2 cycles, reset to 10% of the RECORDED count
           if (this.below_count >= 2) {
-            // Using 0.05 (5% of count) and Math.ceil so it doesn't bottom out at 1
-            this.count = Math.max(1, Math.ceil(this.recorded_count * 0.05));
+            // Using 0.1(10% of count) and Math.ceil so it doesn't bottom out at 1
+            //this.count = Math.max(1, Math.ceil(this.recorded_count * 0.1));
+            this.count = 4
             this.below_count = 0;
           }
         }
@@ -720,11 +736,22 @@
       this.rr       = 0;
       this.LIM      = 100;
       this.TARGET   = 5;
-      this.INTERVAL = 1500;
+      this.INTERVAL = 1000;
     }
     enqueue(p) {
-      if (this.qs[p.flow_id].length >= this.LIM) return false;
-      this.qs[p.flow_id].push(p); return true;
+      if (this.qs[p.flow_id].length >= this.LIM) {
+        const cs = this.cs[p.flow_id];
+        if (cs.dropping) {
+          cs.count++;
+          const newWait = this.INTERVAL / Math.sqrt(cs.count);
+          if (cs.drop_next > p.t + newWait) {
+            cs.drop_next = p.t + newWait;
+          }
+        }
+        return false;
+      }
+      this.qs[p.flow_id].push(p);
+      return true;
     }
     dequeue(now) {
       for (let i = 0; i < NUM_FLOWS; i++) {
@@ -753,8 +780,9 @@
 
             // 2. Every 2 cycles, reset to 10% of the RECORDED count
             if (cs.below_count >= 2) {
-              // Using 0.05 (5% of count) and Math.ceil so it doesn't bottom out at 1
-              cs.count = Math.max(1, Math.ceil(cs.recorded_count * 0.05));
+              // Using 0.1 (10% of count) and Math.ceil so it doesn't bottom out at 1
+              //cs.count = Math.max(1, Math.ceil(cs.recorded_count * 0.1));
+              cs.count=4
               cs.below_count = 0;
             }
           }
@@ -815,7 +843,7 @@
       this.tins = [{ q: Array.from({length: NUM_FLOWS}, () => []), rr: 0 }];
       this.LIM = 100;
       this.TARGET = 5;
-      this.INTERVAL = 1500; // CoDel wait interval
+      this.INTERVAL = 1000; // CoDel wait interval
 
       // State trackers
       this.first_wave = true;
@@ -831,7 +859,16 @@
 
     enqueue(p) {
       const tin = this.tins[0];
-      if (tin.q[p.flow_id].length >= this.LIM) return false;
+      if (tin.q[p.flow_id].length >= this.LIM) {
+        if (this.dropping) {
+          this.count++;
+          const newWait = this.INTERVAL / Math.sqrt(this.count);
+          if (this.drop_next > p.t + newWait) {
+            this.drop_next = p.t + newWait;
+          }
+        }
+        return false;
+      }
       tin.q[p.flow_id].push(p);
       return true;
     }
