@@ -348,7 +348,7 @@
 
         <div class="viz-card">
           <div class="card-header">
-            <span class="card-label">RTT Trace — Last 20 s</span>
+            <span class="card-label">RTT Trace — Last 60 s</span>
             <span class="card-meta" id="rtt-meta">Avg 20.0 ms</span>
           </div>
           <canvas id="rtt-canvas"></canvas>
@@ -1323,7 +1323,7 @@ function renderRTT() {
     'CoDel': {
       title: 'CoDel — Controlled Delay',
       desc: 'Measures sojourn time per packet. If sojourn exceeds TARGET for longer than INTERVAL, enters a drop state with accelerating drops until delay comes back down.',
-      params: [['TARGET','5 ms sojourn'],['INTERVAL','1500 ms'],['Control law','1/√n drops'],['Queue limit','100']],
+      params: [['TARGET','5 ms sojourn'],['INTERVAL','1000 ms'],['Control law','1/√n drops'],['Queue limit','100']],
       obs: 'The signature CoDel sawtooth: RTT rises above TARGET, then CoDel drops packets, queue drains, RTT falls.'
     },
     'PIE': {
@@ -1341,7 +1341,7 @@ function renderRTT() {
     'FQ-CoDel': {
       title: 'FQ-CoDel — Fair Queuing + CoDel',
       desc: 'Combines FQ\'s fairness with an independent CoDel instance. In single flow mode, it functions like standard CoDel but with a smaller limit.',
-      params: [['TARGET','5 ms'],['INTERVAL','1500 ms'],['Scheduler','Deficit RR'],['AQM','CoDel']],
+      params: [['TARGET','5 ms'],['INTERVAL','1000 ms'],['Scheduler','Deficit RR'],['AQM','CoDel']],
       obs: 'Watch the RTT adhere near TARGET as CoDel drops excess packets seamlessly.'
     },
     'Cake': {
