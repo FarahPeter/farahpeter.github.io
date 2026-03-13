@@ -431,6 +431,138 @@ li {
   margin-bottom: 8px;
 }
 
+
+/* ===============================
+   Merged Dual-Column Timeline
+================================ */
+.merged-timeline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px 60px; /* 30px vertical gap, 60px horizontal gap */
+  position: relative;
+  margin-top: 40px;
+}
+
+/* The center vertical line */
+.merged-timeline::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 20px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.25);
+  z-index: 1;
+}
+
+[data-theme="light"] .merged-timeline::before {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.timeline-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="light"] .timeline-card {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.timeline-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+/* The glowing dot */
+.timeline-card::before {
+  content: '';
+  position: absolute;
+  top: 32px;
+  width: 14px;
+  height: 14px;
+  background: var(--bg-section);
+  border: 2px solid var(--primary-hover);
+  border-radius: 50%;
+  z-index: 3;
+  transition: all 0.3s ease;
+}
+
+.timeline-card:hover::before {
+  background: var(--primary-hover);
+  box-shadow: 0 0 12px var(--primary-hover);
+  transform: scale(1.2);
+}
+
+/* Grid Placement & Dot Positioning */
+.col-exp {
+  grid-column: 1; /* Forces Experience to the Left Column */
+}
+.col-edu {
+  grid-column: 2; /* Forces Education to the Right Column */
+}
+
+/* Dot on the right edge of left column */
+.col-exp::before { right: -37px; }
+
+/* Dot on the left edge of right column */
+.col-edu::before { left: -37px; }
+
+/* Category Badges */
+.card-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.badge-exp {
+  background: rgba(74, 222, 128, 0.1); /* Subtle Green */
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.badge-edu {
+  background: rgba(147, 51, 234, 0.1); /* Subtle Purple */
+  color: #c084fc;
+  border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+/* Mobile Fallback: Stack everything into a single left-aligned timeline */
+@media (max-width: 768px) {
+  .merged-timeline {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .merged-timeline::before {
+    left: 14px;
+    transform: none;
+  }
+  .col-exp, .col-edu {
+    grid-column: 1;
+    grid-row: auto !important; /* Disables the manual row overlap for mobile */
+    margin-left: 30px; /* Makes room for the line on the left */
+  }
+  /* Move ALL dots to the left side */
+  .col-exp::before, .col-edu::before {
+    left: -37px;
+    right: auto;
+  }
+}
+
+
+
 /* ===============================
    Links & Buttons
 ================================ */
