@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Regex Hacker</title>
+    <meta name="description" content="A puzzle game that tests your Regular Expression and log parsing skills.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .regex-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 10px;
+            max-width: 1200px;
+        }
+
+        @media (max-width: 800px) {
+            .regex-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-soft);
+        }
+
+        [data-theme="light"] .panel {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .level-title {
+            color: var(--primary-hover);
+            font-size: 1.5rem;
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .level-indicator {
+            background: var(--primary);
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .instructions {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .regex-slash {
+            color: #c084fc;
+            font-weight: bold;
+            font-size: 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #regex-input {
+            background: transparent;
+            border: none;
+            color: var(--primary-hover);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            width: 100%;
+            padding: 0 10px;
+            outline: none;
+        }
+
+        .regex-flags {
+            color: #c084fc;
+            font-weight: bold;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .log-display {
+            background: #050505;
+            color: #a3a3a3;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 20px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            border: 1px inset #222;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        [data-theme="light"] .log-display {
+            background: #f8fafc;
+            color: #475569;
+            border: 1px inset #cbd5e1;
+        }
+
+        /* The magic highlighting class */
+        .match-highlight {
+            background-color: rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+            border-radius: 3px;
+            padding: 0 2px;
+            text-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.85rem;
+            height: 20px;
+            margin-bottom: 15px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-main);
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        #btn-next {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div id="system-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS</span>
+    </div>
+
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home</a></li>
+            <li><a href="fun.html" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Regex Hacker</h1>
+        <h2 class="page-subtitle">Extract the signal from the noise.</h2>
+    </header>
+
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="regex-container">
+
+            <div class="panel">
+                <div class="level-header">
+                    <h3 class="level-title" id="level-title">Level 1</h3>
+                    <span class="level-indicator" id="level-indicator">1 / 5</span>
+                </div>
+
+                <p class="instructions" id="instructions">Loading...</p>
+
+                <div class="input-group">
+                    <span class="regex-slash">/</span>
+                    <input type="text" id="regex-input" placeholder="Type your regex here..." autocomplete="off" spellcheck="false">
+                    <span class="regex-slash">/</span>
+                    <span class="regex-flags" id="regex-flags" title="Click to toggle flags">g</span>
+                </div>
+
+                <div class="error-msg" id="error-msg"></div>
+
+                <div style="text-align: center; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
+                    Need help? Look at this
+                </div>
+
+                <button class="btn" id="btn-next">Access Granted - Next Level ➔</button>
+
+                <div style="margin-top: auto;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="level-header">
+                    <h3 class="level-title" style="font-size: 1.1rem; color: var(--text-muted);">RAW_OUTPUT.log</h3>
+                </div>
+                <div class="log-display" id="log-display"></div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const levels = [
+            {
+                title: "The Basics",
+                desc: "Welcome to the SOC. We are seeing weird activity in the access logs. Write a regex to match the exact word <strong>ERROR</strong>. (Case sensitive).",
+                text: "INFO: System boot successful\nERROR: Configuration file missing\nWARN: High memory usage\nINFO: User login successful\nERROR: Connection timed out",
+                targetMatches: ["ERROR", "ERROR"]
+            },
+            {
+                title: "Status Codes",
+                desc: "Good. Now let's find the failed web requests. Use a regex to highlight all the <strong>404</strong> status codes in this Apache log snippet.",
+                text: "192.168.1.1 - - [10/Oct/2026:13:55:36 -0700] \"GET /index.html HTTP/1.1\" 200 2326\n10.0.0.5 - - [10/Oct/2026:13:55:38 -0700] \"GET /hidden-admin HTTP/1.1\" 404 512\n192.168.1.1 - - [10/Oct/2026:13:55:41 -0700] \"GET /styles.css HTTP/1.1\" 200 401\n172.16.0.4 - - [10/Oct/2026:13:55:42 -0700] \"GET /api/v1/users HTTP/1.1\" 404 120",
+                targetMatches: ["404", "404"]
+            },
+            {
+                title: "Digits & Boundaries",
+                desc: "An attacker is trying to brute force our SSH server. Write a regex that matches <strong>only the 4-digit port numbers</strong> at the end of the log lines.",
+                text: "Failed password for root from 103.45.2.1 port 2222 ssh2\nAccepted publickey for admin from 192.168.1.50 port 5012 ssh2\nFailed password for admin from 45.33.22.1 port 8080 ssh2",
+                targetMatches: ["2222", "5012", "8080"]
+            },
+            {
+                title: "The Extractor",
+                desc: "We found a dumped database file. We need to extract all the <strong>email addresses</strong>. Write a pattern that matches them. (Hint: look for @ and .com/.org)",
+                text: "admin:x:0:0::/root:/bin/bash\nContact the sysadmin at peter.farah@example.com for access.\nuser2: support@company.org\nBackup email: dev-ops_team@internal.net",
+                targetMatches: ["peter.farah@example.com", "support@company.org", "dev-ops_team@internal.net"]
+            },
+            {
+                title: "IP Sniper",
+                desc: "The ultimate test. Write a regex that matches <strong>valid IPv4 addresses</strong>. Do not match versions or random floating point numbers.",
+                text: "Server version: 1.4.55\nTarget IP: 192.168.1.254\nSubnet Mask: 255.255.255.0\nPi is approximately 3.14159\nAttacker found at 10.0.0.5",
+                targetMatches: ["192.168.1.254", "255.255.255.0", "10.0.0.5"]
+            }
+        ];
+
+        let currentLevel = 0;
+        let flags = "g";
+
+        const titleEl = document.getElementById('level-title');
+        const indEl = document.getElementById('level-indicator');
+        const descEl = document.getElementById('instructions');
+        const inputEl = document.getElementById('regex-input');
+        const flagEl = document.getElementById('regex-flags');
+        const logEl = document.getElementById('log-display');
+        const errorEl = document.getElementById('error-msg');
+        const btnNext = document.getElementById('btn-next');
+        const progFill = document.getElementById('progress-fill');
+
+        function loadLevel(index) {
+            const level = levels[index];
+            titleEl.textContent = level.title;
+            indEl.textContent = `${index + 1} / ${levels.length}`;
+            descEl.innerHTML = level.desc;
+            logEl.textContent = level.text; // Escapes HTML naturally
+            inputEl.value = "";
+            errorEl.textContent = "";
+            btnNext.style.display = "none";
+
+            progFill.style.width = `${((index) / levels.length) * 100}%`;
+
+            evaluateRegex();
+        }
+
+        // Toggle flags (g, i, gi)
+        flagEl.addEventListener('click', () => {
+            if (flags === "g") flags = "gi";
+            else if (flags === "gi") flags = "i";
+            else flags = "g";
+            flagEl.textContent = flags;
+            evaluateRegex();
+        });
+
+        inputEl.addEventListener('input', evaluateRegex);
+
+        function evaluateRegex() {
+            const pattern = inputEl.value;
+            const level = levels[currentLevel];
+            const rawText = level.text;
+
+            errorEl.textContent = "";
+
+            if (!pattern) {
+                logEl.textContent = rawText;
+                btnNext.style.display = "none";
+                return;
+            }
+
+            try {
+                // Safely attempt to create regex
+                const regex = new RegExp(pattern, flags);
+
+                // Find matches for validation
+                const matches = rawText.match(regex) || [];
+
+                // Highlight text in the DOM
+                // We use replace with a function to avoid XSS if they somehow inject HTML
+                const highlightedHTML = rawText.replace(regex, (match) => {
+                    if (match.length === 0) return match; // Prevent infinite loops on empty matches like /^/
+                    // Escape the match so it displays safely, then wrap in span
+                    const escaped = match.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    return `<span class="match-highlight">${escaped}</span>`;
+                });
+
+                logEl.innerHTML = highlightedHTML;
+
+                // Validation logic
+                validateLevel(matches, level.targetMatches);
+
+            } catch (e) {
+                // Invalid regex syntax (e.g. typing a single '[')
+                errorEl.textContent = "Syntax Error: " + e.message;
+                logEl.textContent = rawText;
+                btnNext.style.display = "none";
+            }
+        }
+
+        function validateLevel(userMatches, targetMatches) {
+            // Remove empty matches
+            const filteredUser = userMatches.filter(m => m !== "");
+
+            // Check if arrays are identical
+            if (filteredUser.length === targetMatches.length &&
+                filteredUser.every((val, index) => val === targetMatches[index])) {
+                btnNext.style.display = "block";
+                errorEl.style.color = "#4ade80";
+                errorEl.textContent = "Pattern Match Successful!";
+            } else {
+                btnNext.style.display = "none";
+                errorEl.style.color = "#ef4444";
+            }
+        }
+
+        btnNext.addEventListener('click', () => {
+            currentLevel++;
+            if (currentLevel < levels.length) {
+                loadLevel(currentLevel);
+            } else {
+                // Game Complete
+                titleEl.textContent = "System Secured";
+                descEl.innerHTML = "Excellent work. You successfully parsed the logs and extracted the necessary threat intelligence.<br><br><strong>You are ready for the SOC.</strong>";
+                inputEl.disabled = true;
+                logEl.innerHTML = "<span style='color:#4ade80'>[ROOT@SERVER ~]# Connection closed.</span>";
+                btnNext.style.display = "none";
+                progFill.style.width = "100%";
+            }
+        });
+
+        // Init
+        loadLevel(0);
+    </script>
+</body>
+</html>
