@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Firewall Defender</title>
+    <meta name="description" content="Arcade-style network security game. Filter packets and defend the server.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        [data-theme="light"] .hud {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        .hud-stat {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-hover);
+        }
+
+        .hud-stat span {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        #health-val { color: #4ade80; }
+        #health-val.warning { color: #facc15; }
+        #health-val.critical { color: #ef4444; }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+        }
+
+        #game-canvas {
+            width: 100%;
+            height: 100%;
+            background-color: #050505; /* Deep black for terminal feel */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: crosshair;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        [data-theme="light"] #game-canvas {
+            background-color: #f8fafc;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+
+        #game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        [data-theme="light"] #game-overlay {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        #game-overlay h2 {
+            font-size: 2.5rem;
+            color: #ef4444;
+            margin-bottom: 10px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .rules {
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .rules span.bad { color: #ef4444; font-weight: bold; }
+        .rules span.good { color: #4ade80; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="system-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS</span>
+    </div>
+
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Firewall Defender</h1>
+        <h2 class="page-subtitle">Drop malicious traffic. Let valid packets through. Don't blink.</h2>
+    </header>
+
+    <section class="reveal" style="max-width: 1000px; padding: 0 20px;">
+        <div class="game-container">
+
+            <div class="hud">
+                <div class="hud-stat"><span>SCORE:</span> <span id="score-val" style="color: var(--primary-hover);">0</span></div>
+                <div class="hud-stat"><span>UPTIME:</span> <span id="time-val" style="color: var(--primary-hover);">0s</span></div>
+                <div class="hud-stat"><span>SERVER HEALTH:</span> <span id="health-val">100%</span></div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+
+                <div id="game-overlay">
+                    <h2 id="overlay-title">SYSTEM SECURE</h2>
+                    <div class="rules" id="overlay-desc">
+                        Your server is under attack.<br><br>
+                        Click to <span class="bad">DROP</span> malicious packets:<br>
+                        - Port 23 (Telnet)<br>
+                        - Port 3389 (RDP)<br>
+                        - IP: 6.6.6.x (Known Threat Actor)<br><br>
+                        Let <span class="good">VALID</span> traffic through (Ports 80, 443).<br>
+                        Dropping valid traffic damages your standing.
+                    </div>
+                    <button class="btn" id="btn-start" style="border-color: #ef4444; color: #ef4444; font-size: 1.2rem; padding: 10px 30px;">Initialize Firewall</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score-val');
+        const healthEl = document.getElementById('health-val');
+        const timeEl = document.getElementById('time-val');
+        const overlay = document.getElementById('game-overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const btnStart = document.getElementById('btn-start');
+
+        let isPlaying = false;
+        let score = 0;
+        let health = 100;
+        let timeElapsed = 0;
+        let packets = [];
+        let animationId;
+        let lastTime = 0;
+        let spawnRate = 1500; // ms
+        let lastSpawn = 0;
+        let baseSpeed = 1.0;
+
+        // Packet Definitions
+        const BAD_PORTS = [23, 3389];
+        const GOOD_PORTS = [80, 443, 22];
+        const BAD_IP_PREFIX = "6.6.6.";
+        const GOOD_IP_PREFIX = "192.168.1.";
+
+        function getThemeColors() {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            return {
+                bg: isLight ? '#f8fafc' : '#050505',
+                text: isLight ? '#000000' : '#00ff00',
+                packetBg: isLight ? '#ffffff' : '#111111',
+                packetBorder: isLight ? '#cbd5e1' : '#333333',
+                serverLine: '#4ade80',
+                explode: '#ef4444'
+            };
+        }
+
+        class Packet {
+            constructor() {
+                this.width = 130;
+                this.height = 45;
+                this.x = Math.random() * (canvas.width - this.width);
+                this.y = -this.height;
+                this.speed = baseSpeed + (Math.random() * 0.5);
+                this.isBad = Math.random() > 0.5; // 50% chance to be malicious
+                this.markedForDeletion = false;
+
+                // Generate headers
+                if (this.isBad) {
+                    // It's either a bad port OR a bad IP
+                    if (Math.random() > 0.5) {
+                        this.port = BAD_PORTS[Math.floor(Math.random() * BAD_PORTS.length)];
+                        this.ip = GOOD_IP_PREFIX + Math.floor(Math.random() * 255);
+                    } else {
+                        this.port = GOOD_PORTS[Math.floor(Math.random() * GOOD_PORTS.length)];
+                        this.ip = BAD_IP_PREFIX + Math.floor(Math.random() * 255);
+                    }
+                } else {
+                    this.port = GOOD_PORTS[Math.floor(Math.random() * GOOD_PORTS.length)];
+                    this.ip = GOOD_IP_PREFIX + Math.floor(Math.random() * 255);
+                }
+            }
+
+            update(dt) {
+                this.y += this.speed * (dt * 0.06);
+            }
+
+            draw(ctx, colors) {
+                ctx.fillStyle = colors.packetBg;
+                ctx.strokeStyle = colors.packetBorder;
+                ctx.lineWidth = 2;
+
+                // Box
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+                // Text
+                ctx.fillStyle = colors.text;
+                ctx.font = "12px 'JetBrains Mono', monospace";
+                ctx.fillText(`SRC: ${this.ip}`, this.x + 8, this.y + 18);
+                ctx.fillText(`DPT: ${this.port}`, this.x + 8, this.y + 35);
+            }
+
+            isClicked(mx, my) {
+                return mx >= this.x && mx <= this.x + this.width &&
+                       my >= this.y && my <= this.y + this.height;
+            }
+        }
+
+        // Particle system for explosions
+        let particles = [];
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 5;
+                this.vy = (Math.random() - 0.5) * 5;
+                this.life = 1.0;
+                this.color = color;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.05;
+            }
+            draw(ctx) {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, 4, 4);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i = 0; i < 15; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function updateHealth(amount) {
+            health += amount;
+            if (health > 100) health = 100;
+            if (health < 0) health = 0;
+
+            healthEl.textContent = `${health}%`;
+            healthEl.className = '';
+            if (health <= 50) healthEl.classList.add('warning');
+            if (health <= 20) healthEl.classList.add('critical');
+
+            if (health <= 0) gameOver();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            overlay.style.display = 'flex';
+            overlayTitle.textContent = "SERVER BREACHED";
+            btnStart.textContent = "Reboot System";
+        }
+
+        function spawnPacket(timestamp) {
+            if (timestamp - lastSpawn > spawnRate) {
+                packets.push(new Packet());
+                lastSpawn = timestamp;
+
+                // Difficulty scaling over time
+                if (spawnRate > 600) spawnRate -= 15;
+                baseSpeed += 0.02;
+            }
+        }
+
+        function gameLoop(timestamp) {
+            if (!isPlaying) return;
+            if (!lastTime) lastTime = timestamp;
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            const colors = getThemeColors();
+
+            // Clear Canvas
+            ctx.fillStyle = colors.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Server Line (Bottom boundary)
+            const serverY = canvas.height - 30;
+            ctx.strokeStyle = colors.serverLine;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, serverY);
+            ctx.lineTo(canvas.width, serverY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = colors.serverLine;
+            ctx.font = "14px 'JetBrains Mono', monospace";
+            ctx.fillText("INTERNAL NETWORK", 10, canvas.height - 10);
+
+            spawnPacket(timestamp);
+
+            // Update & Draw Packets
+            for (let i = packets.length - 1; i >= 0; i--) {
+                let p = packets[i];
+                p.update(dt);
+                p.draw(ctx, colors);
+
+                // Check Server Collision
+                if (p.y + p.height >= serverY) {
+                    if (p.isBad) {
+                        updateHealth(-15); // Bad packet hit server!
+                        createExplosion(p.x + p.width/2, serverY, colors.explode);
+                        canvas.style.transform = "translate(5px, 5px)"; // Screen shake
+                        setTimeout(() => canvas.style.transform = "translate(0, 0)", 50);
+                    } else {
+                        score += 10; // Good packet routed successfully
+                        scoreEl.textContent = score;
+                    }
+                    packets.splice(i, 1);
+                }
+            }
+
+            // Update & Draw Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let part = particles[i];
+                part.update();
+                part.draw(ctx);
+                if (part.life <= 0) particles.splice(i, 1);
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Timer
+        setInterval(() => {
+            if (isPlaying) {
+                timeElapsed++;
+                timeEl.textContent = `${timeElapsed}s`;
+            }
+        }, 1000);
+
+        // Click Handler (Dropping Packets)
+        canvas.addEventListener('mousedown', (e) => {
+            if (!isPlaying) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            for (let i = packets.length - 1; i >= 0; i--) {
+                if (packets[i].isClicked(mouseX, mouseY)) {
+                    if (packets[i].isBad) {
+                        score += 50; // Successfully dropped threat
+                        createExplosion(mouseX, mouseY, '#ef4444');
+                    } else {
+                        updateHealth(-10); // Dropped valid traffic!
+                        createExplosion(mouseX, mouseY, '#facc15');
+                    }
+                    scoreEl.textContent = score;
+                    packets.splice(i, 1);
+                    break; // Only click one packet per click
+                }
+            }
+        });
+
+        // Handle Touch for Mobile
+        canvas.addEventListener('touchstart', (e) => {
+            if (!isPlaying) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const mouseX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            const mouseY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+
+            for (let i = packets.length - 1; i >= 0; i--) {
+                if (packets[i].isClicked(mouseX, mouseY)) {
+                    if (packets[i].isBad) {
+                        score += 50;
+                        createExplosion(mouseX, mouseY, '#ef4444');
+                    } else {
+                        updateHealth(-10);
+                        createExplosion(mouseX, mouseY, '#facc15');
+                    }
+                    scoreEl.textContent = score;
+                    packets.splice(i, 1);
+                    break;
+                }
+            }
+        }, { passive: false });
+
+        btnStart.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            score = 0;
+            health = 100;
+            timeElapsed = 0;
+            packets = [];
+            particles = [];
+            spawnRate = 1500;
+            baseSpeed = 1.0;
+            lastTime = 0;
+            lastSpawn = performance.now();
+            scoreEl.textContent = score;
+            timeEl.textContent = "0s";
+            updateHealth(0);
+            isPlaying = true;
+            gameLoop(performance.now());
+        });
+    </script>
+</body>
+</html>
