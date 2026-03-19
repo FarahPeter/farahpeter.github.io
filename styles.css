@@ -960,6 +960,52 @@ code {
   100% { transform: rotate(360deg); }
 }
 
+/* ===============================
+   Sketcher button styling (Neon/Blueprint)
+================================ */
+#fun {
+  position: relative;
+  display: inline-block;
+  padding: 12px 24px;
+  color: var(--primary-hover);
+  text-decoration: none;
+  font-weight: bold;
+  font-family: sans-serif;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+#fun::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  /* Blueprint/Cyberpunk color palette */
+  background: conic-gradient(
+    #00fff9, #0066ff, #9400d3, #ff00c1, #00fff9
+  );
+  animation: spin 4s linear infinite reverse; /* Spins the opposite way of AQM */
+  z-index: -2;
+}
+
+#fun::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--bg-nav);
+  border-radius: 5px;
+  z-index: -1;
+  transition: background 0.5s ease;
+}
+
+#fun:hover {
+  text-shadow: 0 0 8px #00fff9; /* Cyan glow on hover */
+}
+
 
 /* ===============================
    Vertical Scroll Progress Bar

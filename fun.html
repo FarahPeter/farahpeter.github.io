@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Interactive Hub</title>
+    <meta name="description" content="A collection of interactive networking simulators, tools, and cryptography playgrounds.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Interactive Hub Grid Styles ── */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .hub-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="light"] .hub-card {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        .hub-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Subtle glowing top border accent for each card */
+        .hub-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--text-muted);
+            transition: background 0.3s ease;
+        }
+
+        /* Card specific accents on hover */
+        .card-aqm:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        .card-sketch:hover::before { background: #00fff9; box-shadow: 0 0 10px #00fff9; }
+        .card-crypto:hover::before { background: #c084fc; box-shadow: 0 0 10px #c084fc; }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            color: var(--primary-hover);
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            flex-grow: 1; /* Pushes the button to the bottom */
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .hub-launch-btn {
+            display: block;
+            text-align: center;
+            width: 100%;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="system-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS</span>
+    </div>
+
+    <div id="vertical-scroll-track">
+      <div id="vertical-scroll-progress"></div>
+    </div>
+
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="server.html" class="nav-highlight">Server Access</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Interactive Hub</h1>
+        <h2 class="page-subtitle">Simulators, tools, and playgrounds</h2>
+    </header>
+
+    <section class="reveal" style="max-width: 1100px; background: transparent; border: none; box-shadow: none; padding: 0 20px;">
+        <div class="hub-grid">
+
+            <div class="hub-card card-aqm">
+                <div class="card-icon">⚡</div>
+                <h3 class="card-title">AQM Network Visualizer</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Networking</span>
+                    <span class="skill-badge">JS Canvas</span>
+                </div>
+                <p class="card-desc">
+                    A live UDP traffic simulation displaying the real-time RTT signatures of 7 different Active Queue Management algorithms including CoDel, PIE, and Cake.
+                </p>
+                <a href="AQMgame.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Launch Sim</a>
+            </div>
+
+            <div class="hub-card card-sketch">
+                <div class="card-icon">✏️</div>
+                <h3 class="card-title">Diagram Sketcher</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Tool</span>
+                    <span class="skill-badge">Prototyping</span>
+                </div>
+                <p class="card-desc">
+                    An interactive whiteboard tailored for network topology design. Includes intelligent shapes, a text tool, and a robust undo/redo history stack.
+                </p>
+                <a href="sketch.html" class="btn hub-launch-btn" style="border-color: #00fff9; color: #00fff9;">Open Sketcher</a>
+            </div>
+
+            <div class="hub-card card-crypto">
+                <div class="card-icon">🔐</div>
+                <h3 class="card-title">Crypto Playground</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Security</span>
+                    <span class="skill-badge">Cryptography</span>
+                </div>
+                <p class="card-desc">
+                    A secure, client-side cryptographic sandbox. Perform real-time AES symmetric encryption, Base64/Hex encoding, and SHA/MD5 hashing instantly as you type.
+                </p>
+                <a href="crypto.html" class="btn hub-launch-btn" style="border-color: #c084fc; color: #c084fc;">Enter Lab</a>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

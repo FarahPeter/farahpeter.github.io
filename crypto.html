@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Live Crypto Playground</title>
+    <meta name="description" content="Client-side cryptography sandbox for hashing, encoding, and symmetric encryption.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        /* ── Crypto Playground Specific Styles ── */
+        .crypto-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .crypto-toolbar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        [data-theme="light"] .crypto-toolbar {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        .toolbar-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-right: 1px solid var(--border-color);
+            padding-right: 15px;
+        }
+
+        .toolbar-section:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .crypto-toolbar label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select, .key-input {
+            background: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        select:focus, .key-input:focus {
+            border-color: var(--primary-hover);
+        }
+
+        .key-input {
+            width: 200px;
+        }
+
+        .crypto-panes {
+            display: flex;
+            gap: 20px;
+            min-height: 400px;
+        }
+
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pane-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            padding: 0 5px;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(74, 222, 128, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        textarea {
+            flex: 1;
+            background: var(--bg-section);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        [data-theme="light"] textarea {
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary), inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        textarea[readonly] {
+            background: var(--bg-main);
+            color: var(--primary-hover);
+            cursor: default;
+        }
+
+        @media (max-width: 768px) {
+            .crypto-panes {
+                flex-direction: column;
+            }
+            .toolbar-section {
+                border-right: none;
+                padding-right: 0;
+                width: 100%;
+                justify-content: space-between;
+            }
+            .key-input {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="system-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS</span>
+    </div>
+
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="AQMgame.html" class="nav-highlight">AQM Simulation</a></li>
+            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Crypto Playground</h1>
+        <h2 class="page-subtitle">Real-time client-side hashing, encoding, and symmetric encryption</h2>
+    </header>
+
+    <section class="reveal" style="max-width: 1200px;">
+        <div class="crypto-container">
+
+            <div class="crypto-toolbar">
+                <div class="toolbar-section">
+                    <label for="operation-select">Mode</label>
+                    <select id="operation-select">
+                        <optgroup label="Hashing (One-way)">
+                            <option value="sha256">SHA-256</option>
+                            <option value="sha512">SHA-512</option>
+                            <option value="sha1">SHA-1</option>
+                            <option value="md5">MD5</option>
+                        </optgroup>
+                        <optgroup label="Encoding (Two-way)">
+                            <option value="b64encode">Base64 Encode</option>
+                            <option value="b64decode">Base64 Decode</option>
+                            <option value="hexencode">Hex Encode</option>
+                            <option value="hexdecode">Hex Decode</option>
+                        </optgroup>
+                        <optgroup label="Symmetric Encryption">
+                            <option value="aes-enc">AES Encrypt</option>
+                            <option value="aes-dec">AES Decrypt</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="toolbar-section" id="key-section" style="display: none;">
+                    <label for="secret-key">Secret Key</label>
+                    <input type="password" id="secret-key" class="key-input" placeholder="Enter passphrase...">
+                </div>
+
+                <div class="toolbar-section" style="margin-left: auto; border-right: none;">
+                    <button class="btn" id="btn-copy">📋 Copy Output</button>
+                </div>
+            </div>
+
+            <div class="crypto-panes">
+                <div class="pane">
+                    <div class="pane-header">
+                        <span>INPUT</span>
+                        <button class="btn" id="btn-clear-input" style="padding: 2px 8px; font-size: 0.75rem; margin:0;">Clear</button>
+                    </div>
+                    <textarea id="crypto-input" placeholder="Type or paste your payload here..."></textarea>
+                </div>
+
+                <div class="pane">
+                    <div class="pane-header">
+                        <span>OUTPUT</span>
+                        <span id="output-status" class="status-badge">READY</span>
+                    </div>
+                    <textarea id="crypto-output" readonly placeholder="Result will appear here..."></textarea>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // ═══════════════════════════════════════════════════════════
+        //  CRYPTOGRAPHY ENGINE
+        // ═══════════════════════════════════════════════════════════
+        const inputArea = document.getElementById('crypto-input');
+        const outputArea = document.getElementById('crypto-output');
+        const operationSelect = document.getElementById('operation-select');
+        const secretKeyInput = document.getElementById('secret-key');
+        const keySection = document.getElementById('key-section');
+        const statusBadge = document.getElementById('output-status');
+
+        // Toggle Secret Key visibility based on selected operation
+        operationSelect.addEventListener('change', () => {
+            const op = operationSelect.value;
+            if (op === 'aes-enc' || op === 'aes-dec') {
+                keySection.style.display = 'flex';
+            } else {
+                keySection.style.display = 'none';
+            }
+            processCrypto();
+        });
+
+        // Event listeners for real-time processing
+        inputArea.addEventListener('input', processCrypto);
+        secretKeyInput.addEventListener('input', processCrypto);
+
+        // Utility to set status badge
+        function setStatus(text, isError = false) {
+            statusBadge.textContent = text;
+            if (isError) {
+                statusBadge.classList.add('error');
+            } else {
+                statusBadge.classList.remove('error');
+            }
+        }
+
+        // Core processing function
+        function processCrypto() {
+            const text = inputArea.value;
+            const op = operationSelect.value;
+            const key = secretKeyInput.value;
+
+            if (!text) {
+                outputArea.value = '';
+                setStatus('READY');
+                return;
+            }
+
+            try {
+                let result = '';
+
+                switch(op) {
+                    // Hashing
+                    case 'md5':
+                        result = CryptoJS.MD5(text).toString();
+                        break;
+                    case 'sha1':
+                        result = CryptoJS.SHA1(text).toString();
+                        break;
+                    case 'sha256':
+                        result = CryptoJS.SHA256(text).toString();
+                        break;
+                    case 'sha512':
+                        result = CryptoJS.SHA512(text).toString();
+                        break;
+
+                    // Encoding
+                    case 'b64encode':
+                        result = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
+                        break;
+                    case 'b64decode':
+                        // CryptoJS Base64 parsing will fail cleanly if invalid
+                        const parsed = CryptoJS.enc.Base64.parse(text);
+                        result = parsed.toString(CryptoJS.enc.Utf8);
+                        if (!result && text.length > 0) throw new Error("Invalid Base64");
+                        break;
+                    case 'hexencode':
+                        result = CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(text));
+                        break;
+                    case 'hexdecode':
+                        result = CryptoJS.enc.Hex.parse(text).toString(CryptoJS.enc.Utf8);
+                        if (!result && text.length > 0) throw new Error("Invalid Hex");
+                        break;
+
+                    // Encryption
+                    case 'aes-enc':
+                        if (!key) throw new Error("Key Required");
+                        result = CryptoJS.AES.encrypt(text, key).toString();
+                        break;
+                    case 'aes-dec':
+                        if (!key) throw new Error("Key Required");
+                        const decrypted = CryptoJS.AES.decrypt(text, key);
+                        result = decrypted.toString(CryptoJS.enc.Utf8);
+                        if (!result) throw new Error("Bad Key or Ciphertext");
+                        break;
+                }
+
+                outputArea.value = result;
+                setStatus('SUCCESS');
+
+            } catch (error) {
+                outputArea.value = '';
+                // Provide specific error feedback
+                if (error.message === "Key Required") {
+                    setStatus('AWAITING KEY', true);
+                } else if (error.message === "Bad Key or Ciphertext") {
+                    setStatus('DECRYPTION FAILED', true);
+                } else {
+                    setStatus('INVALID INPUT', true);
+                }
+            }
+        }
+
+        // ── UI Controls ──
+        document.getElementById('btn-clear-input').addEventListener('click', () => {
+            inputArea.value = '';
+            processCrypto();
+            inputArea.focus();
+        });
+
+        document.getElementById('btn-copy').addEventListener('click', () => {
+            if (outputArea.value) {
+                navigator.clipboard.writeText(outputArea.value).then(() => {
+                    const originalText = document.getElementById('btn-copy').innerHTML;
+                    document.getElementById('btn-copy').innerHTML = '✅ Copied!';
+                    setTimeout(() => {
+                        document.getElementById('btn-copy').innerHTML = originalText;
+                    }, 2000);
+                });
+            }
+        });
+
+        // Trigger initial process to set correct UI state
+        processCrypto();
+    </script>
+</body>
+</html>

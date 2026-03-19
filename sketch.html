@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Sketcher</title>
+    <meta name="description" content="Interactive diagram sketcher and whiteboarding tool for network architectures.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Sketcher Specific Styles ── */
+        .sketch-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        [data-theme="light"] .toolbar {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-right: 1px solid var(--border-color);
+            padding-right: 12px;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .toolbar label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        input[type="color"] {
+            cursor: pointer;
+            background: none;
+            border: none;
+            height: 28px;
+            width: 32px;
+            padding: 0;
+        }
+
+        input[type="range"] {
+            accent-color: var(--primary);
+            cursor: pointer;
+            width: 80px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 65vh;
+            min-height: 500px;
+        }
+
+        #sketch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: crosshair;
+            touch-action: none;
+            box-shadow: var(--shadow-soft);
+            z-index: 10;
+        }
+
+        /* Toggleable CSS Dot Grid */
+        #sketch-canvas.show-grid {
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: -9px -9px;
+        }
+
+        .tool-btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .tool-btn.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        /* Floating Text Input Tool */
+        .text-overlay-input {
+            position: absolute;
+            background: transparent;
+            border: 1px dashed var(--primary);
+            color: var(--primary-hover);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            outline: none;
+            padding: 2px;
+            z-index: 20;
+            min-width: 100px;
+        }
+        [data-theme="light"] .text-overlay-input {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+    <div id="system-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS</span>
+    </div>
+
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Diagram Sketcher</h1>
+        <h2 class="page-subtitle">Interactive whiteboard</h2>
+    </header>
+
+    <section class="reveal" style="max-width: 1200px; padding: 20px;">
+        <div class="sketch-container">
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <button class="btn tool-btn active" data-tool="pen">✏️ Pen</button>
+                    <button class="btn tool-btn" data-tool="line">📏 Line</button>
+                    <button class="btn tool-btn" data-tool="arrow">➔ Arrow</button>
+                    <button class="btn tool-btn" data-tool="rect">⬜ Rect</button>
+                    <button class="btn tool-btn" data-tool="circle">◯ Circle</button>
+                    <button class="btn tool-btn" data-tool="text">🔤 Text</button>
+                    <button class="btn tool-btn" data-tool="eraser">🧽 Eraser</button>
+                </div>
+
+                <div class="toolbar-group">
+                    <input type="color" id="color-picker" value="#4ade80" title="Color">
+                    <input type="range" id="brush-size" min="1" max="25" value="3" title="Stroke Size">
+                </div>
+
+                <div class="toolbar-group">
+                    <button class="btn tool-btn" id="btn-undo" title="Undo (Ctrl+Z)">↩️</button>
+                    <button class="btn tool-btn" id="btn-redo" title="Redo (Ctrl+Y)">↪️</button>
+                    <button class="btn tool-btn" id="btn-grid">🕸️ Grid</button>
+                </div>
+
+                <div class="toolbar-group" style="margin-left: auto;">
+                    <button class="btn tool-btn" id="btn-clear">🗑️ Clear</button>
+                    <button class="btn tool-btn" id="btn-download" style="border-color: var(--primary);">💾 Export PNG</button>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper" id="canvas-wrapper">
+                <canvas id="sketch-canvas" class="show-grid"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // ═══════════════════════════════════════════════════════════
+        //  ADVANCED SKETCHER LOGIC (FIXED UNDO & TEXT)
+        // ═══════════════════════════════════════════════════════════
+        const canvas = document.getElementById('sketch-canvas');
+        const wrapper = document.getElementById('canvas-wrapper');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        const colorPicker = document.getElementById('color-picker');
+        const brushSize = document.getElementById('brush-size');
+        const toolBtns = document.querySelectorAll('[data-tool]');
+
+        // State
+        let isDrawing = false;
+        let hasDrawn = false; // Prevents saving "empty" clicks to history
+        let currentTool = 'pen';
+        let strokeColor = colorPicker.value;
+        let strokeWidth = brushSize.value;
+        let startX, startY;
+        let snapshot;
+
+        // History Stack (Using Synchronous ImageData to prevent async wiping bugs)
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_HISTORY = 30;
+
+        function getThemeBackgroundColor() {
+            return document.documentElement.getAttribute('data-theme') === 'light' ? '#ffffff' : '#121212';
+        }
+
+        function initCanvas() {
+            const rect = wrapper.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            setBrushStyles();
+            saveState(); // Save initial blank state
+        }
+
+        function setBrushStyles() {
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        // ── Robust History Engine ──
+        function saveState() {
+            if (undoStack.length >= MAX_HISTORY) undoStack.shift();
+            // Store raw pixel data directly - no async image loading required
+            undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            redoStack = [];
+        }
+
+        function restoreState(imageData) {
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        document.getElementById('btn-undo').addEventListener('click', () => {
+            if (undoStack.length > 1) {
+                redoStack.push(undoStack.pop());
+                restoreState(undoStack[undoStack.length - 1]);
+            }
+        });
+
+        document.getElementById('btn-redo').addEventListener('click', () => {
+            if (redoStack.length > 0) {
+                const state = redoStack.pop();
+                undoStack.push(state);
+                restoreState(state);
+            }
+        });
+
+        // Keyboard shortcuts (Handles Caps Lock gracefully)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                const key = e.key.toLowerCase();
+                if (key === 'z') { e.preventDefault(); document.getElementById('btn-undo').click(); }
+                if (key === 'y') { e.preventDefault(); document.getElementById('btn-redo').click(); }
+            }
+        });
+
+        document.getElementById('btn-grid').addEventListener('click', function() {
+            canvas.classList.toggle('show-grid');
+            this.classList.toggle('active');
+        });
+
+        // ── Resize Handler ──
+        window.addEventListener('resize', () => {
+            const tempState = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const rect = wrapper.getBoundingClientRect();
+
+            if (canvas.width !== rect.width || canvas.height !== rect.height) {
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.putImageData(tempState, 0, 0);
+                setBrushStyles();
+            }
+        });
+
+        // ── Tool Selection ──
+        toolBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('.tool-btn.active[data-tool]')?.classList.remove('active');
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+                canvas.style.cursor = currentTool === 'text' ? 'text' : 'crosshair';
+            });
+        });
+
+        colorPicker.addEventListener('input', (e) => strokeColor = e.target.value);
+        brushSize.addEventListener('input', (e) => strokeWidth = e.target.value);
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            saveState();
+        });
+
+        document.getElementById('btn-download').addEventListener('click', () => {
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = canvas.width;
+            exportCanvas.height = canvas.height;
+            const exportCtx = exportCanvas.getContext('2d');
+
+            exportCtx.fillStyle = getThemeBackgroundColor();
+            exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+            exportCtx.drawImage(canvas, 0, 0);
+
+            const link = document.createElement('a');
+            link.download = `PeterFarah_${new Date().getTime()}.png`;
+            link.href = exportCanvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // ── Drawing Engine ──
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        function startDrawing(e) {
+            if (currentTool !== 'text' && e.target === canvas) e.preventDefault();
+
+            const pos = getMousePos(e);
+            startX = pos.x;
+            startY = pos.y;
+
+            if (currentTool === 'text') {
+                addTextInput(e, startX, startY);
+                return;
+            }
+
+            isDrawing = true;
+            hasDrawn = false; // Reset draw tracker
+            ctx.beginPath();
+
+            snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            ctx.lineWidth = strokeWidth;
+            if (currentTool === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = "rgba(0,0,0,1)";
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = strokeColor;
+                ctx.fillStyle = strokeColor;
+            }
+
+            if (currentTool === 'pen' || currentTool === 'eraser') {
+                ctx.moveTo(startX, startY);
+            }
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            if (e.target === canvas) e.preventDefault();
+
+            hasDrawn = true; // Mark that actual movement occurred
+            const pos = getMousePos(e);
+
+            if (currentTool === 'pen' || currentTool === 'eraser') {
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            } else {
+                ctx.putImageData(snapshot, 0, 0);
+
+                ctx.beginPath();
+                if (currentTool === 'line') {
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+                } else if (currentTool === 'arrow') {
+                    drawArrow(startX, startY, pos.x, pos.y);
+                } else if (currentTool === 'rect') {
+                    ctx.strokeRect(startX, startY, pos.x - startX, pos.y - startY);
+                } else if (currentTool === 'circle') {
+                    const radius = Math.sqrt(Math.pow(pos.x - startX, 2) + Math.pow(pos.y - startY, 2));
+                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function stopDrawing(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+            ctx.closePath();
+
+            // Only save state if the user actually drew something (prevents duplicate blank states)
+            if (hasDrawn) {
+                saveState();
+            }
+        }
+
+        function drawArrow(fromX, fromY, toX, toY) {
+            const headlen = Math.max(10, strokeWidth * 3);
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.lineTo(toX, toY);
+            ctx.fill();
+        }
+
+        // ── Fixed Text Tool ──
+        function addTextInput(e, x, y) {
+            commitCurrentText();
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'temp-text-input';
+            input.className = 'text-overlay-input';
+            input.placeholder = "Type & press Enter";
+
+            input.style.left = `${x}px`;
+            input.style.top = `${y - 10}px`;
+
+            const fontSize = Math.max(14, Math.min(36, parseInt(strokeWidth) * 3));
+            input.style.fontSize = `${fontSize}px`;
+            input.style.color = document.documentElement.getAttribute('data-theme') === 'light' ? '#000' : strokeColor;
+
+            // Securely attach coordinates to the element
+            input.dataset.x = x;
+            input.dataset.y = y;
+            input.dataset.fontSize = fontSize;
+
+            wrapper.appendChild(input);
+            setTimeout(() => input.focus(), 10);
+
+            input.addEventListener('keydown', (evt) => {
+                if (evt.key === 'Enter') commitCurrentText();
+            });
+            input.addEventListener('blur', () => commitCurrentText());
+        }
+
+        function commitCurrentText() {
+            const input = document.getElementById('temp-text-input');
+            if (!input) return;
+
+            input.removeAttribute('id'); // Prevents double-firing from blur + enter
+
+            const text = input.value.trim();
+            if (text) {
+                const x = parseFloat(input.dataset.x);
+                const y = parseFloat(input.dataset.y);
+                const fontSize = parseFloat(input.dataset.fontSize);
+
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = input.style.color;
+                ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x, y);
+                saveState();
+            }
+            input.remove();
+        }
+
+        // ── Event Listeners ──
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        setTimeout(initCanvas, 150);
+    </script>
+</body>
+</html>
