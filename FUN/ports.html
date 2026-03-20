@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../styles.css">
     <style>
         .search-box { width: 100%; max-width: 800px; margin: 20px auto; display: block; background: var(--bg-main); color: var(--primary-hover); border: 1px solid var(--border-color); padding: 15px 20px; border-radius: 8px; font-size: 1.2rem; outline: none; transition: border-color 0.2s; }
         .search-box:focus { border-color: #3b82f6; }
@@ -32,9 +32,9 @@
                     <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                 </a>
             </li>
-            <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
-            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
-            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+            <li><a href="../index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="../blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="../fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
         </ul>
     </nav>
     <header>
@@ -45,7 +45,7 @@
         <input type="text" id="search" class="search-box" placeholder="Search by port number or service (e.g., 443, SSH, DNS)...">
         <div class="port-grid" id="grid"></div>
     </section>
-    <script src="script.js"></script>
+    <script src="../script.js"></script>
     <script>
         const ports = [
             { p: "20, 21", n: "FTP", d: "File Transfer Protocol", v: false },
