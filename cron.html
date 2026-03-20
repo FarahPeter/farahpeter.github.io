@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Cron Translator & Builder</title>
+    <meta name="description" content="Build and translate Cron expressions into human-readable schedules.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .tool-container { max-width: 800px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; }
+        .input-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color, #333); border-radius: 8px; padding: 30px; text-align: center; }
+        [data-theme="light"] .input-panel { background: rgba(0, 0, 0, 0.015); }
+        .cron-input { background: var(--bg-main, #111); color: #4ade80; border: 1px solid var(--border-color, #444); padding: 15px 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 2rem; width: 100%; max-width: 400px; text-align: center; outline: none; transition: border-color 0.2s, box-shadow 0.2s; letter-spacing: 0.1em; }
+        .cron-input:focus { border-color: #4ade80; box-shadow: 0 0 15px rgba(74, 222, 128, 0.2); }
+
+        /* New Builder CSS */
+        .builder-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color, #333); border-radius: 8px; padding: 20px; text-align: center; }
+        .builder-controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px; }
+        .builder-select { background: var(--bg-main, #111); color: var(--text-main, #fff); border: 1px solid var(--border-color, #444); padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; outline: none; cursor: pointer; transition: border-color 0.2s; font-size: 0.9rem;}
+        .builder-select:focus, .builder-select:hover { border-color: #4ade80; }
+        .builder-label { font-size: 0.8rem; color: var(--text-muted, #888); display: block; margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; }
+        .select-group { display: flex; flex-direction: column; align-items: flex-start; }
+
+        .output-panel { background: var(--bg-section, #1a1a1a); border: 1px solid var(--border-color, #333); border-radius: 8px; padding: 40px 20px; text-align: center; min-height: 150px; display: flex; align-items: center; justify-content: center; }
+        .human-readable { font-size: 1.5rem; color: var(--primary-hover, #4ade80); line-height: 1.5; font-weight: 600; }
+        .error-text { color: #ef4444; font-family: 'JetBrains Mono', monospace; font-size: 1rem; }
+        .hint-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 400px; margin: 15px auto 0; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted, #888); }
+    </style>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>Cron Translator & Builder</h1>
+        <h2 class="page-subtitle">Build scheduling syntax or instantly decode it into plain English.</h2>
+    </header>
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+
+            <div class="builder-panel">
+                <div class="builder-controls">
+                    <div class="select-group">
+                        <span class="builder-label">Minute</span>
+                        <select id="build-min" class="builder-select">
+                            <option value="*">Every minute (*)</option>
+                            <option value="*/5">Every 5 mins (*/5)</option>
+                            <option value="*/15" selected>Every 15 mins (*/15)</option>
+                            <option value="*/30">Every 30 mins (*/30)</option>
+                            <option value="0">Top of hour (0)</option>
+                            <option value="30">Half past (30)</option>
+                        </select>
+                    </div>
+                    <div class="select-group">
+                        <span class="builder-label">Hour</span>
+                        <select id="build-hour" class="builder-select">
+                            <option value="*" selected>Every hour (*)</option>
+                            <option value="*/2">Every 2 hours (*/2)</option>
+                            <option value="*/6">Every 6 hours (*/6)</option>
+                            <option value="0">Midnight (0)</option>
+                            <option value="12">Noon (12)</option>
+                        </select>
+                    </div>
+                    <div class="select-group">
+                        <span class="builder-label">Day</span>
+                        <select id="build-dom" class="builder-select">
+                            <option value="*" selected>Every day (*)</option>
+                            <option value="1">1st of month (1)</option>
+                            <option value="15">15th of month (15)</option>
+                        </select>
+                    </div>
+                    <div class="select-group">
+                        <span class="builder-label">Month</span>
+                        <select id="build-month" class="builder-select">
+                            <option value="*" selected>Every month (*)</option>
+                            <option value="1">January (1)</option>
+                            <option value="6">June (6)</option>
+                            <option value="12">December (12)</option>
+                        </select>
+                    </div>
+                    <div class="select-group">
+                        <span class="builder-label">Weekday</span>
+                        <select id="build-dow" class="builder-select">
+                            <option value="*">Every day (*)</option>
+                            <option value="1-5" selected>Mon-Fri (1-5)</option>
+                            <option value="0,6">Weekends (0,6)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-panel">
+                <input type="text" id="cron-input" class="cron-input" value="*/15 * * * 1-5" spellcheck="false" autocomplete="off">
+                <div class="hint-grid">
+                    <div>MIN<br>(0-59)</div><div>HOUR<br>(0-23)</div><div>DAY<br>(1-31)</div><div>MONTH<br>(1-12)</div><div>WEEKDAY<br>(0-6)</div>
+                </div>
+            </div>
+
+            <div class="output-panel">
+                <div id="output-text" class="human-readable">Loading...</div>
+            </div>
+        </div>
+    </section>
+    <script src="script.js"></script>
+    <script>
+        const input = document.getElementById('cron-input');
+        const output = document.getElementById('output-text');
+
+        // Builder elements
+        const buildMin = document.getElementById('build-min');
+        const buildHour = document.getElementById('build-hour');
+        const buildDom = document.getElementById('build-dom');
+        const buildMonth = document.getElementById('build-month');
+        const buildDow = document.getElementById('build-dow');
+        const builders = [buildMin, buildHour, buildDom, buildMonth, buildDow];
+
+        // Combine dropdown values and update the input box
+        function generateCronFromBuilder() {
+            const cronExpression = `${buildMin.value} ${buildHour.value} ${buildDom.value} ${buildMonth.value} ${buildDow.value}`;
+            input.value = cronExpression;
+            update(); // Trigger the translator
+        }
+
+        // Listen for changes on all dropdowns
+        builders.forEach(select => {
+            select.addEventListener('change', generateCronFromBuilder);
+        });
+
+        // A lightweight, client-side cron parser logic
+        function parseCron(expr) {
+            const parts = expr.trim().split(/\s+/);
+            if(parts.length !== 5) return { error: "Invalid format. Expected exactly 5 parts." };
+
+            const [min, hour, dom, month, dow] = parts;
+            let result = "At ";
+
+            // Minutes & Hours
+            if(min === "*" && hour === "*") result += "every minute";
+            else if(min.startsWith("*/")) result += `every ${min.replace("*/","")} minutes`;
+            else if(hour.startsWith("*/") && min === "0") result += `minute 0 past every ${hour.replace("*/","")} hours`;
+            else if(hour === "*") result += `minute ${min} past every hour`;
+            else if(min === "*") result += `every minute past hour ${hour}`;
+            else result += `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
+
+            // Days & Months
+            if(dom !== "*" || month !== "*") {
+                if(dom.startsWith("*/")) result += `, every ${dom.replace("*/","")} days`;
+                else if(dom !== "*") result += `, on day ${dom} of the month`;
+                if(month.startsWith("*/")) result += `, every ${month.replace("*/","")} months`;
+                else if(month !== "*") result += `, only in month ${month}`;
+            }
+
+            // Days of week
+            const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+            if(dow !== "*") {
+                if(dow.includes("-")) {
+                    const [start, end] = dow.split("-");
+                    result += `, Monday through Friday`; // Simplified assumption for standard 1-5
+                } else if(dow.includes(",")) {
+                    result += `, on specific weekdays`;
+                } else {
+                    result += `, and on ${days[dow % 7]}`;
+                }
+            }
+            return { text: result + "." };
+        }
+
+        function update() {
+            const res = parseCron(input.value);
+            if(res.error) {
+                output.className = "error-text";
+                output.textContent = res.error;
+            } else {
+                output.className = "human-readable";
+                output.textContent = res.text.charAt(0).toUpperCase() + res.text.slice(1);
+            }
+        }
+
+        input.addEventListener('input', update);
+        update(); // Initial run
+    </script>
+</body>
+</html>

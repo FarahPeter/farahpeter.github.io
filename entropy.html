@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Password Entropy</title>
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .entropy-container { max-width: 800px; margin: 20px auto; }
+        .input-box { width: 100%; background: var(--bg-main); color: var(--primary-hover); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; font-size: 1.5rem; text-align: center; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .stat-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; text-align: center; }
+        [data-theme="light"] .stat-card { background: rgba(0,0,0,0.02); }
+        .stat-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary-hover); font-family: 'JetBrains Mono', monospace;}
+        .crack-card { grid-column: 1 / -1; background: var(--bg-section); border-left: 4px solid #ef4444; }
+        .time-value { color: #ef4444; font-size: 2rem; font-weight: bold; }
+        .safe { border-left-color: #4ade80 !important; }
+        .safe .time-value { color: #4ade80; }
+        .warn { border-left-color: #facc15 !important; }
+        .warn .time-value { color: #facc15; }
+    </style>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>Entropy Calculator</h1>
+        <h2 class="page-subtitle">Calculate cryptographic strength against modern GPU hash cracking.</h2>
+    </header>
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="entropy-container">
+            <input type="text" id="pass-input" class="input-box" placeholder="Type a password..." autocomplete="off">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Length</div>
+                    <div class="stat-value" id="val-len">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Character Pool</div>
+                    <div class="stat-value" id="val-pool">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Bits of Entropy</div>
+                    <div class="stat-value" id="val-ent">0</div>
+                </div>
+                <div class="stat-card crack-card" id="crack-card">
+                    <div class="stat-title">Offline Crack Time (100 Billion Hashes/sec)</div>
+                    <div class="time-value" id="val-time">Instant</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="script.js"></script>
+    <script>
+        const input = document.getElementById('pass-input');
+        const crackCard = document.getElementById('crack-card');
+
+        function formatTime(seconds) {
+            if(seconds < 1) return "Instant";
+            if(seconds < 60) return `${Math.round(seconds)} Seconds`;
+            if(seconds < 3600) return `${Math.round(seconds/60)} Minutes`;
+            if(seconds < 86400) return `${Math.round(seconds/3600)} Hours`;
+            if(seconds < 31536000) return `${Math.round(seconds/86400)} Days`;
+            const years = seconds/31536000;
+            if(years < 1000) return `${Math.round(years)} Years`;
+            if(years < 1000000) return `${Math.round(years/1000)} Thousand Years`;
+            return `${Math.round(years/1000000)} Million Years+`;
+        }
+
+        input.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const L = val.length;
+
+            let R = 0;
+            if(/[a-z]/.test(val)) R += 26;
+            if(/[A-Z]/.test(val)) R += 26;
+            if(/[0-9]/.test(val)) R += 10;
+            if(/[^a-zA-Z0-9]/.test(val)) R += 32;
+
+            const entropy = L === 0 ? 0 : L * Math.log2(R);
+            const combinations = Math.pow(2, entropy);
+            const hashRate = 100000000000; // 100 Billion/sec
+            const secondsToCrack = combinations / hashRate;
+
+            document.getElementById('val-len').textContent = L;
+            document.getElementById('val-pool').textContent = R;
+            document.getElementById('val-ent').textContent = Math.round(entropy);
+            document.getElementById('val-time').textContent = formatTime(secondsToCrack);
+
+            crackCard.className = "stat-card crack-card";
+            if(entropy > 80) crackCard.classList.add('safe');
+            else if(entropy > 50) crackCard.classList.add('warn');
+        });
+    </script>
+</body>
+</html>
