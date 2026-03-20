@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | CHMOD Calculator</title>
+    <meta name="description" content="Visual Linux File Permissions (CHMOD) Calculator.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .chmod-container {
+            max-width: 800px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .output-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        [data-theme="light"] .output-panel {
+            background: #1e293b; /* Dark terminal look even in light mode */
+            box-shadow: none;
+        }
+
+        .output-box {
+            text-align: center;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .output-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .output-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            color: #eab308; /* Yellow terminal text */
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+        }
+
+        .grid-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .perm-card {
+            background: var(--bg-section);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .perm-title {
+            font-size: 1.2rem;
+            color: var(--primary-hover);
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Checkbox Toggles */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .toggle-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 46px;
+            height: 24px;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        input[type="checkbox"]:checked + .toggle-switch {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        input[type="checkbox"]:checked + .toggle-switch::after {
+            transform: translateX(22px);
+            background-color: #fff;
+        }
+
+        /* Coloring the labels on check */
+        input[type="checkbox"]:checked ~ .toggle-label {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="system-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS</span>
+    </div>
+
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>CHMOD Calculator</h1>
+        <h2 class="page-subtitle">Visual Linux file permission generator.</h2>
+    </header>
+
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="chmod-container">
+
+            <div class="output-panel">
+                <div class="output-box">
+                    <div class="output-label">Octal Value</div>
+                    <div class="output-value" id="out-octal">755</div>
+                </div>
+                <div class="output-box">
+                    <div class="output-label">Symbolic Value</div>
+                    <div class="output-value" id="out-symbolic" style="color: #3b82f6; text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);">-rwxr-xr-x</div>
+                </div>
+            </div>
+
+            <div class="grid-panel">
+                <div class="perm-card">
+                    <h3 class="perm-title">Owner (u)</h3>
+
+                    <label class="toggle-row">
+                        <span class="toggle-label">Read (4)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="o-r" checked>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-label">Write (2)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="o-w" checked>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-label">Execute (1)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="o-x" checked>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="perm-card">
+                    <h3 class="perm-title">Group (g)</h3>
+
+                    <label class="toggle-row">
+                        <span class="toggle-label">Read (4)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="g-r" checked>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-label">Write (2)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="g-w">
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-label">Execute (1)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="g-x" checked>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="perm-card">
+                    <h3 class="perm-title">Public (o)</h3>
+
+                    <label class="toggle-row">
+                        <span class="toggle-label">Read (4)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="p-r" checked>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-label">Write (2)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="p-w">
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-label">Execute (1)</span>
+                        <div style="position: relative;">
+                            <input type="checkbox" id="p-x" checked>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const outOctal = document.getElementById('out-octal');
+        const outSymbolic = document.getElementById('out-symbolic');
+
+        function calculatePermissions() {
+            // Arrays storing state
+            const owner = [
+                document.getElementById('o-r').checked,
+                document.getElementById('o-w').checked,
+                document.getElementById('o-x').checked
+            ];
+            const group = [
+                document.getElementById('g-r').checked,
+                document.getElementById('g-w').checked,
+                document.getElementById('g-x').checked
+            ];
+            const public = [
+                document.getElementById('p-r').checked,
+                document.getElementById('p-w').checked,
+                document.getElementById('p-x').checked
+            ];
+
+            // Calculate Octal
+            const getOctal = (arr) => (arr[0] ? 4 : 0) + (arr[1] ? 2 : 0) + (arr[2] ? 1 : 0);
+            const octalStr = `${getOctal(owner)}${getOctal(group)}${getOctal(public)}`;
+
+            // Calculate Symbolic
+            const getSym = (arr) => `${arr[0] ? 'r' : '-'}${arr[1] ? 'w' : '-'}${arr[2] ? 'x' : '-'}`;
+            const symbolicStr = `-${getSym(owner)}${getSym(group)}${getSym(public)}`;
+
+            outOctal.textContent = octalStr;
+            outSymbolic.textContent = symbolicStr;
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', calculatePermissions));
+
+        // Initial Run
+        calculatePermissions();
+    </script>
+</body>
+</html>

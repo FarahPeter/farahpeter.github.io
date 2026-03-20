@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Subnet & CIDR Calculator</title>
+    <meta name="description" content="Advanced IPv4 Subnet and CIDR Calculator for network engineers.">
+    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .tool-container {
+            max-width: 800px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+
+        [data-theme="light"] .input-panel {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .text-input {
+            background: var(--bg-main);
+            color: var(--primary-hover);
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .text-input:focus {
+            border-color: #4ade80;
+        }
+
+        .cidr-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #cidr-slider {
+            flex: 1;
+            accent-color: #4ade80;
+            cursor: pointer;
+        }
+
+        #cidr-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: #4ade80;
+            font-weight: bold;
+            min-width: 50px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .result-card {
+            background: var(--bg-section);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #4ade80;
+        }
+
+        .result-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            color: var(--primary-hover);
+        }
+
+        .error-state {
+            color: #ef4444 !important;
+        }
+        .error-border {
+            border-left-color: #ef4444 !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="system-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS</span>
+    </div>
+
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="index.html" class="nav-highlight">Home</a></li>
+            <li><a href="blog.html" class="nav-highlight">Research & Blog</a></li>
+            <li><a href="fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Subnet Calculator</h1>
+        <h2 class="page-subtitle">Instantly calculate IPv4 boundaries, masks, and host ranges.</h2>
+    </header>
+
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+
+            <div class="input-panel">
+                <div class="input-group">
+                    <label for="ip-input">Target IP Address</label>
+                    <input type="text" id="ip-input" class="text-input" value="192.168.1.50" placeholder="e.g. 10.0.0.1">
+                </div>
+                <div class="input-group">
+                    <label for="cidr-slider">CIDR Notation (/Mask)</label>
+                    <div class="cidr-slider-container">
+                        <input type="range" id="cidr-slider" min="0" max="32" value="24">
+                        <span id="cidr-display">/24</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-grid">
+                <div class="result-card" id="card-net">
+                    <div class="result-label">Network Address</div>
+                    <div class="result-value" id="res-network">192.168.1.0</div>
+                </div>
+                <div class="result-card" id="card-broad">
+                    <div class="result-label">Broadcast Address</div>
+                    <div class="result-value" id="res-broadcast">192.168.1.255</div>
+                </div>
+                <div class="result-card" id="card-mask">
+                    <div class="result-label">Subnet Mask</div>
+                    <div class="result-value" id="res-mask">255.255.255.0</div>
+                </div>
+                <div class="result-card" id="card-wild">
+                    <div class="result-label">Wildcard Mask</div>
+                    <div class="result-value" id="res-wildcard">0.0.0.255</div>
+                </div>
+                <div class="result-card" id="card-first">
+                    <div class="result-label">First Usable Host</div>
+                    <div class="result-value" id="res-first">192.168.1.1</div>
+                </div>
+                <div class="result-card" id="card-last">
+                    <div class="result-label">Last Usable Host</div>
+                    <div class="result-value" id="res-last">192.168.1.254</div>
+                </div>
+                <div class="result-card" id="card-hosts" style="grid-column: 1 / -1;">
+                    <div class="result-label">Total Usable Hosts</div>
+                    <div class="result-value" id="res-hosts" style="color: #4ade80;">254</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const ipInput = document.getElementById('ip-input');
+        const cidrSlider = document.getElementById('cidr-slider');
+        const cidrDisplay = document.getElementById('cidr-display');
+        const cards = document.querySelectorAll('.result-card');
+
+        // Result Fields
+        const resNet = document.getElementById('res-network');
+        const resBroad = document.getElementById('res-broadcast');
+        const resMask = document.getElementById('res-mask');
+        const resWild = document.getElementById('res-wildcard');
+        const resFirst = document.getElementById('res-first');
+        const resLast = document.getElementById('res-last');
+        const resHosts = document.getElementById('res-hosts');
+
+        function ipToInt(ip) {
+            return ip.split('.').reduce((int, octet) => (int << 8) + parseInt(octet, 10), 0) >>> 0;
+        }
+
+        function intToIp(int) {
+            return [
+                (int >>> 24) & 255,
+                (int >>> 16) & 255,
+                (int >>> 8) & 255,
+                int & 255
+            ].join('.');
+        }
+
+        function isValidIp(ip) {
+            const regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return regex.test(ip);
+        }
+
+        function calculateSubnet() {
+            const ipStr = ipInput.value.trim();
+            const cidr = parseInt(cidrSlider.value, 10);
+            cidrDisplay.textContent = `/${cidr}`;
+
+            if (!isValidIp(ipStr)) {
+                setErrorState("Invalid IP Format");
+                return;
+            }
+            clearErrorState();
+
+            const ipInt = ipToInt(ipStr);
+            const maskInt = cidr === 0 ? 0 : (0xFFFFFFFF << (32 - cidr)) >>> 0;
+            const wildInt = (~maskInt) >>> 0;
+            const netInt = (ipInt & maskInt) >>> 0;
+            const broadInt = (netInt | wildInt) >>> 0;
+
+            resNet.textContent = intToIp(netInt);
+            resBroad.textContent = intToIp(broadInt);
+            resMask.textContent = intToIp(maskInt);
+            resWild.textContent = intToIp(wildInt);
+
+            // Special cases for /32 and /31
+            if (cidr === 32) {
+                resFirst.textContent = "N/A";
+                resLast.textContent = "N/A";
+                resHosts.textContent = "1 (Host Route)";
+            } else if (cidr === 31) {
+                resFirst.textContent = intToIp(netInt);
+                resLast.textContent = intToIp(broadInt);
+                resHosts.textContent = "2 (Point-to-Point)";
+            } else {
+                resFirst.textContent = intToIp(netInt + 1);
+                resLast.textContent = intToIp(broadInt - 1);
+                const hosts = Math.pow(2, 32 - cidr) - 2;
+                resHosts.textContent = hosts.toLocaleString();
+            }
+        }
+
+        function setErrorState(msg) {
+            [resNet, resBroad, resMask, resWild, resFirst, resLast, resHosts].forEach(el => {
+                el.textContent = msg;
+                el.classList.add('error-state');
+            });
+            cards.forEach(c => c.classList.add('error-border'));
+        }
+
+        function clearErrorState() {
+            [resNet, resBroad, resMask, resWild, resFirst, resLast, resHosts].forEach(el => {
+                el.classList.remove('error-state');
+            });
+            cards.forEach(c => c.classList.remove('error-border'));
+        }
+
+        ipInput.addEventListener('input', calculateSubnet);
+        cidrSlider.addEventListener('input', calculateSubnet);
+
+        calculateSubnet(); // Initial render
+    </script>
+</body>
+</html>
