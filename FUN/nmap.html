@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Nmap Command Builder</title>
+    <meta name="description" content="Visual interface to generate complex Nmap scan commands.">
+    <link rel="icon" type="image/x-icon" href="../Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .tool-container { max-width: 900px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; }
+        
+        .input-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+        [data-theme="light"] .input-panel { background: rgba(0, 0, 0, 0.015); }
+        
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+        
+        .text-input, select { background: var(--bg-main); color: var(--primary-hover); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box;}
+        .text-input:focus, select:focus { border-color: #ef4444; }
+        
+        .checkbox-group { display: flex; flex-direction: column; gap: 12px; margin-top: 5px; }
+        .checkbox-row { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;}
+        .checkbox-row input { accent-color: #ef4444; width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-row span { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-main); }
+        
+        .output-panel { background: #050505; border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; position: relative; min-height: 80px; display: flex; align-items: center;}
+        [data-theme="light"] .output-panel { background: #f8fafc; }
+        
+        .command-output { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; color: #ef4444; word-break: break-all; margin: 0; padding-right: 50px; line-height: 1.4; }
+        
+        .copy-btn { position: absolute; top: 20px; right: 20px; background: var(--bg-section); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; transition: all 0.2s; }
+        .copy-btn:hover { border-color: #ef4444; color: #ef4444; }
+        
+        .slider-container { display: flex; align-items: center; gap: 15px; }
+        .slider-container input { flex: 1; accent-color: #ef4444; cursor: pointer;}
+        .slider-val { font-family: 'JetBrains Mono', monospace; color: #ef4444; font-weight: bold; width: 30px; font-size: 1.1rem;}
+    </style>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="../index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="../fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    
+    <header>
+        <h1>Nmap Command Builder</h1>
+        <h2 class="page-subtitle">Visual interface to generate complex network scan commands.</h2>
+    </header>
+    
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+            
+            <div class="output-panel">
+                <div class="command-output" id="command-output">nmap &lt;target&gt;</div>
+                <button class="copy-btn" id="btn-copy">Copy</button>
+            </div>
+
+            <div class="input-panel">
+                <div class="input-group">
+                    <label for="target">Target (IP / Subnet / Domain)</label>
+                    <input type="text" id="target" class="text-input" placeholder="e.g. 192.168.1.0/24">
+                </div>
+                
+                <div class="input-group">
+                    <label for="ports">Ports (-p)</label>
+                    <input type="text" id="ports" class="text-input" placeholder="e.g. 80,443 or 1-1000 or -">
+                </div>
+
+                <div class="input-group">
+                    <label for="scan-type">Scan Type</label>
+                    <select id="scan-type">
+                        <option value="-sS" selected>TCP SYN Scan (-sS)</option>
+                        <option value="-sT">TCP Connect Scan (-sT)</option>
+                        <option value="-sU">UDP Scan (-sU)</option>
+                        <option value="-sA">TCP ACK Scan (-sA)</option>
+                        <option value="-sn">Ping Scan / No Port Scan (-sn)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="timing">Timing Template (-T)</label>
+                    <div class="slider-container">
+                        <input type="range" id="timing" min="0" max="5" value="4">
+                        <span class="slider-val" id="timing-val">T4</span>
+                    </div>
+                </div>
+                
+                <div class="input-group" style="grid-column: 1 / -1;">
+                    <label>Options & Flags</label>
+                    <div class="checkbox-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <label class="checkbox-row"><input type="checkbox" id="chk-sv"><span>Service Version (-sV)</span></label>
+                        <label class="checkbox-row"><input type="checkbox" id="chk-o"><span>OS Detection (-O)</span></label>
+                        <label class="checkbox-row"><input type="checkbox" id="chk-a"><span>Aggressive Scan (-A)</span></label>
+                        <label class="checkbox-row"><input type="checkbox" id="chk-pn"><span>Disable Ping (-Pn)</span></label>
+                        <label class="checkbox-row"><input type="checkbox" id="chk-v"><span>Verbose (-v)</span></label>
+                        <label class="checkbox-row"><input type="checkbox" id="chk-6"><span>IPv6 Scan (-6)</span></label>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+    
+    <script src="../script.js"></script>
+    <script>
+        const target = document.getElementById('target');
+        const scanType = document.getElementById('scan-type');
+        const timing = document.getElementById('timing');
+        const timingVal = document.getElementById('timing-val');
+        const ports = document.getElementById('ports');
+        const chkSv = document.getElementById('chk-sv');
+        const chkO = document.getElementById('chk-o');
+        const chkA = document.getElementById('chk-a');
+        const chkPn = document.getElementById('chk-pn');
+        const chkV = document.getElementById('chk-v');
+        const chk6 = document.getElementById('chk-6');
+        const output = document.getElementById('command-output');
+        const btnCopy = document.getElementById('btn-copy');
+
+        function buildCommand() {
+            timingVal.textContent = `T${timing.value}`;
+            
+            let cmd = ['nmap'];
+            if (scanType.value !== "") cmd.push(scanType.value);
+            if (timing.value !== "3") cmd.push(`-T${timing.value}`); // T3 is default, usually omitted
+            if (ports.value.trim() !== "") cmd.push(`-p ${ports.value.trim()}`);
+            if (chkSv.checked) cmd.push('-sV');
+            if (chkO.checked) cmd.push('-O');
+            if (chkA.checked) cmd.push('-A');
+            if (chkPn.checked) cmd.push('-Pn');
+            if (chkV.checked) cmd.push('-v');
+            if (chk6.checked) cmd.push('-6');
+            
+            cmd.push(target.value.trim() || '<target>');
+            
+            output.textContent = cmd.join(' ');
+        }
+
+        // Event Listeners
+        const inputs = [target, scanType, timing, ports, chkSv, chkO, chkA, chkPn, chkV, chk6];
+        inputs.forEach(el => el.addEventListener('input', buildCommand));
+
+        btnCopy.addEventListener('click', () => {
+            navigator.clipboard.writeText(output.textContent).then(() => {
+                btnCopy.textContent = 'Copied!';
+                setTimeout(() => btnCopy.textContent = 'Copy', 2000);
+            });
+        });
+
+        buildCommand(); // Init
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | JSON Beautifier</title>
+    <meta name="description" content="Format, beautify, and validate JSON payloads instantly.">
+    <link rel="icon" type="image/x-icon" href="../Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .tool-container { max-width: 1200px; margin: 20px auto; display: flex; gap: 20px; flex-wrap: wrap; }
+        
+        .pane { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+        .pane-header { display: flex; justify-content: space-between; align-items: center; padding: 0 5px;}
+        .pane-title { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;}
+        
+        textarea, .output-area { 
+            width: 100%; 
+            height: 60vh; 
+            min-height: 400px;
+            background: var(--bg-section); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 15px; 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 0.9rem; 
+            line-height: 1.5;
+            resize: vertical; 
+            outline: none; 
+            color: var(--text-main); 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+        [data-theme="light"] textarea, [data-theme="light"] .output-area { box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        
+        textarea:focus { border-color: #eab308; box-shadow: 0 0 0 1px #eab308, inset 0 2px 4px rgba(0,0,0,0.2); }
+        
+        .output-area { 
+            background: #050505; 
+            white-space: pre; 
+            overflow: auto; 
+        }
+        [data-theme="light"] .output-area { background: #f8fafc; }
+        
+        .btn-action { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; transition: all 0.2s; }
+        .btn-action:hover { border-color: #eab308; color: #eab308; }
+        
+        /* Syntax Highlighting */
+        .json-string { color: #4ade80; }
+        .json-number { color: #facc15; }
+        .json-boolean { color: #c084fc; }
+        .json-null { color: #ef4444; font-weight: bold; }
+        .json-key { color: #60a5fa; }
+        
+        [data-theme="light"] .json-string { color: #16a34a; }
+        [data-theme="light"] .json-number { color: #ca8a04; }
+        [data-theme="light"] .json-boolean { color: #9333ea; }
+        [data-theme="light"] .json-null { color: #dc2626; }
+        [data-theme="light"] .json-key { color: #2563eb; }
+        
+        .error-msg { color: #ef4444; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; height: 20px; margin-top: 5px;}
+    </style>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="../index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="../fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    
+    <header>
+        <h1>JSON Beautifier</h1>
+        <h2 class="page-subtitle">Format, syntax-highlight, and validate raw JSON payloads.</h2>
+    </header>
+    
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+            
+            <div class="pane">
+                <div class="pane-header">
+                    <span class="pane-title">Raw Input</span>
+                    <button class="btn-action" id="btn-clear">Clear</button>
+                </div>
+                <textarea id="json-input" placeholder="Paste your raw, minified, or messy JSON here..."></textarea>
+                <div class="error-msg" id="error-msg"></div>
+            </div>
+
+            <div class="pane">
+                <div class="pane-header">
+                    <span class="pane-title">Beautified Output</span>
+                    <button class="btn-action" id="btn-copy">📋 Copy</button>
+                </div>
+                <div class="output-area" id="json-output"></div>
+            </div>
+            
+        </div>
+    </section>
+    
+    <script src="../script.js"></script>
+    <script>
+        const input = document.getElementById('json-input');
+        const output = document.getElementById('json-output');
+        const errorMsg = document.getElementById('error-msg');
+        let cleanJsonStr = "";
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) { cls = 'json-key'; } else { cls = 'json-string'; }
+                } else if (/true|false/.test(match)) { cls = 'json-boolean';
+                } else if (/null/.test(match)) { cls = 'json-null'; }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        input.addEventListener('input', () => {
+            const raw = input.value.trim();
+            if (!raw) { output.innerHTML = ''; errorMsg.textContent = ''; cleanJsonStr = ""; return; }
+            try {
+                const parsed = JSON.parse(raw);
+                cleanJsonStr = JSON.stringify(parsed, null, 4);
+                output.innerHTML = syntaxHighlight(cleanJsonStr);
+                errorMsg.textContent = '';
+            } catch (e) {
+                errorMsg.textContent = 'Invalid JSON: ' + e.message;
+            }
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            input.value = ''; output.innerHTML = ''; errorMsg.textContent = ''; cleanJsonStr = "";
+        });
+
+        document.getElementById('btn-copy').addEventListener('click', () => {
+            if (cleanJsonStr) {
+                navigator.clipboard.writeText(cleanJsonStr).then(() => {
+                    const btn = document.getElementById('btn-copy');
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
