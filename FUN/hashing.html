@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | File Hasher</title>
+    <meta name="description" content="Calculate file hashes locally in your browser.">
+    <link rel="icon" type="image/x-icon" href="../Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .tool-container { max-width: 800px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; }
+        .drop-zone { background: rgba(255, 255, 255, 0.02); border: 2px dashed var(--border-color); border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+        [data-theme="light"] .drop-zone { background: rgba(0, 0, 0, 0.015); }
+        .drop-zone.dragover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .drop-zone-text { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--text-muted); pointer-events: none; }
+        .file-input { display: none; }
+        .results-panel { background: #050505; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: none; flex-direction: column; gap: 15px; }
+        [data-theme="light"] .results-panel { background: #f8fafc; }
+        .hash-row { display: flex; align-items: center; gap: 10px; }
+        .hash-label { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--primary-hover); width: 80px; font-weight: bold; }
+        .hash-value { flex: 1; background: var(--bg-section); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-main); word-break: break-all; }
+        .copy-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; transition: all 0.2s; white-space: nowrap; }
+        .copy-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+        .file-info { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; text-align: center; }
+        .progress-bar-container { width: 100%; height: 4px; background: var(--bg-section); border-radius: 2px; overflow: hidden; margin-top: 10px; display: none; }
+        .progress-bar { height: 100%; width: 0%; background: #3b82f6; transition: width 0.1s; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="../index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="../fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>File Hasher</h1>
+        <h2 class="page-subtitle">Calculate MD5, SHA-1, and SHA-256 hashes of files locally in your browser.</h2>
+    </header>
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+            <div class="drop-zone" id="drop-zone">
+                <span class="drop-zone-text">Drag & Drop a file here or click to browse</span>
+                <input type="file" id="file-input" class="file-input">
+            </div>
+
+            <div class="progress-bar-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="results-panel" id="results-panel">
+                <div class="file-info" id="file-info">File: filename.ext (0 bytes)</div>
+
+                <div class="hash-row">
+                    <span class="hash-label">MD5</span>
+                    <div class="hash-value" id="val-md5">Calculating...</div>
+                    <button class="copy-btn" onclick="copyHash('val-md5', this)">Copy</button>
+                </div>
+                <div class="hash-row">
+                    <span class="hash-label">SHA-1</span>
+                    <div class="hash-value" id="val-sha1">Calculating...</div>
+                    <button class="copy-btn" onclick="copyHash('val-sha1', this)">Copy</button>
+                </div>
+                <div class="hash-row">
+                    <span class="hash-label">SHA-256</span>
+                    <div class="hash-value" id="val-sha256">Calculating...</div>
+                    <button class="copy-btn" onclick="copyHash('val-sha256', this)">Copy</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="../script.js"></script>
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const resultsPanel = document.getElementById('results-panel');
+        const fileInfo = document.getElementById('file-info');
+        const md5Val = document.getElementById('val-md5');
+        const sha1Val = document.getElementById('val-sha1');
+        const sha256Val = document.getElementById('val-sha256');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Setup Drag & Drop
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                processFile(e.target.files[0]);
+            }
+        });
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function copyHash(elementId, btn) {
+            const text = document.getElementById(elementId).textContent;
+            if (text && text !== "Calculating...") {
+                navigator.clipboard.writeText(text).then(() => {
+                    const orig = btn.textContent;
+                    btn.textContent = "Copied!";
+                    setTimeout(() => btn.textContent = orig, 2000);
+                });
+            }
+        }
+
+        function processFile(file) {
+            fileInfo.textContent = `File: ${file.name} (${formatBytes(file.size)})`;
+            resultsPanel.style.display = 'flex';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            md5Val.textContent = "Calculating...";
+            sha1Val.textContent = "Calculating...";
+            sha256Val.textContent = "Calculating...";
+
+            // Use FileReader to read chunk by chunk
+            const chunkSize = 1024 * 1024 * 5; // 5MB chunks
+            const fileSize = file.size;
+            let offset = 0;
+
+            const md5Algo = CryptoJS.algo.MD5.create();
+            const sha1Algo = CryptoJS.algo.SHA1.create();
+            const sha256Algo = CryptoJS.algo.SHA256.create();
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                // Convert array buffer to word array for cryptojs
+                const wordBuffer = CryptoJS.lib.WordArray.create(e.target.result);
+
+                md5Algo.update(wordBuffer);
+                sha1Algo.update(wordBuffer);
+                sha256Algo.update(wordBuffer);
+
+                offset += e.target.result.byteLength;
+
+                const progress = Math.min(100, (offset / fileSize) * 100);
+                progressBar.style.width = `${progress}%`;
+
+                if (offset < fileSize) {
+                    readNextChunk();
+                } else {
+                    // Finalize
+                    md5Val.textContent = md5Algo.finalize().toString();
+                    sha1Val.textContent = sha1Algo.finalize().toString();
+                    sha256Val.textContent = sha256Algo.finalize().toString();
+
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                    }, 500);
+                }
+            };
+
+            reader.onerror = function() {
+                md5Val.textContent = "Error reading file";
+                sha1Val.textContent = "Error reading file";
+                sha256Val.textContent = "Error reading file";
+                progressContainer.style.display = 'none';
+            };
+
+            function readNextChunk() {
+                const slice = file.slice(offset, offset + chunkSize);
+                reader.readAsArrayBuffer(slice);
+            }
+
+            readNextChunk();
+        }
+    </script>
+</body>
+</html>

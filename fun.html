@@ -63,6 +63,20 @@
         .card-cron:hover::before { background: #facc15; box-shadow: 0 0 10px #facc15; }
         .card-entropy:hover::before { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
         .card-ports:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+        .card-regex:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        .card-firewall:hover::before { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        .card-base64:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+        .card-url:hover::before { background: #facc15; box-shadow: 0 0 10px #facc15; }
+        .card-jwt:hover::before { background: #c084fc; box-shadow: 0 0 10px #c084fc; }
+        .card-mac:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        .card-password:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        .card-dns:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+        .card-hashing:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+        .card-pwd-strength:hover::before { background: #facc15; box-shadow: 0 0 10px #facc15; }
+        .card-whois:hover::before { background: #00fff9; box-shadow: 0 0 10px #00fff9; }
+        .card-ping:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        .card-cidr:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+
 
         .card-icon {
             font-size: 2.5rem;
@@ -201,6 +215,34 @@
                 <a href="FUN/AQMgame.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Launch Sim</a>
             </div>
 
+            <!--
+            <div class="hub-card card-firewall">
+                <div class="card-icon">🛡️</div>
+                <h3 class="card-title">Firewall Defender</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Security</span>
+                    <span class="skill-badge">Networking</span>
+                </div>
+                <p class="card-desc">
+                    An arcade-style network security game. Filter incoming packets in real-time, drop malicious traffic, and keep the server healthy.
+                </p>
+                <a href="FUN/firewall.html" class="btn hub-launch-btn" style="border-color: #ef4444; color: #ef4444;">Play Defender</a>
+            </div>
+
+            <div class="hub-card card-regex">
+                <div class="card-icon">🧩</div>
+                <h3 class="card-title">Regex Hacker</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Security</span>
+                    <span class="skill-badge">Utility</span>
+                </div>
+                <p class="card-desc">
+                    A puzzle game testing your Regular Expression and log parsing skills. Extract key intelligence from raw logs across multiple levels.
+                </p>
+                <a href="FUN/regex.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Start Hacking</a>
+            </div>
+            -->
+
             <div class="hub-card card-sketch">
                 <div class="card-icon">✏️</div>
                 <h3 class="card-title">Diagram Sketcher</h3>
@@ -227,6 +269,60 @@
                 <a href="FUN/crypto.html" class="btn hub-launch-btn" style="border-color: #c084fc; color: #c084fc;">Enter Lab</a>
             </div>
 
+            <div class="hub-card card-jwt">
+                <div class="card-icon">🎟️</div>
+                <h3 class="card-title">JWT Decoder</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Security</span>
+                    <span class="skill-badge">Utility</span>
+                </div>
+                <p class="card-desc">
+                    Instantly decode and inspect JSON Web Tokens (JWT). View headers and payloads with syntax highlighting and format validation.
+                </p>
+                <a href="FUN/jwt.html" class="btn hub-launch-btn" style="border-color: #c084fc; color: #c084fc;">Open Decoder</a>
+            </div>
+
+            <div class="hub-card card-password">
+                <div class="card-icon">🔑</div>
+                <h3 class="card-title">Password Generator</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Security</span>
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Tool</span>
+                </div>
+                <p class="card-desc">
+                    Generate strong, secure, and highly randomized passwords locally in your browser. Customize length and character sets.
+                </p>
+                <a href="FUN/password.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Generate Password</a>
+            </div>
+
+            <div class="hub-card card-pwd-strength">
+                <div class="card-icon">💪</div>
+                <h3 class="card-title">Password Strength</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Security</span>
+                    <span class="skill-badge">Utility</span>
+                </div>
+                <p class="card-desc">
+                    Analyze the strength, entropy, and estimated crack time of your passwords locally without sending data to a server.
+                </p>
+                <a href="FUN/password-strength.html" class="btn hub-launch-btn" style="border-color: #facc15; color: #facc15;">Check Strength</a>
+            </div>
+
+            <div class="hub-card card-hashing">
+                <div class="card-icon">🗄️</div>
+                <h3 class="card-title">File Hasher</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Security</span>
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Tool</span>
+                </div>
+                <p class="card-desc">
+                    Calculate MD5, SHA-1, and SHA-256 hashes of files directly in your browser. Works completely offline with large file support.
+                </p>
+                <a href="FUN/hashing.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open Hasher</a>
+            </div>
+
             <div class="hub-card card-nmap">
                 <div class="card-icon">🎯</div>
                 <h3 class="card-title">Nmap Builder</h3>
@@ -241,6 +337,47 @@
                 <a href="FUN/nmap.html" class="btn hub-launch-btn" style="border-color: #ef4444; color: #ef4444;">Launch Builder</a>
             </div>
 
+            <div class="hub-card card-dns">
+                <div class="card-icon">🔎</div>
+                <h3 class="card-title">DNS Lookup Tool</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Networking</span>
+                </div>
+                <p class="card-desc">
+                    Perform instant DNS lookups using Google's DNS-over-HTTPS. Query A, AAAA, MX, TXT, CNAME, and NS records directly from your browser.
+                </p>
+                <a href="FUN/dns.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open DNS Lookup</a>
+            </div>
+
+            <div class="hub-card card-whois">
+                <div class="card-icon">📖</div>
+                <h3 class="card-title">WHOIS Lookup</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Networking</span>
+                </div>
+                <p class="card-desc">
+                    Query registration and ownership information for domains or IP addresses instantly using a free public API.
+                </p>
+                <a href="FUN/whois.html" class="btn hub-launch-btn" style="border-color: #00fff9; color: #00fff9;">Open WHOIS Lookup</a>
+            </div>
+
+            <!--
+            <div class="hub-card card-ping">
+                <div class="card-icon">📡</div>
+                <h3 class="card-title">Ping Simulator</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Networking</span>
+                </div>
+                <p class="card-desc">
+                    Simulate network reachability testing (Ping) directly from your browser with realistic latency approximations.
+                </p>
+                <a href="FUN/ping.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Launch Ping</a>
+            </div>
+            -->
+
             <div class="hub-card card-json">
                 <div class="card-icon">❴❵</div>
                 <h3 class="card-title">JSON Beautifier</h3>
@@ -254,6 +391,45 @@
                 <a href="FUN/json.html" class="btn hub-launch-btn" style="border-color: #eab308; color: #eab308;">Open Beautifier</a>
             </div>
 
+            <div class="hub-card card-base64">
+                <div class="card-icon">🔤</div>
+                <h3 class="card-title">Base64 Encode/Decode</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Tool</span>
+                </div>
+                <p class="card-desc">
+                    A simple and fast client-side tool to encode and decode text to and from Base64 format. Great for quick string manipulation.
+                </p>
+                <a href="FUN/base64.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open Tool</a>
+            </div>
+
+            <div class="hub-card card-url">
+                <div class="card-icon">🔗</div>
+                <h3 class="card-title">URL Encode/Decode</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Tool</span>
+                </div>
+                <p class="card-desc">
+                    Easily encode and decode URL strings and parameters. Fix messy links or prepare payloads for web requests instantly.
+                </p>
+                <a href="FUN/urlencode.html" class="btn hub-launch-btn" style="border-color: #facc15; color: #facc15;">Open Tool</a>
+            </div>
+
+            <div class="hub-card card-mac">
+                <div class="card-icon">🖥️</div>
+                <h3 class="card-title">MAC Formatter</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Networking</span>
+                </div>
+                <p class="card-desc">
+                    Convert lists of MAC addresses between different formats (Cisco, Linux, Windows) with a single click. Ideal for bulk config updates.
+                </p>
+                <a href="FUN/mac.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Open Formatter</a>
+            </div>
+
             <div class="hub-card card-subnet">
                 <div class="card-icon">🌐</div>
                 <h3 class="card-title">Subnet Calculator</h3>
@@ -265,6 +441,19 @@
                     A fast, client-side IPv4 Subnet and CIDR calculator. Instantly calculates Network Addresses, Broadcast IPs, Wildcard Masks, and Usable Host boundaries.
                 </p>
                 <a href="FUN/subnet.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Open Tool</a>
+            </div>
+
+            <div class="hub-card card-cidr">
+                <div class="card-icon">🧮</div>
+                <h3 class="card-title">CIDR Tool</h3>
+                <div class="card-tags">
+                    <span class="skill-badge">Utility</span>
+                    <span class="skill-badge">Networking</span>
+                </div>
+                <p class="card-desc">
+                    Convert between CIDR notation and IP address ranges quickly. Calculate exact start/end addresses or find optimal CIDR blocks.
+                </p>
+                <a href="FUN/cidr.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Open CIDR Tool</a>
             </div>
 
             <div class="hub-card card-chmod">

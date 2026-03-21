@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | Ping Simulator</title>
+    <meta name="description" content="A visual simulator of the ping command.">
+    <link rel="icon" type="image/x-icon" href="../Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .tool-container { max-width: 800px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; }
+        .input-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+        [data-theme="light"] .input-panel { background: rgba(0, 0, 0, 0.015); }
+        .input-group { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px; }
+        .input-group label { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+        .text-input, select { background: var(--bg-main); color: var(--primary-hover); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        .text-input:focus, select:focus { border-color: #4ade80; }
+        .btn-lookup { padding: 12px 20px; font-size: 1rem; border-color: #4ade80; color: #4ade80; cursor: pointer; align-self: flex-end; }
+        .btn-lookup:hover { background: #4ade80; color: #000; }
+        .output-panel { background: #050505; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 250px; position: relative; max-height: 400px; overflow-y: auto; }
+        [data-theme="light"] .output-panel { background: #f8fafc; }
+        .output-text { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-main); white-space: pre-wrap; word-break: break-all; margin: 0; line-height: 1.5; }
+        .success { color: #4ade80; }
+        .error { color: #ef4444; }
+        .controls { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+        .controls button { padding: 5px 10px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="../index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="../fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>Ping Simulator</h1>
+        <h2 class="page-subtitle">Simulate network reachability testing directly from your browser.</h2>
+    </header>
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+            <div class="input-panel">
+                <div class="input-group">
+                    <label for="target-input">Target (Domain or IP)</label>
+                    <input type="text" id="target-input" class="text-input" placeholder="e.g. google.com or 8.8.8.8" value="1.1.1.1">
+                </div>
+                <div class="input-group" style="flex: 0.5;">
+                    <label for="count-input">Count</label>
+                    <input type="number" id="count-input" class="text-input" value="4" min="1" max="20">
+                </div>
+                <button class="btn btn-lookup" id="btn-ping">Ping ➔</button>
+            </div>
+            <div class="output-panel">
+                <pre class="output-text" id="output-text">Ready to ping...</pre>
+            </div>
+            <div class="controls">
+                <button class="btn" id="btn-clear" style="border-color: var(--text-muted); color: var(--text-muted);">Clear Console</button>
+            </div>
+        </div>
+    </section>
+    <script src="../script.js"></script>
+    <script>
+        const targetInput = document.getElementById('target-input');
+        const countInput = document.getElementById('count-input');
+        const btnPing = document.getElementById('btn-ping');
+        const btnClear = document.getElementById('btn-clear');
+        const outputText = document.getElementById('output-text');
+
+        let pingInterval;
+
+        function clearConsole() {
+            outputText.innerHTML = '';
+            outputText.className = 'output-text';
+        }
+
+        btnClear.addEventListener('click', clearConsole);
+
+        function appendLine(text, className = '') {
+            const span = document.createElement('span');
+            span.textContent = text + '\n';
+            if (className) span.className = className;
+            outputText.appendChild(span);
+            outputText.parentElement.scrollTop = outputText.parentElement.scrollHeight;
+        }
+
+        async function resolveIP(domain) {
+            // Note: Since browsers don't allow raw ICMP pings, we simulate it.
+            // But we can do a real DNS lookup to get the IP to make it more realistic.
+            try {
+                // If it looks like an IP already, just return it
+                if (/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(domain)) return domain;
+                if (/^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/.test(domain)) return domain;
+
+                const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=1`);
+                const data = await response.json();
+                if (data.Status === 0 && data.Answer && data.Answer.length > 0) {
+                    return data.Answer[0].data;
+                }
+            } catch (e) {
+                // Ignore and use domain as IP
+            }
+            return domain; // Fallback
+        }
+
+        async function startPing() {
+            if (pingInterval) clearInterval(pingInterval);
+
+            let target = targetInput.value.trim();
+            if (!target) {
+                appendLine('Ping request could not find host. Please check the name and try again.', 'error');
+                return;
+            }
+
+            const count = parseInt(countInput.value) || 4;
+            if (count > 20) {
+                appendLine('Count limited to 20 for simulation.', 'error');
+                countInput.value = 20;
+            }
+
+            btnPing.disabled = true;
+            btnPing.textContent = 'Pinging...';
+
+            clearConsole();
+
+            const ip = await resolveIP(target);
+
+            appendLine(`Pinging ${target} [${ip}] with 32 bytes of data:\n`);
+
+            let pingsSent = 0;
+            let pingsReceived = 0;
+            let minTime = Infinity;
+            let maxTime = 0;
+            let totalTime = 0;
+
+            pingInterval = setInterval(() => {
+                if (pingsSent >= count) {
+                    clearInterval(pingInterval);
+
+                    // Show stats
+                    appendLine(`\nPing statistics for ${ip}:`);
+                    const loss = Math.round(((pingsSent - pingsReceived) / pingsSent) * 100);
+                    appendLine(`    Packets: Sent = ${pingsSent}, Received = ${pingsReceived}, Lost = ${pingsSent - pingsReceived} (${loss}% loss),`);
+
+                    if (pingsReceived > 0) {
+                        appendLine(`Approximate round trip times in milli-seconds:`);
+                        const avgTime = Math.round(totalTime / pingsReceived);
+                        appendLine(`    Minimum = ${minTime}ms, Maximum = ${maxTime}ms, Average = ${avgTime}ms`);
+                    }
+
+                    btnPing.disabled = false;
+                    btnPing.textContent = 'Ping ➔';
+                    return;
+                }
+
+                // Simulate latency based on a random value, plus occasional dropped packet
+                const isDropped = Math.random() < 0.05; // 5% chance to drop
+
+                if (isDropped) {
+                    appendLine(`Request timed out.`, 'error');
+                } else {
+                    // Simulate ping via a quick fetch to a well known endpoint, or just random
+                    // We'll use a random realistic latency
+                    const latency = Math.floor(Math.random() * 40) + 10; // 10-50ms
+
+                    minTime = Math.min(minTime, latency);
+                    maxTime = Math.max(maxTime, latency);
+                    totalTime += latency;
+                    pingsReceived++;
+
+                    appendLine(`Reply from ${ip}: bytes=32 time=${latency}ms TTL=115`, 'success');
+                }
+
+                pingsSent++;
+
+            }, 1000); // 1 ping per second
+        }
+
+        btnPing.addEventListener('click', startPing);
+        targetInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startPing();
+        });
+    </script>
+</body>
+</html>

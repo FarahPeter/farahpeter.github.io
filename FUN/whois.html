@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | WHOIS Lookup Tool</title>
+    <meta name="description" content="Perform WHOIS lookups for domains and IP addresses.">
+    <link rel="icon" type="image/x-icon" href="../Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .tool-container { max-width: 800px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; }
+        .input-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+        [data-theme="light"] .input-panel { background: rgba(0, 0, 0, 0.015); }
+        .input-group { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px; }
+        .input-group label { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+        .text-input { background: var(--bg-main); color: var(--primary-hover); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        .text-input:focus { border-color: #3b82f6; }
+        .btn-lookup { padding: 12px 20px; font-size: 1rem; border-color: #3b82f6; color: #3b82f6; cursor: pointer; align-self: flex-end; }
+        .btn-lookup:hover { background: #3b82f6; color: #000; }
+        .output-panel { background: #050505; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 200px; position: relative; max-height: 500px; overflow-y: auto; }
+        [data-theme="light"] .output-panel { background: #f8fafc; }
+        .output-text { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-main); white-space: pre-wrap; word-break: break-all; margin: 0; line-height: 1.5; }
+        .loading { color: #facc15; }
+        .error { color: #ef4444; }
+        .success { color: #4ade80; }
+    </style>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="../index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="../fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>WHOIS Lookup</h1>
+        <h2 class="page-subtitle">Query registration information for domains or IP addresses.</h2>
+    </header>
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+            <div class="input-panel">
+                <div class="input-group">
+                    <label for="domain-input">Domain Name or IP</label>
+                    <input type="text" id="domain-input" class="text-input" placeholder="e.g. peterfarah.com or 8.8.8.8">
+                </div>
+                <button class="btn btn-lookup" id="btn-lookup">Lookup ➔</button>
+            </div>
+            <div class="output-panel">
+                <pre class="output-text" id="output-text">Results will appear here...</pre>
+            </div>
+        </div>
+    </section>
+    <script src="../script.js"></script>
+    <script>
+        const domainInput = document.getElementById('domain-input');
+        const btnLookup = document.getElementById('btn-lookup');
+        const outputText = document.getElementById('output-text');
+
+        // Using a free WHOIS API for demonstration (rdap.org or similar proxy could be used, here using a CORS-friendly JSON API like networkcalc)
+        async function performLookup() {
+            let domain = domainInput.value.trim();
+
+            if (!domain) {
+                outputText.textContent = 'Please enter a valid domain name or IP address.';
+                outputText.className = 'output-text error';
+                return;
+            }
+
+            // Strip http/https
+            domain = domain.replace(/^(?:https?:\/\/)?/i, "").split('/')[0];
+
+            outputText.textContent = `Looking up WHOIS records for ${domain}...\n`;
+            outputText.className = 'output-text loading';
+
+            try {
+                // Using networkcalc API for WHOIS
+                const response = await fetch(`https://networkcalc.com/api/dns/whois/${encodeURIComponent(domain)}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+
+                if (data.status !== "OK") {
+                    outputText.textContent = `WHOIS Lookup Failed.\nDomain might not exist or WHOIS data is unavailable.`;
+                    outputText.className = 'output-text error';
+                    return;
+                }
+
+                let resultStr = ``;
+                if(data.whois) {
+                   if(data.whois.domain) resultStr += `Domain Name: ${data.whois.domain}\n`;
+                   if(data.whois.registrar) resultStr += `Registrar: ${data.whois.registrar}\n`;
+                   if(data.whois.created) resultStr += `Created Date: ${data.whois.created}\n`;
+                   if(data.whois.expires) resultStr += `Expiration Date: ${data.whois.expires}\n`;
+                   if(data.whois.updated) resultStr += `Updated Date: ${data.whois.updated}\n`;
+
+                   if(data.whois.name_servers) {
+                       resultStr += `Name Servers:\n`;
+                       data.whois.name_servers.forEach(ns => resultStr += ` - ${ns}\n`);
+                   }
+                   if(data.whois.status) {
+                       resultStr += `Status:\n`;
+                       data.whois.status.forEach(st => resultStr += ` - ${st}\n`);
+                   }
+                   if(data.whois.registrant) {
+                       resultStr += `\nRegistrant:\n`;
+                       for(const [k, v] of Object.entries(data.whois.registrant)) {
+                           resultStr += ` ${k}: ${v}\n`;
+                       }
+                   }
+                } else if(data.record) {
+                    // Fallback to raw record if structured is missing
+                    resultStr += data.record;
+                } else {
+                     resultStr += "No WHOIS data found.";
+                }
+
+                outputText.textContent = resultStr;
+                outputText.className = 'output-text success';
+
+            } catch (error) {
+                outputText.textContent = `Error performing lookup: ${error.message}\n(API might be rate-limited or blocking the request)`;
+                outputText.className = 'output-text error';
+            }
+        }
+
+        btnLookup.addEventListener('click', performLookup);
+        domainInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performLookup();
+        });
+    </script>
+</body>
+</html>

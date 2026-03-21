@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Farah | CIDR Tool</title>
+    <meta name="description" content="CIDR to IP Range and IP to CIDR tool.">
+    <link rel="icon" type="image/x-icon" href="../Files/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .tool-container { max-width: 800px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; }
+        .input-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
+        [data-theme="light"] .input-panel { background: rgba(0, 0, 0, 0.015); }
+        .input-group { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .input-group label { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+        .text-input { background: var(--bg-main); color: var(--primary-hover); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; }
+        .text-input:focus { border-color: #4ade80; }
+        .btn-lookup { padding: 12px 20px; font-size: 1rem; border-color: #4ade80; color: #4ade80; cursor: pointer; align-self: flex-start; margin-top: 10px; }
+        .btn-lookup:hover { background: #4ade80; color: #000; }
+        .output-panel { background: #050505; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 100px; position: relative; max-height: 400px; overflow-y: auto; }
+        [data-theme="light"] .output-panel { background: #f8fafc; }
+        .output-text { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-main); white-space: pre-wrap; word-break: break-all; margin: 0; line-height: 1.5; }
+        .success { color: #4ade80; }
+        .error { color: #ef4444; }
+        .row { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div id="system-status"><div class="status-dot"></div><span class="status-text">SYS</span></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li>
+                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </a>
+            </li>
+            <li><a href="../index.html" class="nav-highlight">Home / Profile</a></li>
+            <li><a href="../fun.html" id="fun" class="nav-highlight">Interactive Hub</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>CIDR Tool</h1>
+        <h2 class="page-subtitle">Convert between CIDR notation and IP Ranges.</h2>
+    </header>
+    <section class="reveal" style="padding: 0 20px;">
+        <div class="tool-container">
+            <!-- CIDR to Range -->
+            <div class="input-panel">
+                <h3 style="margin-top: 0;">CIDR to IP Range</h3>
+                <div class="row">
+                    <div class="input-group">
+                        <label>CIDR Notation</label>
+                        <input type="text" id="cidr-input" class="text-input" placeholder="192.168.1.0/24">
+                    </div>
+                    <button class="btn btn-lookup" id="btn-calc-range">Calculate Range</button>
+                </div>
+                <div class="output-panel">
+                    <pre class="output-text" id="range-output">Output will appear here...</pre>
+                </div>
+            </div>
+
+            <!-- Range to CIDR -->
+            <div class="input-panel">
+                <h3 style="margin-top: 0;">IP Range to CIDR</h3>
+                <div class="row">
+                    <div class="input-group">
+                        <label>Start IP</label>
+                        <input type="text" id="ip-start" class="text-input" placeholder="192.168.1.0">
+                    </div>
+                    <div class="input-group">
+                        <label>End IP</label>
+                        <input type="text" id="ip-end" class="text-input" placeholder="192.168.1.255">
+                    </div>
+                    <button class="btn btn-lookup" id="btn-calc-cidr">Calculate CIDR</button>
+                </div>
+                <div class="output-panel">
+                    <pre class="output-text" id="cidr-output">Output will appear here...</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="../script.js"></script>
+    <script>
+        function ipToInt(ip) {
+            return ip.split('.').reduce((int, oct) => (int << 8) + parseInt(oct, 10), 0) >>> 0;
+        }
+
+        function intToIp(int) {
+            return [
+                (int >>> 24) & 255,
+                (int >>> 16) & 255,
+                (int >>> 8) & 255,
+                int & 255
+            ].join('.');
+        }
+
+        function isValidIp(ip) {
+            return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
+        }
+
+        document.getElementById('btn-calc-range').addEventListener('click', () => {
+            const out = document.getElementById('range-output');
+            const val = document.getElementById('cidr-input').value.trim();
+            out.className = 'output-text error';
+
+            if (!val.includes('/')) {
+                out.textContent = "Invalid format. Expected IP/Mask (e.g., 192.168.1.0/24)";
+                return;
+            }
+
+            const parts = val.split('/');
+            const ip = parts[0];
+            const mask = parseInt(parts[1], 10);
+
+            if (!isValidIp(ip) || isNaN(mask) || mask < 0 || mask > 32) {
+                out.textContent = "Invalid IP or subnet mask.";
+                return;
+            }
+
+            const ipInt = ipToInt(ip);
+            const maskInt = mask === 0 ? 0 : (0xFFFFFFFF << (32 - mask)) >>> 0;
+            const wildInt = (~maskInt) >>> 0;
+            const netInt = (ipInt & maskInt) >>> 0;
+            const broadInt = (netInt | wildInt) >>> 0;
+
+            const count = (broadInt - netInt + 1);
+
+            out.className = 'output-text success';
+            out.textContent = `Network:   ${intToIp(netInt)}\nBroadcast: ${intToIp(broadInt)}\n\nRange:     ${intToIp(netInt)} - ${intToIp(broadInt)}\nHosts:     ${count.toLocaleString()}`;
+        });
+
+        // Simple range to CIDR (assumes perfectly matching bounds for a single CIDR, otherwise breaks it down)
+        function rangeToCidrs(startIpInt, endIpInt) {
+            let cidrs = [];
+            let current = startIpInt;
+
+            while (current <= endIpInt) {
+                let maxMask = 32;
+                while (maxMask > 0) {
+                    let mask = maxMask - 1;
+                    let maskInt = mask === 0 ? 0 : (0xFFFFFFFF << (32 - mask)) >>> 0;
+                    let wildInt = (~maskInt) >>> 0;
+
+                    if ((current & maskInt) !== current || (current + wildInt) > endIpInt) {
+                        break;
+                    }
+                    maxMask--;
+                }
+
+                cidrs.push(`${intToIp(current)}/${maxMask}`);
+
+                let maskInt = maxMask === 0 ? 0 : (0xFFFFFFFF << (32 - maxMask)) >>> 0;
+                let wildInt = (~maskInt) >>> 0;
+
+                // Prevent infinite loop if current is 255.255.255.255
+                if (current === 0xFFFFFFFF) break;
+
+                current = (current + wildInt + 1) >>> 0;
+            }
+            return cidrs;
+        }
+
+        document.getElementById('btn-calc-cidr').addEventListener('click', () => {
+            const out = document.getElementById('cidr-output');
+            const startIp = document.getElementById('ip-start').value.trim();
+            const endIp = document.getElementById('ip-end').value.trim();
+            out.className = 'output-text error';
+
+            if (!isValidIp(startIp) || !isValidIp(endIp)) {
+                out.textContent = "Invalid IP addresses.";
+                return;
+            }
+
+            const startInt = ipToInt(startIp);
+            const endInt = ipToInt(endIp);
+
+            if (startInt > endInt) {
+                out.textContent = "Start IP must be less than or equal to End IP.";
+                return;
+            }
+
+            const cidrs = rangeToCidrs(startInt, endInt);
+            out.className = 'output-text success';
+            out.textContent = cidrs.join('\n');
+        });
+    </script>
+</body>
+</html>
