@@ -42,5 +42,8 @@ When generating code for this project, please follow these rules:
 ## 7. Current Project Focus
 * Expanding the "Interactive Hub" with new networking and security tools.
 
+## 7. Additional notes
+* If a section of code is commented, keep it commented unless explicitly asked to change it
+
 ---
 **End of Context.** Please acknowledge these rules when assisting with this project.
