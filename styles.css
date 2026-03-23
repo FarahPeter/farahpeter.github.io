@@ -129,6 +129,28 @@ body {
 }
 
 /* ===============================
+   Accessibility: Skip to Content
+================================ */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-hover);
+  color: var(--bg-main);
+  padding: 10px 20px;
+  z-index: 9999;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: bold;
+  border-radius: 0 0 8px 8px;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ===============================
    Custom Text Selection
 ================================ */
 ::selection {

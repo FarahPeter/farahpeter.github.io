@@ -14,7 +14,6 @@
 * **Deployment:** Github Pages
 
 ## 3. Project Structure
-Briefly explaining where things live so the AI knows where to put new files:
 * `index.html`: Main landing page and profile.
 * `fun.html`: The "Interactive Hub" containing links to tools and simulators.
 * `blog.html` & `server.html`: Research write-ups and server access pages.
