@@ -215,16 +215,18 @@ header h1 {
   pointer-events: none;
 }
 
-/* Trigger the left/magenta slice on hover */
-.glitch-name:hover::before {
+/* Trigger the left/magenta slice on hover and initial active class */
+.glitch-name:hover::before,
+.glitch-name.is-glitching::before {
   left: 3px;
   text-shadow: -2px 0 #ff00c1; /* Cyberpunk Magenta */
   opacity: 1;
   animation: glitch-anim-1 0.4s infinite linear alternate-reverse;
 }
 
-/* Trigger the right/cyan slice on hover */
-.glitch-name:hover::after {
+/* Trigger the right/cyan slice on hover and initial active class */
+.glitch-name:hover::after,
+.glitch-name.is-glitching::after {
   left: -3px;
   text-shadow: 2px 0 #00fff9; /* Cyberpunk Cyan */
   opacity: 1;

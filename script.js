@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // --- Initial Glitch Effect ---
+    const glitchName = document.querySelector('.glitch-name');
+    if (glitchName) {
+        glitchName.classList.add('is-glitching');
+        setTimeout(() => {
+            glitchName.classList.remove('is-glitching');
+        }, 5000);
+    }
 });
 
 // --- Back to Top Button Logic ---

@@ -16,7 +16,8 @@
 ## 3. Project Structure
 * `index.html`: Main landing page and profile.
 * `fun.html`: The "Interactive Hub" containing links to tools and simulators.
-* `blog.html` & `server.html`: Research write-ups and server access pages.
+* `blog.html`: Research write-ups .
+* `server.html`: server access pages.
 * `/FUN`: Directory containing standalone interactive tools (e.g., `nmap.html`, `json.html`, `AQMgame.html`).
 * `/Files`: Assets including images, favicons, and CV/Resume PDFs.
 * `styles.css`: Global stylesheet using CSS variables for theming.
