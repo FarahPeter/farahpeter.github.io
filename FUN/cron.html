@@ -10,24 +10,37 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="../styles.css">
     <style>
-        .tool-container { max-width: 800px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; }
-        .input-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color, #333); border-radius: 8px; padding: 30px; text-align: center; }
-        [data-theme="light"] .input-panel { background: rgba(0, 0, 0, 0.015); }
-        .cron-input { background: var(--bg-main, #111); color: #4ade80; border: 1px solid var(--border-color, #444); padding: 15px 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 2rem; width: 100%; max-width: 400px; text-align: center; outline: none; transition: border-color 0.2s, box-shadow 0.2s; letter-spacing: 0.1em; }
-        .cron-input:focus { border-color: #4ade80; box-shadow: 0 0 15px rgba(74, 222, 128, 0.2); }
+        .tool-container { max-width: 1000px; margin: 20px auto; display: flex; flex-direction: column; gap: 25px; }
 
-        /* New Builder CSS */
-        .builder-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color, #333); border-radius: 8px; padding: 20px; text-align: center; }
-        .builder-controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px; }
-        .builder-select { background: var(--bg-main, #111); color: var(--text-main, #fff); border: 1px solid var(--border-color, #444); padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; outline: none; cursor: pointer; transition: border-color 0.2s; font-size: 0.9rem;}
-        .builder-select:focus, .builder-select:hover { border-color: #4ade80; }
-        .builder-label { font-size: 0.8rem; color: var(--text-muted, #888); display: block; margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; }
-        .select-group { display: flex; flex-direction: column; align-items: flex-start; }
+        /* Master Input & Output */
+        .master-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color, #333); border-radius: 12px; padding: 30px; text-align: center; }
+        [data-theme="light"] .master-panel { background: rgba(0, 0, 0, 0.015); }
 
-        .output-panel { background: var(--bg-section, #1a1a1a); border: 1px solid var(--border-color, #333); border-radius: 8px; padding: 40px 20px; text-align: center; min-height: 150px; display: flex; align-items: center; justify-content: center; }
-        .human-readable { font-size: 1.5rem; color: var(--primary-hover, #4ade80); line-height: 1.5; font-weight: 600; }
-        .error-text { color: #ef4444; font-family: 'JetBrains Mono', monospace; font-size: 1rem; }
-        .hint-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 400px; margin: 15px auto 0; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted, #888); }
+        .cron-input { background: var(--bg-main, #0a0a0a); color: #fff; border: 2px solid var(--border-color, #444); padding: 15px 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; width: 100%; max-width: 600px; text-align: center; outline: none; transition: all 0.3s ease; letter-spacing: 0.1em; margin-bottom: 20px; }
+        .cron-input.valid { border-color: #4ade80; color: #4ade80; box-shadow: 0 0 20px rgba(74, 222, 128, 0.1); }
+        .cron-input.invalid { border-color: #ef4444; color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
+
+        .human-readable { font-size: 1.6rem; color: var(--primary-hover, #4ade80); line-height: 1.5; font-weight: 600; min-height: 60px; display: flex; align-items: center; justify-content: center;}
+        .error-text { color: #ef4444; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; }
+
+        /* Intuitive Builder Grid */
+        .builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .builder-card { background: var(--bg-section, #111); border: 1px solid var(--border-color, #333); border-radius: 10px; padding: 20px; text-align: left; transition: border-color 0.2s; }
+        .builder-card:hover { border-color: #555; }
+        .card-header { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: #4ade80; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 8px; text-align: center; font-weight: bold;}
+
+        /* Builder Controls */
+        .option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.9rem; color: #ccc; }
+        .option-row label { cursor: pointer; user-select: none; flex-grow: 1; }
+        .option-row input[type="radio"] { accent-color: #4ade80; cursor: pointer; width: 16px; height: 16px; margin: 0; }
+
+        .number-input, .text-input { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; font-family: 'JetBrains Mono', monospace; outline: none; transition: border-color 0.2s; }
+        .number-input { width: 50px; text-align: center; }
+        .text-input { width: 80px; }
+        .number-input:focus, .text-input:focus { border-color: #4ade80; }
+
+        /* Small hint text */
+        .hint { font-size: 0.7rem; color: #666; display: block; margin-top: -8px; margin-bottom: 10px; margin-left: 24px;}
     </style>
 </head>
 <body>
@@ -48,151 +61,271 @@
     </nav>
     <header>
         <h1>Cron Translator & Builder</h1>
-        <h2 class="page-subtitle">Build scheduling syntax or instantly decode it into plain English.</h2>
+        <h2 class="page-subtitle">Zero knowledge required. Build complex schedules using the visual blocks below.</h2>
     </header>
+
     <section class="reveal" style="padding: 0 20px;">
         <div class="tool-container">
 
-            <div class="builder-panel">
-                <div class="builder-controls">
-                    <div class="select-group">
-                        <span class="builder-label">Minute</span>
-                        <select id="build-min" class="builder-select">
-                            <option value="*">Every minute (*)</option>
-                            <option value="*/5">Every 5 mins (*/5)</option>
-                            <option value="*/15" selected>Every 15 mins (*/15)</option>
-                            <option value="*/30">Every 30 mins (*/30)</option>
-                            <option value="0">Top of hour (0)</option>
-                            <option value="30">Half past (30)</option>
-                        </select>
-                    </div>
-                    <div class="select-group">
-                        <span class="builder-label">Hour</span>
-                        <select id="build-hour" class="builder-select">
-                            <option value="*" selected>Every hour (*)</option>
-                            <option value="*/2">Every 2 hours (*/2)</option>
-                            <option value="*/6">Every 6 hours (*/6)</option>
-                            <option value="0">Midnight (0)</option>
-                            <option value="12">Noon (12)</option>
-                        </select>
-                    </div>
-                    <div class="select-group">
-                        <span class="builder-label">Day</span>
-                        <select id="build-dom" class="builder-select">
-                            <option value="*" selected>Every day (*)</option>
-                            <option value="1">1st of month (1)</option>
-                            <option value="15">15th of month (15)</option>
-                        </select>
-                    </div>
-                    <div class="select-group">
-                        <span class="builder-label">Month</span>
-                        <select id="build-month" class="builder-select">
-                            <option value="*" selected>Every month (*)</option>
-                            <option value="1">January (1)</option>
-                            <option value="6">June (6)</option>
-                            <option value="12">December (12)</option>
-                        </select>
-                    </div>
-                    <div class="select-group">
-                        <span class="builder-label">Weekday</span>
-                        <select id="build-dow" class="builder-select">
-                            <option value="*">Every day (*)</option>
-                            <option value="1-5" selected>Mon-Fri (1-5)</option>
-                            <option value="0,6">Weekends (0,6)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="input-panel">
-                <input type="text" id="cron-input" class="cron-input" value="*/15 * * * 1-5" spellcheck="false" autocomplete="off">
-                <div class="hint-grid">
-                    <div>MIN<br>(0-59)</div><div>HOUR<br>(0-23)</div><div>DAY<br>(1-31)</div><div>MONTH<br>(1-12)</div><div>WEEKDAY<br>(0-6)</div>
-                </div>
-            </div>
-
-            <div class="output-panel">
+            <div class="master-panel">
+                <input type="text" id="cron-input" class="cron-input" value="*/15 * * * *" spellcheck="false" autocomplete="off">
                 <div id="output-text" class="human-readable">Loading...</div>
+            </div>
+
+            <div class="builder-grid" id="builder-form">
+
+                <div class="builder-card">
+                    <div class="card-header">Minute</div>
+                    <div class="option-row">
+                        <input type="radio" name="min-mode" value="*" id="min-every">
+                        <label for="min-every">Every Minute</label>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="min-mode" value="step" id="min-step">
+                        <label for="min-step">Every</label>
+                        <input type="number" id="min-step-val" class="number-input" min="1" max="59" value="15">
+                        <span>min</span>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="min-mode" value="exact" id="min-exact">
+                        <label for="min-exact">Exactly at</label>
+                        <input type="number" id="min-exact-val" class="number-input" min="0" max="59" value="0">
+                    </div>
+                    <span class="hint">(0-59)</span>
+                    <div class="option-row">
+                        <input type="radio" name="min-mode" value="custom" id="min-custom">
+                        <label for="min-custom">Custom</label>
+                        <input type="text" id="min-custom-val" class="text-input" placeholder="e.g. 1-5">
+                    </div>
+                </div>
+
+                <div class="builder-card">
+                    <div class="card-header">Hour</div>
+                    <div class="option-row">
+                        <input type="radio" name="hour-mode" value="*" id="hour-every" checked>
+                        <label for="hour-every">Every Hour</label>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="hour-mode" value="step" id="hour-step">
+                        <label for="hour-step">Every</label>
+                        <input type="number" id="hour-step-val" class="number-input" min="1" max="23" value="2">
+                        <span>hrs</span>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="hour-mode" value="exact" id="hour-exact">
+                        <label for="hour-exact">Exactly at</label>
+                        <input type="number" id="hour-exact-val" class="number-input" min="0" max="23" value="12">
+                    </div>
+                    <span class="hint">(0=Midnight, 23=11PM)</span>
+                    <div class="option-row">
+                        <input type="radio" name="hour-mode" value="custom" id="hour-custom">
+                        <label for="hour-custom">Custom</label>
+                        <input type="text" id="hour-custom-val" class="text-input" placeholder="e.g. 9-17">
+                    </div>
+                </div>
+
+                <div class="builder-card">
+                    <div class="card-header">Day</div>
+                    <div class="option-row">
+                        <input type="radio" name="dom-mode" value="*" id="dom-every" checked>
+                        <label for="dom-every">Every Day</label>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="dom-mode" value="step" id="dom-step">
+                        <label for="dom-step">Every</label>
+                        <input type="number" id="dom-step-val" class="number-input" min="1" max="31" value="2">
+                        <span>days</span>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="dom-mode" value="exact" id="dom-exact">
+                        <label for="dom-exact">On the</label>
+                        <input type="number" id="dom-exact-val" class="number-input" min="1" max="31" value="1">
+                    </div>
+                    <span class="hint">(1-31)</span>
+                    <div class="option-row">
+                        <input type="radio" name="dom-mode" value="custom" id="dom-custom">
+                        <label for="dom-custom">Custom</label>
+                        <input type="text" id="dom-custom-val" class="text-input" placeholder="e.g. 15,30">
+                    </div>
+                </div>
+
+                <div class="builder-card">
+                    <div class="card-header">Month</div>
+                    <div class="option-row">
+                        <input type="radio" name="month-mode" value="*" id="month-every" checked>
+                        <label for="month-every">Every Month</label>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="month-mode" value="step" id="month-step">
+                        <label for="month-step">Every</label>
+                        <input type="number" id="month-step-val" class="number-input" min="1" max="12" value="3">
+                        <span>mo</span>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="month-mode" value="exact" id="month-exact">
+                        <label for="month-exact">Exactly</label>
+                        <input type="number" id="month-exact-val" class="number-input" min="1" max="12" value="1">
+                    </div>
+                    <span class="hint">(1=Jan, 12=Dec)</span>
+                    <div class="option-row">
+                        <input type="radio" name="month-mode" value="custom" id="month-custom">
+                        <label for="month-custom">Custom</label>
+                        <input type="text" id="month-custom-val" class="text-input" placeholder="e.g. JAN-MAR">
+                    </div>
+                </div>
+
+                <div class="builder-card">
+                    <div class="card-header">Weekday</div>
+                    <div class="option-row">
+                        <input type="radio" name="dow-mode" value="*" id="dow-every" checked>
+                        <label for="dow-every">Every Day</label>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="dow-mode" value="exact" id="dow-exact">
+                        <label for="dow-exact">Exactly</label>
+                        <input type="number" id="dow-exact-val" class="number-input" min="0" max="6" value="1">
+                    </div>
+                    <span class="hint">(0=Sun, 6=Sat)</span>
+                    <div class="option-row">
+                        <input type="radio" name="dow-mode" value="custom" id="dow-custom">
+                        <label for="dow-custom">Custom</label>
+                        <input type="text" id="dow-custom-val" class="text-input" placeholder="e.g. 1-5">
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
+
     <script src="../script.js"></script>
     <script>
-        const input = document.getElementById('cron-input');
-        const output = document.getElementById('output-text');
+        const cronInput = document.getElementById('cron-input');
+        const outputText = document.getElementById('output-text');
+        const builderForm = document.getElementById('builder-form');
 
-        // Builder elements
-        const buildMin = document.getElementById('build-min');
-        const buildHour = document.getElementById('build-hour');
-        const buildDom = document.getElementById('build-dom');
-        const buildMonth = document.getElementById('build-month');
-        const buildDow = document.getElementById('build-dow');
-        const builders = [buildMin, buildHour, buildDom, buildMonth, buildDow];
+        const partsData = ['min', 'hour', 'dom', 'month', 'dow'];
 
-        // Combine dropdown values and update the input box
-        function generateCronFromBuilder() {
-            const cronExpression = `${buildMin.value} ${buildHour.value} ${buildDom.value} ${buildMonth.value} ${buildDow.value}`;
-            input.value = cronExpression;
-            update(); // Trigger the translator
+        // 1. Get value from a specific builder block
+        function getBlockValue(part) {
+            const mode = document.querySelector(`input[name="${part}-mode"]:checked`).value;
+            if (mode === '*') return '*';
+            if (mode === 'step') return '*/' + document.getElementById(`${part}-step-val`).value;
+            if (mode === 'exact') return document.getElementById(`${part}-exact-val`).value;
+            if (mode === 'custom') return document.getElementById(`${part}-custom-val`).value || '*';
+            return '*';
         }
 
-        // Listen for changes on all dropdowns
-        builders.forEach(select => {
-            select.addEventListener('change', generateCronFromBuilder);
+        // 2. Set UI state from a raw string part
+        function setBlockValue(part, value) {
+            if (value === '*') {
+                document.getElementById(`${part}-every`).checked = true;
+            } else if (value.startsWith('*/') && document.getElementById(`${part}-step`)) {
+                document.getElementById(`${part}-step`).checked = true;
+                document.getElementById(`${part}-step-val`).value = value.replace('*/', '');
+            } else if (!isNaN(value) && document.getElementById(`${part}-exact`)) {
+                document.getElementById(`${part}-exact`).checked = true;
+                document.getElementById(`${part}-exact-val`).value = value;
+            } else {
+                // Fallback to custom for ranges (e.g., 1-5), lists (e.g., 1,2), or words (e.g., MON)
+                document.getElementById(`${part}-custom`).checked = true;
+                document.getElementById(`${part}-custom-val`).value = value;
+            }
+        }
+
+        // 3. Build string from UI interactions
+        function updateFromBuilder() {
+            const newExpr = partsData.map(getBlockValue).join(' ');
+            if (cronInput.value !== newExpr) {
+                cronInput.value = newExpr;
+                processCronText(newExpr);
+            }
+        }
+
+        // 4. Update UI from manual string typing
+        function syncBuilderFromInput() {
+            const expr = cronInput.value.trim();
+            const parts = expr.split(/\s+/);
+            if (parts.length === 5) {
+                partsData.forEach((part, idx) => {
+                    setBlockValue(part, parts[idx]);
+                });
+            }
+            processCronText(expr);
+        }
+
+        // Add event listeners
+        builderForm.addEventListener('input', (e) => {
+            // If they type in a number/text input, auto-select its corresponding radio button
+            if (e.target.type === 'number' || e.target.type === 'text') {
+                const radioId = e.target.id.replace('-val', '');
+                document.getElementById(radioId).checked = true;
+            }
+            updateFromBuilder();
         });
 
-        // A lightweight, client-side cron parser logic
-        function parseCron(expr) {
-            const parts = expr.trim().split(/\s+/);
-            if(parts.length !== 5) return { error: "Invalid format. Expected exactly 5 parts." };
+        cronInput.addEventListener('input', syncBuilderFromInput);
 
-            const [min, hour, dom, month, dow] = parts;
-            let result = "At ";
+        // 5. Basic Parser for Human Readable Output
+        function processCronText(expr) {
+            expr = expr.toLowerCase();
+            const parts = expr.split(/\s+/);
 
-            // Minutes & Hours
-            if(min === "*" && hour === "*") result += "every minute";
-            else if(min.startsWith("*/")) result += `every ${min.replace("*/","")} minutes`;
-            else if(hour.startsWith("*/") && min === "0") result += `minute 0 past every ${hour.replace("*/","")} hours`;
-            else if(hour === "*") result += `minute ${min} past every hour`;
-            else if(min === "*") result += `every minute past hour ${hour}`;
-            else result += `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
-
-            // Days & Months
-            if(dom !== "*" || month !== "*") {
-                if(dom.startsWith("*/")) result += `, every ${dom.replace("*/","")} days`;
-                else if(dom !== "*") result += `, on day ${dom} of the month`;
-                if(month.startsWith("*/")) result += `, every ${month.replace("*/","")} months`;
-                else if(month !== "*") result += `, only in month ${month}`;
+            if (parts.length !== 5) {
+                outputText.className = "error-text";
+                outputText.textContent = "Invalid format. Expected 5 parameters.";
+                cronInput.className = "cron-input invalid";
+                return;
             }
 
-            // Days of week
-            const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-            if(dow !== "*") {
-                if(dow.includes("-")) {
-                    const [start, end] = dow.split("-");
-                    result += `, Monday through Friday`; // Simplified assumption for standard 1-5
-                } else if(dow.includes(",")) {
-                    result += `, on specific weekdays`;
+            cronInput.className = "cron-input valid";
+            const [min, hour, dom, month, dow] = parts;
+
+            const format = (v, nameStr) => {
+                if(v === '*') return '';
+                if(v.startsWith('*/')) return `every ${v.replace('*/', '')} ${nameStr}s`;
+                if(v.includes('-')) return v.replace('-', ' through ');
+                return v;
+            };
+
+            let result = [];
+
+            // Time
+            if (min === '*' && hour === '*') result.push("Every minute");
+            else if (min.startsWith('*/') && hour === '*') result.push(`Every ${min.replace('*/', '')} minutes`);
+            else if (min === '0' && hour === '*') result.push("At the top of every hour");
+            else if (hour === '*') result.push(`At minute ${min} past every hour`);
+            else if (min === '*') result.push(`Every minute of hour ${hour}`);
+            else result.push(`At ${hour.padStart(2, '0')}:${min.padStart(2, '0')}`);
+
+            // Date
+            if (dom !== '*') {
+                if(dom.startsWith('*/')) result.push(`every ${dom.replace('*/','')} days`);
+                else result.push(`on day ${format(dom, '')} of the month`);
+            }
+
+            // Month
+            if (month !== '*') {
+                if(month.startsWith('*/')) result.push(`every ${month.replace('*/','')} months`);
+                else result.push(`in month ${format(month, '')}`);
+            }
+
+            // Weekday
+            if (dow !== '*') {
+                const prefix = (dom !== '*' || month !== '*') ? 'and ' : '';
+                if (dow.match(/^[0-6]-[0-6]$/)) {
+                    result.push(`${prefix}on days ${dow.replace('-', ' to ')} of the week`);
                 } else {
-                    result += `, and on ${days[dow % 7]}`;
+                    result.push(`${prefix}on weekday ${dow}`);
                 }
             }
-            return { text: result + "." };
+
+            let text = result.join(', ') + '.';
+            outputText.className = "human-readable";
+            outputText.textContent = text.charAt(0).toUpperCase() + text.slice(1);
         }
 
-        function update() {
-            const res = parseCron(input.value);
-            if(res.error) {
-                output.className = "error-text";
-                output.textContent = res.error;
-            } else {
-                output.className = "human-readable";
-                output.textContent = res.text.charAt(0).toUpperCase() + res.text.slice(1);
-            }
-        }
-
-        input.addEventListener('input', update);
-        update(); // Initial run
+        // Initialize state on page load
+        syncBuilderFromInput();
     </script>
 </body>
 </html>
