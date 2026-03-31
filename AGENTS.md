@@ -18,7 +18,30 @@
 * `fun.html`: The "Interactive Hub" containing links to tools and simulators.
 * `blog.html`: Research write-ups .
 * `server.html`: server access pages.
-* `/FUN`: Directory containing standalone interactive tools (e.g., `nmap.html`, `json.html`, `AQMgame.html`).
+* `/FUN`: Directory containing standalone interactive tools:
+  - AQMgame.html
+  - base64.html
+  - chmod.html
+  - cidr.html
+  - cron.html
+  - crypto.html
+  - dns.html
+  - entropy.html
+  - firewall.html
+  - hashing.html
+  - json.html
+  - jwt.html
+  - mac.html
+  - nmap.html
+  - password-strength.html
+  - password.html
+  - ping.html
+  - ports.html
+  - regex.html
+  - sketch.html
+  - subnet.html
+  - urlencode.html
+  - whois.html
 * `/Files`: Assets including images, favicons, and CV/Resume PDFs.
 * `styles.css`: Global stylesheet using CSS variables for theming.
 * `script.js`: Global JavaScript for theme toggling and navigation logic.
