@@ -162,7 +162,7 @@ if (scrollTrack && scrollProgress) {
 
 // --- Visitor IP Logging & Heartbeat ---
 function sendHeartbeat() {
-    fetch('https://hook.peterfarah.com', {
+    fetch('https://hook.peterfarah.com/heartbeat', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
