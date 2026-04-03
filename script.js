@@ -159,3 +159,21 @@ if (scrollTrack && scrollProgress) {
         }, 1200);
     });
 }
+
+// --- Visitor IP Logging & Heartbeat ---
+function sendHeartbeat() {
+    fetch('https://hook.peterfarah.com', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ page: window.location.pathname })
+    }).catch(error => {
+        // Silently fail if server is down
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    sendHeartbeat(); // Send immediately on load
+    setInterval(sendHeartbeat, 10000); // Send heartbeat every 10 seconds
+});
