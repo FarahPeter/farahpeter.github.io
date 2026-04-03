@@ -162,15 +162,20 @@ if (scrollTrack && scrollProgress) {
 
 // --- Visitor IP Logging & Heartbeat ---
 function sendHeartbeat() {
+    const payload = {
+        page: window.location.pathname,
+        referrer: document.referrer || 'Direct',
+        user_agent: navigator.userAgent,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        language: navigator.language || navigator.userLanguage,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
+
     fetch('https://hook.peterfarah.com/heartbeat', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ page: window.location.pathname })
-    }).catch(error => {
-        // Silently fail if server is down
-    });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(error => {});
 }
 
 document.addEventListener('DOMContentLoaded', () => {
