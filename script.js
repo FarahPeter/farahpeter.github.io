@@ -160,22 +160,81 @@ if (scrollTrack && scrollProgress) {
     });
 }
 
-// --- Visitor IP Logging & Heartbeat ---
+
+
+// --- Visitor IP Logging, Telemetry & Heartbeat ---
+
+// Global states for telemetry
+let maxScrollPercent = 0;
+let pageLoadTime = null;
+
+// Track Max Scroll
+window.addEventListener('scroll', () => {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = Math.round((winScroll / height) * 100);
+    if (scrolled > maxScrollPercent) {
+        maxScrollPercent = scrolled;
+    }
+});
+
+// Calculate Page Load Time after everything renders
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const navEntry = performance.getEntriesByType('navigation')[0];
+        if (navEntry) {
+            pageLoadTime = Math.round(navEntry.loadEventEnd - navEntry.startTime);
+        }
+    }, 0);
+});
+
+// Track Outbound & CTA Clicks
+document.addEventListener('DOMContentLoaded', () => {
+    const trackableElements = document.querySelectorAll('a, button');
+    trackableElements.forEach(el => {
+        el.addEventListener('click', (e) => {
+            const url = el.getAttribute('href') || 'button-click';
+            const text = el.innerText.trim().substring(0, 40) || el.getAttribute('aria-label') || 'icon/image';
+
+            fetch('https://hook.peterfarah.com/track-click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    text: text,
+                    page: window.location.pathname
+                }),
+                keepalive: true // Ensures the request fires even if the tab closes/navigates away
+            }).catch(() => {});
+        });
+    });
+});
+
 function sendHeartbeat() {
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
     const payload = {
         page: window.location.pathname,
         referrer: document.referrer || 'Direct',
         user_agent: navigator.userAgent,
         screen: `${window.screen.width}x${window.screen.height}`,
         language: navigator.language || navigator.userLanguage,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        // New Telemetry Metrics
+        theme: localStorage.getItem('theme') || 'dark',
+        max_scroll: maxScrollPercent,
+        load_time: pageLoadTime,
+        network_type: connection ? connection.effectiveType : 'unknown',
+        downlink: connection ? connection.downlink : null,
+        device_memory: navigator.deviceMemory || null,
+        cores: navigator.hardwareConcurrency || null
     };
 
     fetch('https://hook.peterfarah.com/heartbeat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-    }).catch(error => {});
+    }).catch(() => {});
 }
 
 document.addEventListener('DOMContentLoaded', () => {
