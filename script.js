@@ -213,6 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function sendHeartbeat() {
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
+    // Parse UTM parameters or source parameters from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmSource = urlParams.get('utm_source') || urlParams.get('source') || null;
+
     const payload = {
         page: window.location.pathname,
         referrer: document.referrer || 'Direct',
@@ -220,14 +224,16 @@ function sendHeartbeat() {
         screen: `${window.screen.width}x${window.screen.height}`,
         language: navigator.language || navigator.userLanguage,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        // New Telemetry Metrics
         theme: localStorage.getItem('theme') || 'dark',
         max_scroll: maxScrollPercent,
         load_time: pageLoadTime,
         network_type: connection ? connection.effectiveType : 'unknown',
         downlink: connection ? connection.downlink : null,
         device_memory: navigator.deviceMemory || null,
-        cores: navigator.hardwareConcurrency || null
+        cores: navigator.hardwareConcurrency || null,
+        // New Additions:
+        visibility_state: document.visibilityState, // 'visible' or 'hidden'
+        utm_source: utmSource
     };
 
     fetch('https://hook.peterfarah.com/heartbeat', {
