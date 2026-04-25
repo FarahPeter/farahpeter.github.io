@@ -88,6 +88,30 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Skill Tooltips
+    document.querySelectorAll('.skill-badge[data-level]').forEach(badge => {
+      const level = badge.getAttribute('data-level');
+      const label = badge.getAttribute('data-label') || '';
+
+      const tip = document.createElement('div');
+      tip.className = 'skill-tooltip';
+      tip.innerHTML = `
+        <span>${label}</span>
+        <div class="skill-tooltip-bar-track">
+          <div class="skill-tooltip-bar-fill" style="width: 0%"></div>
+        </div>
+      `;
+      badge.appendChild(tip);
+
+      // Animate bar on hover
+      badge.addEventListener('mouseenter', () => {
+        tip.querySelector('.skill-tooltip-bar-fill').style.width = level + '%';
+      });
+      badge.addEventListener('mouseleave', () => {
+        tip.querySelector('.skill-tooltip-bar-fill').style.width = '0%';
+      });
+    });
+
 // --- Back to Top Button Logic ---
     const backToTopBtn = document.getElementById('back-to-top');
 
