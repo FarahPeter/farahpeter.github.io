@@ -16,6 +16,33 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    // Magnetic Buttons
+    document.querySelectorAll('.btn, nav ul li a.nav-highlight').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const centerX = rect.left + rect.width  / 2;
+        const centerY = rect.top  + rect.height / 2;
+        const distX = (e.clientX - centerX) * 0.3;
+        const distY = (e.clientY - centerY) * 0.3;
+        btn.style.transform = `translate(${distX}px, ${distY}px)`;
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+      });
+    });
+
+    // Header Parallax
+    const parallaxImage = document.getElementById('profile-image');
+    const parallaxName  = document.querySelector('header h1');
+    const parallaxSub   = document.querySelector('.page-subtitle');
+
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if (parallaxImage) parallaxImage.style.transform = `translateY(${y * 0.15}px)`;
+      if (parallaxName)  parallaxName.style.transform  = `translateY(${y * 0.08}px)`;
+      if (parallaxSub)   parallaxSub.style.transform   = `translateY(${y * 0.05}px)`;
+    });
 
     // --- Initial Glitch Effect ---
     const glitchName = document.querySelector('.glitch-name');
@@ -25,7 +52,41 @@ document.addEventListener('DOMContentLoaded', () => {
             glitchName.classList.remove('is-glitching');
         }, 5000);
     }
-});
+    });
+
+        // Custom Cursor
+    const cursorDot  = document.getElementById('cursor-dot');
+    const cursorRing = document.getElementById('cursor-ring');
+
+    if (window.matchMedia('(pointer: fine)').matches) {
+      let ringX = 0, ringY = 0;
+      let dotX  = 0, dotY  = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        dotX = e.clientX;
+        dotY = e.clientY;
+      });
+
+      (function animateCursor() {
+        requestAnimationFrame(animateCursor);
+
+        // Dot snaps instantly
+        cursorDot.style.left = dotX + 'px';
+        cursorDot.style.top  = dotY + 'px';
+
+        // Ring lerps behind — creates the lag/weight
+        ringX += (dotX - ringX) * 0.12;
+        ringY += (dotY - ringY) * 0.12;
+        cursorRing.style.left = ringX + 'px';
+        cursorRing.style.top  = ringY + 'px';
+      })();
+
+      // Expand on interactive elements
+      document.querySelectorAll('a, button, .btn, .skill-badge, .timeline-card').forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+      });
+    }
 
 // --- Back to Top Button Logic ---
     const backToTopBtn = document.getElementById('back-to-top');
@@ -261,3 +322,189 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pagehide', () => {
     sendHeartbeat();
 });
+
+// Boot screen — only fires once per session
+if (!sessionStorage.getItem('booted')) {
+  const bootScreen = document.getElementById('boot-screen');
+  const bootLines  = document.getElementById('boot-lines');
+
+  const lines = [
+    '> Initializing peterfarah.com...',
+    '> Authenticating session...',
+    '> Loading profile: Peter Farah',
+    '> Role: Automation Engineer @ Murex',
+    '> Status: All systems operational ✓',
+  ];
+
+  lines.forEach((text, i) => {
+    const div = document.createElement('div');
+    div.className = 'boot-line';
+    div.textContent = text;
+    div.style.animationDelay = `${i * 300}ms`;
+    bootLines.appendChild(div);
+  });
+
+  setTimeout(() => {
+    bootScreen.classList.add('fade-out');
+    setTimeout(() => bootScreen.remove(), 700);
+    sessionStorage.setItem('booted', '1');
+  }, lines.length * 300 + 700);
+} else {
+  document.getElementById('boot-screen')?.remove();
+}
+
+// 3D Tilt Effect
+document.querySelectorAll('.timeline-card, .job, .project, .certificate').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -6; // max 6deg
+    const rotateY = ((x - centerX) / centerX) *  6;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+  });
+
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+
+
+// Text Scramble on Section Titles
+class TextScramble {
+  constructor(el) {
+    this.el = el;
+    this.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&';
+    this.original = el.textContent;
+    this.frame = 0;
+  }
+
+  scramble() {
+    let iteration = 0;
+    const original = this.original;
+    const el = this.el;
+    const chars = this.chars;
+
+    clearInterval(this._interval);
+    this._interval = setInterval(() => {
+      el.textContent = original
+        .split('')
+        .map((char, i) => {
+          if (char === ' ') return ' ';
+          if (i < iteration) return original[i];
+          return chars[Math.floor(Math.random() * chars.length)];
+        })
+        .join('');
+
+      if (iteration >= original.length) clearInterval(this._interval);
+      iteration += 0.5;
+    }, 40);
+  }
+}
+
+// Attach to all section titles via IntersectionObserver
+document.querySelectorAll('.section-title').forEach(title => {
+  const scrambler = new TextScramble(title);
+  let fired = false;
+
+  const obs = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && !fired) {
+      fired = true;
+      scrambler.scramble();
+      obs.unobserve(title);
+    }
+  }, { threshold: 0.5 });
+
+  obs.observe(title);
+});
+
+// Konami Code Easter Egg
+const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiProgress = 0;
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === KONAMI[konamiProgress]) {
+    konamiProgress++;
+    if (konamiProgress === KONAMI.length) {
+      konamiProgress = 0;
+      triggerEasterEgg();
+    }
+  } else {
+    konamiProgress = 0;
+  }
+});
+
+function triggerEasterEgg() {
+  // Fire the glitch on the name
+  const glitch = document.querySelector('.glitch-name');
+  if (glitch) {
+    glitch.classList.add('is-glitching');
+    setTimeout(() => glitch.classList.remove('is-glitching'), 2000);
+  }
+
+  // Flash a terminal message
+  const toast = document.createElement('div');
+  toast.textContent = '> ACCESS GRANTED — Nice try, hacker.';
+  toast.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: #141414; border: 1px solid #4ade80; color: #4ade80;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    padding: 12px 24px; border-radius: 8px; z-index: 99999;
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+    animation: cmd-drop 0.2s ease;
+    white-space: nowrap;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// Mouse Trail
+const trailCanvas = document.getElementById('mouse-trail');
+const trailCtx    = trailCanvas.getContext('2d');
+const trailPoints = []; // { x, y, t }
+const TRAIL_MS    = 250;
+
+function resizeTrail() {
+  trailCanvas.width  = window.innerWidth;
+  trailCanvas.height = window.innerHeight;
+}
+resizeTrail();
+window.addEventListener('resize', resizeTrail);
+
+window.addEventListener('mousemove', (e) => {
+  trailPoints.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+});
+
+(function drawTrail() {
+  requestAnimationFrame(drawTrail);
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+
+  const now = performance.now();
+
+  // Drop points older than 250ms
+  while (trailPoints.length && now - trailPoints[0].t > TRAIL_MS) {
+    trailPoints.shift();
+  }
+
+  if (trailPoints.length < 2) return;
+
+  for (let i = 1; i < trailPoints.length; i++) {
+    const p1 = trailPoints[i - 1];
+    const p2 = trailPoints[i];
+    const age     = now - p2.t;
+    const opacity = 1 - age / TRAIL_MS; // 1 at tip, 0 at tail
+
+    trailCtx.beginPath();
+    trailCtx.moveTo(p1.x, p1.y);
+    trailCtx.lineTo(p2.x, p2.y);
+    trailCtx.strokeStyle    = `rgba(192, 192, 192, ${opacity * 0.55})`;
+    trailCtx.lineWidth      = opacity * 3;
+    trailCtx.lineCap        = 'round';
+    trailCtx.lineJoin       = 'round';
+    trailCtx.shadowColor    = `rgba(220, 220, 220, ${opacity * 0.8})`;
+    trailCtx.shadowBlur     = 8 * opacity;
+    trailCtx.stroke();
+  }
+})();
