@@ -983,7 +983,7 @@ footer {
     padding: 0 !important;
     margin: 0 0 20px 0 !important;
     transform: none !important;
-    page-break-inside: avoid;
+    page-break-inside: auto !important; /* Allow page breaks inside sections so long posts don't get cut off */
   }
 
   .section-title {
@@ -1000,6 +1000,46 @@ footer {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+
+  /* --- NEW: Force Blog Posts to Expand for Printing --- */
+
+  /* 1. Force the hidden wrapper to display as a standard block */
+  .blog-content-wrapper {
+    display: block !important;
+  }
+
+  /* 2. Make the text fully visible and remove side padding */
+  .blog-content {
+    opacity: 1 !important;
+    padding: 10px 0 30px 0 !important;
+    overflow: visible !important;
+  }
+
+  /* 3. Reformat the cover so it looks like a standard printed header */
+  .blog-cover {
+    height: auto !important;
+    border-radius: 0 !important;
+  }
+
+  /* 4. Hide the giant cover image to save printer ink & space */
+  .blog-cover img {
+    display: none !important;
+  }
+
+  /* 5. Pull the title out of the dark overlay and make it black text */
+  .blog-cover-overlay {
+    position: relative !important;
+    background: transparent !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  .blog-cover-overlay .section-title {
+    color: #000 !important;
+    text-shadow: none !important;
+    margin-bottom: 15px !important;
+    font-size: 1.8rem !important; /* Make it look like a clear document header */
   }
 }
 
@@ -1378,3 +1418,101 @@ body.cursor-hover #cursor-dot {
   height: 4px;
 }
 
+
+
+/* ===============================
+   Interactive Blog Posts
+================================ */
+.blog-post {
+  padding: 0; /* Override default section padding */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The clickable image header */
+.blog-cover {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 12px;
+  transition: border-radius 0.4s ease;
+}
+
+/* Flatten bottom radius when expanded */
+.blog-post.expanded .blog-cover {
+  border-radius: 12px 12px 0 0;
+}
+
+.blog-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.blog-cover:hover img {
+  transform: scale(1.05); /* Slight zoom on hover */
+}
+
+/* Dark gradient overlay to make text readable */
+.blog-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  transition: background 0.3s ease;
+}
+
+.blog-cover:hover .blog-cover-overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.blog-cover-overlay .section-title {
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+}
+
+/* Modern CSS Grid transition for smooth height animation */
+.blog-content-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Inner container holding the actual text */
+.blog-content {
+  overflow: hidden;
+  padding: 0 40px; /* Padding shrinks to 0 vertically when hidden */
+  opacity: 0;
+  transition: opacity 0.4s ease, padding 0.4s ease;
+}
+
+/* The active expanded state */
+.blog-post.expanded .blog-content-wrapper {
+  grid-template-rows: 1fr;
+}
+
+.blog-post.expanded .blog-content {
+  opacity: 1;
+  padding: 40px; /* Restores inner padding */
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .blog-cover {
+    height: 220px;
+  }
+  .blog-content {
+    padding: 0 20px;
+  }
+  .blog-post.expanded .blog-content {
+    padding: 25px 20px;
+  }
+}

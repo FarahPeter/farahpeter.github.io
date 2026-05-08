@@ -112,6 +112,35 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // --- Interactive Blog Posts (Expand/Collapse) ---
+document.querySelectorAll('.blog-cover').forEach(cover => {
+    cover.addEventListener('click', function() {
+        const post = this.closest('.blog-post');
+        const isExpanded = post.classList.contains('expanded');
+
+        // Optional UX: Close all other open posts when one is clicked
+        document.querySelectorAll('.blog-post').forEach(p => {
+            p.classList.remove('expanded');
+        });
+
+        // Toggle the clicked post
+        if (!isExpanded) {
+            post.classList.add('expanded');
+
+            // Scroll smoothly so the image cover sits perfectly at the top of the screen
+            setTimeout(() => {
+                const navHeight = document.querySelector('nav').offsetHeight || 80;
+                const topPosition = post.getBoundingClientRect().top + window.scrollY - navHeight - 20;
+
+                window.scrollTo({
+                    top: topPosition,
+                    behavior: 'smooth'
+                });
+            }, 100); // Slight delay ensures the CSS expansion has started
+        }
+    });
+});
+
 // --- Back to Top Button Logic ---
     const backToTopBtn = document.getElementById('back-to-top');
 
@@ -364,7 +393,7 @@ if (!sessionStorage.getItem('booted')) {
     const div = document.createElement('div');
     div.className = 'boot-line';
     div.textContent = text;
-    div.style.animationDelay = `${i * 300}ms`;
+    div.style.animationDelay = `${i * 100}ms`;
     bootLines.appendChild(div);
   });
 
@@ -372,7 +401,7 @@ if (!sessionStorage.getItem('booted')) {
     bootScreen.classList.add('fade-out');
     setTimeout(() => bootScreen.remove(), 700);
     sessionStorage.setItem('booted', '1');
-  }, lines.length * 300 + 700);
+  }, lines.length * 100 + 700);
 } else {
   document.getElementById('boot-screen')?.remove();
 }
@@ -423,7 +452,7 @@ class TextScramble {
         .join('');
 
       if (iteration >= original.length) clearInterval(this._interval);
-      iteration += 0.5;
+      iteration += 1;
     }, 40);
   }
 }
