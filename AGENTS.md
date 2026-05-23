@@ -63,7 +63,7 @@ When generating code for this project, please follow these rules:
 * Validate HTML/CSS against W3C standards where possible.
 
 ## 7. Current Project Focus
-* Expanding the "Interactive Hub" with new networking and security tools.
+* polish the hall website, ensuring all interactive elements are functional and visually consistent with the established design language. Prioritize accessibility and performance optimizations.
 
 ## 7. Additional notes
 * If a section of code is commented, keep it commented unless explicitly asked to change it

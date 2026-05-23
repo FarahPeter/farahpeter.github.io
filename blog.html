@@ -1,223 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <meta property="og:title" content="Peter Farah | Research & Technical Blog">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peter Farah | Research &amp; Technical Blog</title>
   <meta name="description" content="Technical write-ups on AQM classification research, home server infrastructure, and network automation by Peter Farah.">
+  <meta property="og:title" content="Peter Farah | Research &amp; Technical Blog">
+  <meta property="og:description" content="Deep dives into AQM classification, home server architecture, and network automation.">
   <meta property="og:image" content="https://peterfarah.com/Files/images/profile/profile_old.jpg">
   <meta property="og:url" content="https://peterfarah.com/blog.html">
   <meta property="og:type" content="website">
-
-    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
-
-  <title>Peter Farah - Blog | Active Queue Management Research</title>
+  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- Canvas & Cursor -->
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
   <div id="cursor-ring"></div>
 
+  <!-- Scroll Progress -->
+  <div id="vertical-scroll-track"><div id="vertical-scroll-progress"></div></div>
 
-  <div id="vertical-scroll-track">
-    <div id="vertical-scroll-progress"></div>
-  </div>
+  <!-- ===== NAVIGATION ===== -->
+  <nav aria-label="Main navigation">
+    <a href="index.html" class="nav-logo">&gt; peterfarah.com</a>
 
-  <header>
-    <h1>Research & Technical Blog</h1>
-    <h2 class="page-subtitle">Deep dives into network analysis and automation</h2>
-  </header>
-
-  <nav>
-      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
-      <ul id="nav-menu">
-        <li>
-                <a href="#" id="theme-toggle" aria-label="Toggle Theme">
-                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                </a>
-            </li>
+    <div class="nav-right">
+      <ul class="nav-links">
         <li><a href="#aqm-research">AQM Research</a></li>
-        <li><a href="#home-server">Home Server Architecture</a></li>
+        <li><a href="#home-server">Home Server</a></li>
         <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
         <li><a href="FUN/AQMgame.html" id="rainbow-btn" class="nav-highlight">AQM Simulation</a></li>
         <li><a href="server.html" class="nav-highlight">Server Access</a></li>
-    </ul>
+      </ul>
+
+      <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
+      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </nav>
 
+  <!-- Mobile Drawer Overlay -->
+  <div class="nav-overlay" id="nav-overlay" aria-hidden="true"></div>
+
+  <!-- Mobile Drawer -->
+  <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
+    <div class="nav-drawer-header">
+      <span class="nav-logo">&gt; blog</span>
+      <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
+    </div>
+    <a href="#aqm-research">AQM Research</a>
+    <a href="#home-server">Home Server Architecture</a>
+    <div class="nav-drawer-divider"></div>
+    <a href="index.html" class="nav-highlight">Home / Profile</a>
+    <a href="FUN/AQMgame.html" class="nav-highlight">AQM Simulation</a>
+    <a href="server.html" class="nav-highlight">Server Access</a>
+    <div class="nav-drawer-divider"></div>
+    <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
+      <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/></svg>
+      Toggle Theme
+    </button>
+  </aside>
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="blog-page-header">
+    <h1>Research &amp; Technical Blog</h1>
+    <p class="page-subtitle">Deep dives into network analysis and automation</p>
+  </div>
+
+  <!-- ========================================
+       BLOG POST 1: AQM Research
+  ======================================== -->
   <section class="reveal blog-post" id="aqm-research">
     <div class="blog-cover">
       <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" loading="lazy" alt="AQM Research Architecture Diagram">
       <div class="blog-cover-overlay">
-        <h2 class="section-title" style="border: none; color: #ffffff; margin-bottom: 15px;">Research on Active Queue Management (AQM) Classification and Analysis</h2>
-        <span class="btn">Click to Expand & Read</span>
+        <h2 class="section-title">Research on Active Queue Management (AQM) Classification and Analysis</h2>
+        <span class="btn">Click to Expand &amp; Read</span>
       </div>
     </div>
 
     <div class="blog-content-wrapper">
       <div class="blog-content">
+
         <p>
-          During my research internship at <b>Institut Polytechnique de Paris</b> and later at <b>Telecom Sud-Paris</b>, I developed a
-          full testbed and classification framework capable of identifying which <b>Active Queue Management (AQM)</b> algorithm
-          is running in a bottleneck router. The system was designed to distinguish between algorithms such as
-          <b>CoDel</b>, <b>FQ-CoDel</b>, <b>Cake</b>, <b>PIE</b>, <b>RED</b>, <b>FIFO</b>, and <b>FQ</b>.
-          The ultimate goal was to analyze how these queue disciplines affect congestion, latency, and fairness, and to
-          build a detection system that operates without privileged access to the router.
+          During my research internship at <strong>Institut Polytechnique de Paris</strong> and later at <strong>Telecom Sud-Paris</strong>, I developed a full testbed and classification framework capable of identifying which <strong>Active Queue Management (AQM)</strong> algorithm is running in a bottleneck router. The system was designed to distinguish between algorithms such as <strong>CoDel</strong>, <strong>FQ-CoDel</strong>, <strong>Cake</strong>, <strong>PIE</strong>, <strong>RED</strong>, <strong>FIFO</strong>, and <strong>FQ</strong>. The ultimate goal was to analyse how these queue disciplines affect congestion, latency, and fairness, and to build a detection system that operates without privileged access to the router.
         </p>
 
         <h3>Objective</h3>
         <p>
-          The main objective was to identify the AQM algorithm active in a network bottleneck using only <b>RTT traces</b> collected
-          from UDP traffic. This required creating an experimental framework that generated, captured, analyzed, and compared
-          large quantities of network data automatically. The classification needed to remain accurate across varying link speeds,
-          queue lengths, and packet sizes.
+          The main objective was to identify the AQM algorithm active in a network bottleneck using only <strong>RTT traces</strong> collected from UDP traffic. This required creating an experimental framework that generated, captured, analysed, and compared large quantities of network data automatically. The classification needed to remain accurate across varying link speeds, queue lengths, and packet sizes.
         </p>
 
         <h3>Architecture Overview</h3>
-        <p>
-          The system was structured around three main machines forming a <b>controlled testbed</b>:
-        </p>
+        <p>The system was structured around three main machines forming a <strong>controlled testbed</strong>:</p>
         <ul>
-          <li><b>Client:</b> Responsible for generating UDP traffic and recording RTT measurements in real time.</li>
-          <li><b>Router:</b> Configured with different AQM algorithms via Linux’s <code>tc qdisc</code> system
-            (CoDel, FQ-CoDel, PIE, RED, Cake, FIFO, and FQ). This device acted as the network bottleneck, enforcing queuing delay and packet drops.</li>
-          <li><b>Server:</b> Received packets and sent acknowledgments back to the client, closing the feedback loop.</li>
+          <li><strong>Client:</strong> Responsible for generating UDP traffic and recording RTT measurements in real time.</li>
+          <li><strong>Router:</strong> Configured with different AQM algorithms via Linux's <code>tc qdisc</code> system (CoDel, FQ-CoDel, PIE, RED, Cake, FIFO, and FQ). This device acted as the network bottleneck, enforcing queuing delay and packet drops.</li>
+          <li><strong>Server:</strong> Received packets and sent acknowledgements back to the client, closing the feedback loop.</li>
         </ul>
-
-        <p>
-          Each component interacted through a <b>Python-based orchestration layer</b> that coordinated configuration, data collection,
-          and experiment timing. The design allowed repeatable testing under controlled parameters such as bitrate, queue size,
-          and packet interval.
-        </p>
+        <p>Each component interacted through a <strong>Python-based orchestration layer</strong> that coordinated configuration, data collection, and experiment timing. The design allowed repeatable testing under controlled parameters such as bitrate, queue size, and packet interval.</p>
 
         <h3>Workflow</h3>
         <ol>
-          <li><b>Connection Establishment</b>
-            <ul>
-              <li>The master client connects to the master server over TCP.</li>
-            </ul>
-          </li>
-
-          <li><b>Bottleneck Measurement (1)</b>
-            <ul>
-              <li>The server runs the bitrate measurement server binary.</li>
-              <li>The client runs the corresponding measurement client binary and extracts the bottleneck bitrate.</li>
-            </ul>
-          </li>
-
-          <li><b>Bottleneck Type Verification (2)</b>
-            <ul>
-              <li>The server runs the bottleneck type checker binary.</li>
-              <li>The client runs the corresponding type checker client binary at the measured bitrate + 2 Mbit/s.</li>
-              <li>If throughput increases significantly, the bottleneck may be CPU or another factor; otherwise, it is confirmed to be the interface speed.</li>
-            </ul>
-          </li>
-
-          <li><b>Queue Size Measurement (3)</b>
-            <ul>
-              <li>The server runs the queue measurement server binary.</li>
-              <li>The client runs the corresponding queue measurement client binary and extracts the queue length in packets.</li>
-            </ul>
-          </li>
-
-          <li><b>Queue Consistency Check</b>
-            <ul>
-              <li>The client estimates queuing delay based on bitrate, packet size, and measured queue length.</li>
-              <li>If the estimated sojourn time is very small, the client raises a warning (possible misconfiguration, RED behavior, or background traffic) but continues the experiment.</li>
-            </ul>
-          </li>
-
-          <li><b>Simulation-Based Test Time Estimation (4)</b>
-            <ul>
-              <li>The client runs a CoDel simulation using the measured bitrate, added bitrate, queue size, and packet size.</li>
-              <li>The simulation suggests an experiment duration; if invalid, a default of 30 seconds is used.</li>
-              <li>Final test time is set to simulation time + 1 second.</li>
-            </ul>
-          </li>
-
-          <li><b>AQM/FQ Measurement (5)</b>
-            <ul>
-              <li>The server starts the AQM/FQ measurement binary.</li>
-              <li>The client launches the classification measurement tool, tuned with adjusted bitrate, packet size, and estimated test time.</li>
-              <li>RTT traces are collected.</li>
-            </ul>
-          </li>
-
-          <li><b>File Transfer</b>
-            <ul>
-              <li>The client sends all generated CSV files to the server.</li>
-            </ul>
-          </li>
-
-          <li><b>Classification (6)</b>
-            <ul>
-              <li>The server runs the Python classifier with the correct template family.</li>
-              <li>The classification result is sent back to the client and logged.</li>
-            </ul>
-          </li>
-
-          <li><b>Completion</b>
-            <ul>
-              <li>Both sides close the connection.</li>
-            </ul>
-          </li>
+          <li><strong>Connection Establishment</strong> — The master client connects to the master server over TCP.</li>
+          <li><strong>Bottleneck Measurement (1)</strong> — The server runs the bitrate measurement server binary. The client runs the corresponding measurement client binary and extracts the bottleneck bitrate.</li>
+          <li><strong>Bottleneck Type Verification (2)</strong> — The server runs the bottleneck type checker binary. The client runs the type checker client binary at the measured bitrate + 2 Mbit/s. If throughput increases significantly, the bottleneck may be CPU or another factor; otherwise it is confirmed as interface speed.</li>
+          <li><strong>Queue Size Measurement (3)</strong> — The server runs the queue measurement server binary. The client extracts the queue length in packets.</li>
+          <li><strong>Queue Consistency Check</strong> — The client estimates queuing delay based on bitrate, packet size, and measured queue length. If the estimated sojourn time is very small, a warning is raised but the experiment continues.</li>
+          <li><strong>Simulation-Based Test Time Estimation (4)</strong> — The client runs a CoDel simulation using measured parameters. The simulation suggests an experiment duration; if invalid, 30 seconds is used as default. Final test time = simulation time + 1 second.</li>
+          <li><strong>AQM/FQ Measurement (5)</strong> — The server starts the AQM/FQ measurement binary. The client launches the classification measurement tool, tuned with adjusted bitrate, packet size, and estimated test time. RTT traces are collected.</li>
+          <li><strong>File Transfer</strong> — The client sends all generated CSV files to the server.</li>
+          <li><strong>Classification (6)</strong> — The server runs the Python classifier with the correct template family. The classification result is sent back to the client and logged.</li>
+          <li><strong>Completion</strong> — Both sides close the connection.</li>
         </ol>
 
-        <div style="text-align:center; margin: 25px 0;">
-          <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" loading="lazy" alt="AQM Research Architecture Diagram" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-          <p style="font-size:0.9em; color:#666; margin-top:8px;">
-            Figure 1 – Overall architecture of the AQM classification and analysis framework.
-          </p>
+        <div style="text-align:center; margin:24px 0;">
+          <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" loading="lazy" alt="AQM Research Architecture Diagram">
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">Figure 1 – Overall architecture of the AQM classification and analysis framework.</p>
         </div>
 
         <h3>Detailed Architecture Components</h3>
 
         <h4>1. Traffic Generation and RTT Measurement</h4>
         <p>
-          I implemented multiple <b>C programs</b> that used both <b>raw UDP sockets</b> and <b>standard UDP sockets</b> to simulate various traffic flows with high timing accuracy.
-          Instead of relying on <code>usleep()</code> or fixed sleep intervals, the sender dynamically tracked the elapsed time since the start of transmission and computed how many packets <i>should</i> have been sent by that point in time.
-          If the actual number of sent packets lagged behind the theoretical rate, the sender immediately sent the necessary packets to catch up.
+          I implemented multiple <strong>C programs</strong> that used both <strong>raw UDP sockets</strong> and <strong>standard UDP sockets</strong> to simulate various traffic flows with high timing accuracy. Instead of relying on <code>usleep()</code> or fixed sleep intervals, the sender dynamically tracked elapsed time since the start of transmission and computed how many packets <em>should</em> have been sent by that point. If the actual number of sent packets lagged behind the theoretical rate, the sender immediately sent the necessary packets to catch up.
         </p>
-
-        <p>
-          This timing control approach ensured consistent and precise bitrate regulation without cumulative drift caused by system-level sleep inaccuracies.
-          Each sender operated based on a defined target bitrate, allowing accurate reproduction of network load at different transmission speeds.
-        </p>
-
+        <p>This timing control approach ensured consistent and precise bitrate regulation without cumulative drift caused by system-level sleep inaccuracies. Each sender operated based on a defined target bitrate, allowing accurate reproduction of network load at different transmission speeds.</p>
         <ul>
           <li>Bitrate-based pacing by calculating expected packet count from elapsed time since start.</li>
           <li>Configurable payload size and total packet count per experiment.</li>
           <li>Support for concurrent sender threads to simulate multiple independent flows.</li>
         </ul>
-
-        <p>
-          Round-Trip Times (RTTs) were measured at the client side by timestamping outgoing packets and matching them with acknowledgment timestamps received from the server.
-          The resulting RTT traces were stored as time-series datasets, capturing queue buildup, delay oscillations, and congestion patterns under each tested AQM discipline.
-        </p>
-        <img src="Files/images/Blog/AQMResearche/RTTtracesAQMs.jpg" loading="lazy" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-
+        <p>Round-Trip Times (RTTs) were measured at the client side by timestamping outgoing packets and matching them with acknowledgement timestamps received from the server. The resulting RTT traces were stored as time-series datasets, capturing queue buildup, delay oscillations, and congestion patterns under each tested AQM discipline.</p>
+        <img src="Files/images/Blog/AQMResearche/RTTtracesAQMs.jpg" loading="lazy" alt="AQM Signature RTT traces">
 
         <h4>2. Router Configuration and AQM Control</h4>
-        <p>
-          The router (a Linux system acting as a virtual bottleneck) was configured using <b>tc qdisc</b> commands.
-          A shell-based configuration script applied the desired AQM discipline on the egress interface:
-        </p>
+        <p>The router (a Linux system acting as a virtual bottleneck) was configured using <strong>tc qdisc</strong> commands. A shell-based configuration script applied the desired AQM discipline on the egress interface:</p>
         <div class="terminal-block">
           <div class="terminal-header">
             <div class="terminal-dot dot-close"></div>
@@ -231,50 +166,35 @@
             # etc...
           </div>
         </div>
-        <p>
-          Additional scripts removed qdiscs cleanly after each experiment.
-        </p>
+        <p>Additional scripts removed qdiscs cleanly after each experiment.</p>
 
         <h4>3. Bottleneck Analysis and Pre-Processing</h4>
         <ul>
-          <li><b>Bottleneck Bitrate Estimation:</b> A C program transmitted UDP packets and the server approximated the link’s maximum sustainable rate by looking at the maximum received rate.</li>
-          <li><b>Queue Length Estimation:</b> Another C program measured queue buildup time to calculate queue depth (queue length).</li>
-          <li><b>CPU Bottleneck Detection:</b> Another C program ensured that the observed delay was due to link capacity, not processor limitations.</li>
+          <li><strong>Bottleneck Bitrate Estimation:</strong> A C program transmitted UDP packets and the server approximated the link's maximum sustainable rate by looking at the maximum received rate.</li>
+          <li><strong>Queue Length Estimation:</strong> Another C program measured queue buildup time to calculate queue depth.</li>
+          <li><strong>CPU Bottleneck Detection:</strong> Another C program ensured the observed delay was due to link capacity, not processor limitations.</li>
         </ul>
 
         <h4>4. CoDel Simulation</h4>
-        <p>
-          I implemented a <b>Python simulation of the CoDel algorithm</b> faithfully based on the Linux kernel’s CoDel implementation.
-          This simulation was used to study how network parameters such as bottleneck bitrate,packet size, queue length, and added bitrate influence
-          delay control behavior. It also provided a reference RTT pattern used to calculate the needed total test time and that can be used for classification comparisons in the future.
-        </p>
+        <p>I implemented a <strong>Python simulation of the CoDel algorithm</strong> faithfully based on the Linux kernel's CoDel implementation. This simulation studied how network parameters such as bottleneck bitrate, packet size, queue length, and added bitrate influence delay control behaviour. It also provided a reference RTT pattern used to calculate the needed total test time and for future classification comparisons.</p>
 
         <h4>5. Data Collection and Storage</h4>
-        <p>
-          Each experiment produced multiple CSV trace files:
-        </p>
+        <p>Each experiment produced multiple CSV trace files:</p>
         <ul>
           <li>Per-packet RTT measurements (timestamp, RTT value, sequence number).</li>
           <li>Metadata files containing AQM type, bitrate, queue length, and parameters.</li>
         </ul>
-        <p>
-          All data was organized hierarchically by AQM type and bitrate for structured post-processing.
-        </p>
+        <p>All data was organised hierarchically by AQM type and bitrate for structured post-processing.</p>
 
         <h4>6. Classification and Analysis Engine</h4>
-        <p>
-          The classifier was implemented in Python using <b>Dynamic Time Warping (DTW)</b> to measure similarity between new RTT traces
-          and pre-recorded template traces of each AQM type. Two classification stages were applied:
-        </p>
+        <p>The classifier was implemented in Python using <strong>Dynamic Time Warping (DTW)</strong> to measure similarity between new RTT traces and pre-recorded template traces of each AQM type. Two classification stages were applied:</p>
         <ul>
-          <li><b>Stage 1:</b> Distinguish between fair-queuing AQMs (like FQ-CoDel, FQ, Cake) and non-fair-queuing ones (like CoDel, PIE, RED, FIFO).</li>
-          <li><b>Stage 2:</b> Perform fine-grained classification within each group using normalized DTW distance metrics and flow correlation behavior.</li>
+          <li><strong>Stage 1:</strong> Distinguish between fair-queuing AQMs (FQ-CoDel, FQ, Cake) and non-fair-queuing ones (CoDel, PIE, RED, FIFO).</li>
+          <li><strong>Stage 2:</strong> Perform fine-grained classification within each group using normalised DTW distance metrics and flow correlation behaviour.</li>
         </ul>
 
         <h3>Automation Framework</h3>
-        <p>
-          A central Python orchestration script handled:
-        </p>
+        <p>A central Python orchestration script handled:</p>
         <ul>
           <li>SSH-based remote control of client, router, and server machines.</li>
           <li>Automated setup and teardown of AQM configurations.</li>
@@ -283,214 +203,176 @@
         </ul>
 
         <h3>Results</h3>
-        <p style="color: blue;">Ideal Testbench</p>
-        <p style="color: darkorange;">Ideal Testbench with remote server</p>
-        <p style="color: green;">Home network tests</p>
-        <img src="Files/images/Blog/AQMResearche/Results.jpg" loading="lazy" alt="AQM Research Results" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+        <p style="font-size:0.82rem; color:var(--text-muted);">Legend: <span style="color:#2563eb;">Blue</span> = Ideal Testbench &nbsp;|&nbsp; <span style="color:#ea580c;">Orange</span> = Ideal Testbench with remote server &nbsp;|&nbsp; <span style="color:#16a34a;">Green</span> = Home network tests</p>
+        <img src="Files/images/Blog/AQMResearche/Results.jpg" loading="lazy" alt="AQM Research Results">
         <p>
-          The developed framework achieved <b>high classification accuracy</b> under a wide range of network conditions, including variations in bitrate, queue length, and packet size.
-          In controlled testbed environments, the system consistently distinguished between all tested AQM algorithms with strong separation in their RTT profiles.
-          When evaluated in a real-world scenario involving a live client and router over an operational network, the classifier maintained an overall accuracy of <b>87%</b>,
-          demonstrating its robustness outside laboratory conditions.
+          The developed framework achieved <strong>high classification accuracy</strong> under a wide range of network conditions, including variations in bitrate, queue length, and packet size. In controlled testbed environments, the system consistently distinguished between all tested AQM algorithms with strong separation in their RTT profiles. When evaluated in a real-world scenario involving a live client and router over an operational network, the classifier maintained an overall accuracy of <strong>87%</strong>, demonstrating its robustness outside laboratory conditions.
         </p>
-
-        <p>
-          Each AQM exhibited a distinct temporal signature in the RTT traces:
-        </p>
+        <p>Each AQM exhibited a distinct temporal signature in the RTT traces:</p>
         <ul>
-          <li><b>CoDel</b> and <b>PIE</b> displayed highly recognizable periodic delay oscillations corresponding to their active queue control cycles, making them the most easily distinguishable algorithms.</li>
-          <li><b>RED</b> showed probabilistic yet smoother delay variations resulting from its random early drop mechanism, producing moderate oscillations without strict periodicity.</li>
-          <li><b>FQ-CoDel</b>, <b>Cake</b>, and <b>FQ</b> each displayed their own characteristic RTT signatures in single-flow conditions. All three demonstrated clear evidence of per-flow fairness and reduced inter-flow interference, with RTTs remaining stable and well-isolated between flows.</li>
-          <li><b>FIFO</b> traces were dominated by congestion plateaus and sharp delay spikes, reflecting unregulated queue buildup and absence of any active queue control.</li>
+          <li><strong>CoDel</strong> and <strong>PIE</strong> displayed highly recognisable periodic delay oscillations corresponding to their active queue control cycles, making them the most easily distinguishable algorithms.</li>
+          <li><strong>RED</strong> showed probabilistic yet smoother delay variations resulting from its random early drop mechanism, producing moderate oscillations without strict periodicity.</li>
+          <li><strong>FQ-CoDel</strong>, <strong>Cake</strong>, and <strong>FQ</strong> each displayed their own characteristic RTT signatures in single-flow conditions. All three demonstrated clear evidence of per-flow fairness and reduced inter-flow interference, with RTTs remaining stable and well-isolated between flows.</li>
+          <li><strong>FIFO</strong> traces were dominated by congestion plateaus and sharp delay spikes, reflecting unregulated queue buildup and absence of any active queue control.</li>
         </ul>
+        <p>These results confirm that end-to-end RTT measurements carry sufficient information to infer the active queue management policy at a bottleneck router. The classification performance validates the effectiveness of combining precise C-level traffic generation, kernel-level AQM configuration, and DTW-based pattern matching for automated queue behaviour identification.</p>
 
+        <h3>Conclusion</h3>
+        <img src="Files/images/Blog/AQMResearche/realLifeExample.JPG" loading="lazy" alt="Real-life AQM classification example">
         <p>
-          These results confirm that end-to-end RTT measurements carry sufficient information to infer the active queue management policy at a bottleneck router.
-          The classification performance validates the effectiveness of combining precise C-level traffic generation, kernel-level AQM configuration, and DTW-based pattern matching for automated queue behavior identification.
+          This project represents a <strong>state-of-the-art framework</strong> for the identification and analysis of Active Queue Management (AQM) algorithms using only end-to-end network measurements. By integrating <strong>C-based traffic generation</strong>, <strong>precise RTT collection</strong>, <strong>kernel-level AQM configuration</strong>, and <strong>Dynamic Time Warping (DTW)-based classification</strong>, it achieves an unprecedented level of accuracy and automation in recognising queue management behaviour without requiring any access to routers.
         </p>
-
-
-      <h3>Conclusion</h3>
-
-        <img src="Files/images/Blog/AQMResearche/realLifeExample.JPG" loading="lazy" alt="AQM Signature RTT traces" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-      <p>
-        This project represents a <b>state-of-the-art framework</b> for the identification and analysis of Active Queue Management (AQM) algorithms using only end-to-end network measurements.
-        By integrating <b>C-based traffic generation</b>, <b>precise RTT collection</b>, <b>kernel-level AQM configuration</b>, and <b>Dynamic Time Warping (DTW)-based classification</b>, it achieves an unprecedented level of accuracy and automation in recognizing queue management behavior without requiring any access to routers.
-      </p>
-      <p>
-        The system goes beyond traditional traffic analysis approaches by correlating time-domain RTT dynamics with underlying queue control logic, allowing fine-grained differentiation between AQMs such as CoDel, PIE, RED, Cake, FQ-CoDel, FQ, and FIFO.
-        Its modular and fully automated design makes it adaptable to both controlled research environments and real-world network scenarios.
-      </p>
-      <p>
-        The resulting framework demonstrates that <b>passive AQM classification is both feasible and practical</b>—a significant advancement in network diagnostics and congestion research.
-        It establishes a foundation for future intelligent systems capable of autonomously identifying, simulating, and optimizing queue management strategies in next-generation networks.
-      </p>
-      <p>
-      Beyond classification, the system increases visibility into bottleneck behavior, enabling network operators to identify the active AQM and adapt congestion control algorithms accordingly for tangible performance gains.
-      This capability also has <b>dual security implications</b>: while identifying the AQM can be leveraged by attackers as a reconnaissance step to craft targeted strategies, it equally empowers defenders.
-      Knowing the active AQM allows adaptive congestion control mechanisms to respond effectively under attack or in hostile conditions, preserving network stability and throughput.
-      </p>
-      <p><i>Future extensions</i> include integrating reinforcement learning to predict queue type adaptively and simulating all AQMs to generate on the fly perfect templates given network parameters.</p>
+        <p>
+          The system goes beyond traditional traffic analysis approaches by correlating time-domain RTT dynamics with underlying queue control logic, allowing fine-grained differentiation between AQMs such as CoDel, PIE, RED, Cake, FQ-CoDel, FQ, and FIFO. Its modular and fully automated design makes it adaptable to both controlled research environments and real-world network scenarios.
+        </p>
+        <p>
+          The resulting framework demonstrates that <strong>passive AQM classification is both feasible and practical</strong> — a significant advancement in network diagnostics and congestion research. It establishes a foundation for future intelligent systems capable of autonomously identifying, simulating, and optimising queue management strategies in next-generation networks.
+        </p>
+        <p>
+          Beyond classification, the system increases visibility into bottleneck behaviour, enabling network operators to identify the active AQM and adapt congestion control algorithms accordingly for tangible performance gains. This capability also has <strong>dual security implications</strong>: while identifying the AQM can be leveraged by attackers as a reconnaissance step to craft targeted strategies, it equally empowers defenders. Knowing the active AQM allows adaptive congestion control mechanisms to respond effectively under attack or in hostile conditions, preserving network stability and throughput.
+        </p>
+        <p><em>Future extensions</em> include integrating reinforcement learning to predict queue type adaptively and simulating all AQMs to generate on-the-fly perfect templates given network parameters.</p>
 
       </div>
     </div>
   </section>
 
-<section class="reveal blog-post" id="home-server">
-  <div class="blog-cover">
-    <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Home Server Architecture">
-    <div class="blog-cover-overlay">
-      <h2 class="section-title" style="border: none; color: #ffffff; margin-bottom: 15px;">Home Server Infrastructure, Automation & Observability Platform</h2>
-      <span class="btn">Click to Expand & Read</span>
-    </div>
-  </div>
-
-  <div class="blog-content-wrapper">
-    <div class="blog-content">
-      <p>
-        I designed and deployed a self-hosted Ubuntu server environment operating as a
-        personal cloud, automation engine, and monitoring platform. The system runs
-        continuously and hosts multiple production-grade Python services, supported by
-        a full observability stack and secured through a Zero Trust architecture.
-      </p>
-
-      <div style="text-align:center; margin: 25px 0;">
-        <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Grafana" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+  <!-- ========================================
+       BLOG POST 2: Home Server
+  ======================================== -->
+  <section class="reveal blog-post" id="home-server">
+    <div class="blog-cover">
+      <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Home Server Architecture">
+      <div class="blog-cover-overlay">
+        <h2 class="section-title">Home Server Infrastructure, Automation &amp; Observability Platform</h2>
+        <span class="btn">Click to Expand &amp; Read</span>
       </div>
-
-      <h3>Infrastructure Architecture</h3>
-      <ul>
-        <li><b>Ubuntu Server (VM-based):</b> Centralized host running all automation and monitoring services.</li>
-        <li><b>Systemd-managed services:</b> All Python applications run as managed services with automatic restart policies and failure handling.</li>
-        <li><b>Isolated Python virtual environments:</b> Dependency separation for reliability and maintainability.</li>
-        <li><b>Structured logging:</b> JSON-based logs for automation tasks and service health tracking.</li>
-      </ul>
-
-      <h3>Fully Automated YouTube Content Pipeline</h3>
-      <p>
-        I developed a complete end-to-end automated YouTube publishing system that
-        generates content, converts it to media, assembles the final video, and uploads it —
-        without manual intervention.
-      </p>
-
-      <h4>1. Content Generation Layer</h4>
-      <ul>
-        <li>Integration with the <b>Google Gemini API</b> for automated script generation.</li>
-        <li>Automatic fallback to an older Gemini model when API rate limits or quota limits are reached.</li>
-        <li>Structured JSON parsing to extract titles, descriptions, and script bodies reliably.</li>
-      </ul>
-
-      <h4>2. Media Processing Pipeline</h4>
-      <ul>
-        <li>Text-to-Speech generation using API-based voice synthesis.</li>
-        <li>Automated audio normalization and processing.</li>
-        <li>Video rendering using programmatic video assembly.</li>
-        <li>Dynamic audio overlay and synchronization between narration and visuals.</li>
-        <li>FFmpeg-based encoding and final export pipeline.</li>
-      </ul>
-
-      <h4>3. YouTube Integration</h4>
-      <ul>
-        <li>Secure OAuth-based integration with the YouTube Data API.</li>
-        <li>Automated upload with metadata injection (title, description, tags, visibility).</li>
-        <li>Upload status monitoring and structured success/failure logging.</li>
-      </ul>
-
-      <p>
-        The entire pipeline is orchestrated through Python, with robust exception handling,
-        retry mechanisms, and logging to ensure resilience against API limits or transient failures.
-      </p>
-
-      <h3>Custom Media Ingestion Service (Python FTP Server)</h3>
-      <p>
-        To support content workflows, I implemented a lightweight Python-based FTP server
-        that enables secure transfer of media files from my mobile device directly to the server.
-      </p>
-      <ul>
-        <li>Dedicated service for controlled upload of images and videos.</li>
-        <li>Directory-based separation for automated processing pipelines.</li>
-        <li>Runs as a managed background service with restart policies.</li>
-        <li>Monitored via Prometheus exporter for service health and activity metrics.</li>
-      </ul>
-
-      <h3>Observability & Monitoring Stack</h3>
-      <p>
-        The server is instrumented with full-stack monitoring to ensure continuous
-        visibility into system performance and application health.
-      </p>
-
-      <h4>1. Infrastructure Monitoring</h4>
-      <ul>
-        <li><b>Prometheus</b> collects system-level metrics (CPU, RAM, disk I/O, network).</li>
-        <li><b>Grafana</b> dashboards provide real-time visualization and historical trend analysis.</li>
-      </ul>
-      <img src="Files/images/Blog/HomeServer/Grafana2.JPG" loading="lazy" alt="Grafana2" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-
-      <h4>2. Custom Application Metrics</h4>
-      <ul>
-        <li>Developed a custom Python Prometheus exporter.</li>
-        <li>Exposes service state (running, failed, restarting).</li>
-        <li>Exports task-level metrics such as upload success rate, processing duration, and error counters.</li>
-        <li>Tracks FTP server activity and connection statistics.</li>
-      </ul>
-      <img src="Files/images/Blog/HomeServer/Grafana.JPG" loading="lazy" alt="Grafana" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-
-
-      <h4>3. Uptime Monitoring</h4>
-      <ul>
-        <li>Deployed Uptime Kuma to monitor:</li>
-        <ul>
-          <li>Ubuntu server availability</li>
-          <li>peterfarah.com</li>
-          <li>farmavetservices.com</li>
-        </ul>
-        <li>Alerting mechanisms for downtime detection.</li>
-      </ul>
-      <img src="Files/images/Blog/HomeServer/Uptime.JPG" loading="lazy" alt="Uptime Kuma" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-
-      <h3>Zero Trust Remote Access Architecture</h3>
-      <p>
-        Instead of exposing services via port forwarding, I implemented
-        <b>Cloudflare Zero Trust Tunnel</b> to securely expose internal services while
-        keeping the server protected behind NAT.
-      </p>
-      <img src="Files/images/Blog/HomeServer/cloudflareAplications.JPG" loading="lazy" alt="CLoudFlare" style="max-width:90%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-
-      <ul>
-        <li>Secure SSH access via <code>ssh.peterfarah.com</code>.</li>
-        <li>Grafana dashboard accessible at <code>grafana.peterfarah.com</code>.</li>
-        <li>Uptime dashboard accessible at <code>up.peterfarah.com</code>.</li>
-        <li>Request Limited access: <a href="https://access.peterfarah.com" target="_blank"><code>access.peterfarah.com</code></a>.</li>
-        <li>No inbound ports opened on the router.</li>
-        <li>Access control policies enforced at the Cloudflare layer.</li>
-      </ul>
-
-      <h3>Engineering Principles Applied</h3>
-      <ul>
-        <li>Automation-first system design</li>
-        <li>Resilience through fallback mechanisms and service restart policies</li>
-        <li>Structured observability with custom instrumentation</li>
-        <li>Secure-by-design remote access using Zero Trust architecture</li>
-        <li>Production-style service orchestration in a self-hosted environment</li>
-      </ul>
-
-      <p>
-        This project demonstrates practical DevOps engineering, API integration,
-        automation pipelines, secure infrastructure exposure, and full observability —
-        all operating continuously in a real-world self-hosted production environment.
-      </p>
     </div>
-  </div>
-</section>
 
+    <div class="blog-content-wrapper">
+      <div class="blog-content">
+
+        <p>
+          I designed and deployed a self-hosted Ubuntu server environment operating as a personal cloud, automation engine, and monitoring platform. The system runs continuously and hosts multiple production-grade Python services, supported by a full observability stack and secured through a Zero Trust architecture.
+        </p>
+
+        <div style="text-align:center; margin:20px 0;">
+          <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Full Architecture Diagram">
+        </div>
+
+        <h3>Infrastructure Architecture</h3>
+        <ul>
+          <li><strong>Ubuntu Server (VM-based):</strong> Centralised host running all automation and monitoring services.</li>
+          <li><strong>Systemd-managed services:</strong> All Python applications run as managed services with automatic restart policies and failure handling.</li>
+          <li><strong>Isolated Python virtual environments:</strong> Dependency separation for reliability and maintainability.</li>
+          <li><strong>Structured logging:</strong> JSON-based logs for automation tasks and service health tracking.</li>
+        </ul>
+
+        <h3>Fully Automated YouTube Content Pipeline</h3>
+        <p>I developed a complete end-to-end automated YouTube publishing system that generates content, converts it to media, assembles the final video, and uploads it — without manual intervention.</p>
+
+        <h4>1. Content Generation Layer</h4>
+        <ul>
+          <li>Integration with the <strong>Google Gemini API</strong> for automated script generation.</li>
+          <li>Automatic fallback to an older Gemini model when API rate limits or quota limits are reached.</li>
+          <li>Structured JSON parsing to extract titles, descriptions, and script bodies reliably.</li>
+        </ul>
+
+        <h4>2. Media Processing Pipeline</h4>
+        <ul>
+          <li>Text-to-Speech generation using API-based voice synthesis.</li>
+          <li>Automated audio normalisation and processing.</li>
+          <li>Video rendering using programmatic video assembly.</li>
+          <li>Dynamic audio overlay and synchronisation between narration and visuals.</li>
+          <li>FFmpeg-based encoding and final export pipeline.</li>
+        </ul>
+
+        <h4>3. YouTube Integration</h4>
+        <ul>
+          <li>Secure OAuth-based integration with the YouTube Data API.</li>
+          <li>Automated upload with metadata injection (title, description, tags, visibility).</li>
+          <li>Upload status monitoring and structured success/failure logging.</li>
+        </ul>
+
+        <p>The entire pipeline is orchestrated through Python, with robust exception handling, retry mechanisms, and logging to ensure resilience against API limits or transient failures.</p>
+
+        <h3>Custom Media Ingestion Service (Python FTP Server)</h3>
+        <p>To support content workflows, I implemented a lightweight Python-based FTP server that enables secure transfer of media files from my mobile device directly to the server.</p>
+        <ul>
+          <li>Dedicated service for controlled upload of images and videos.</li>
+          <li>Directory-based separation for automated processing pipelines.</li>
+          <li>Runs as a managed background service with restart policies.</li>
+          <li>Monitored via Prometheus exporter for service health and activity metrics.</li>
+        </ul>
+
+        <h3>Observability &amp; Monitoring Stack</h3>
+        <p>The server is instrumented with full-stack monitoring to ensure continuous visibility into system performance and application health.</p>
+
+        <h4>1. Infrastructure Monitoring</h4>
+        <ul>
+          <li><strong>Prometheus</strong> collects system-level metrics (CPU, RAM, disk I/O, network).</li>
+          <li><strong>Grafana</strong> dashboards provide real-time visualisation and historical trend analysis.</li>
+        </ul>
+        <img src="Files/images/Blog/HomeServer/Grafana2.JPG" loading="lazy" alt="Grafana dashboard 2">
+
+        <h4>2. Custom Application Metrics</h4>
+        <ul>
+          <li>Developed a custom Python Prometheus exporter.</li>
+          <li>Exposes service state (running, failed, restarting).</li>
+          <li>Exports task-level metrics such as upload success rate, processing duration, and error counters.</li>
+          <li>Tracks FTP server activity and connection statistics.</li>
+        </ul>
+        <img src="Files/images/Blog/HomeServer/Grafana.JPG" loading="lazy" alt="Grafana dashboard">
+
+        <h4>3. Uptime Monitoring</h4>
+        <ul>
+          <li>Deployed Uptime Kuma to monitor:</li>
+          <ul>
+            <li>Ubuntu server availability</li>
+            <li>peterfarah.com</li>
+            <li>farmavetservices.com</li>
+          </ul>
+          <li>Alerting mechanisms for downtime detection.</li>
+        </ul>
+        <img src="Files/images/Blog/HomeServer/Uptime.JPG" loading="lazy" alt="Uptime Kuma dashboard">
+
+        <h3>Zero Trust Remote Access Architecture</h3>
+        <p>Instead of exposing services via port forwarding, I implemented <strong>Cloudflare Zero Trust Tunnel</strong> to securely expose internal services while keeping the server protected behind NAT.</p>
+        <img src="Files/images/Blog/HomeServer/cloudflareAplications.JPG" loading="lazy" alt="Cloudflare Zero Trust applications">
+        <ul>
+          <li>Secure SSH access via <code>ssh.peterfarah.com</code>.</li>
+          <li>Grafana dashboard accessible at <code>grafana.peterfarah.com</code>.</li>
+          <li>Uptime dashboard accessible at <code>up.peterfarah.com</code>.</li>
+          <li>Request Limited access: <a href="https://access.peterfarah.com" target="_blank"><code>access.peterfarah.com</code></a>.</li>
+          <li>No inbound ports opened on the router.</li>
+          <li>Access control policies enforced at the Cloudflare layer.</li>
+        </ul>
+
+        <h3>Engineering Principles Applied</h3>
+        <ul>
+          <li>Automation-first system design</li>
+          <li>Resilience through fallback mechanisms and service restart policies</li>
+          <li>Structured observability with custom instrumentation</li>
+          <li>Secure-by-design remote access using Zero Trust architecture</li>
+          <li>Production-style service orchestration in a self-hosted environment</li>
+        </ul>
+
+        <p>This project demonstrates practical DevOps engineering, API integration, automation pipelines, secure infrastructure exposure, and full observability — all operating continuously in a real-world self-hosted production environment.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
   <footer>
     <p>&copy; 2026 Peter Farah. All rights reserved.</p>
   </footer>
 
+  <!-- Back to Top -->
   <button id="back-to-top" aria-label="Back to top">
-        <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
-    </button>
+    <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
+  </button>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
