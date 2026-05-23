@@ -1,85 +1,38 @@
-html
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Peter Farah | Service Access Panel</title>
-  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Peter Farah</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <canvas id="mouse-trail"></canvas>
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
 
-  <canvas id="mouse-trail"></canvas>
-  <div id="cursor-dot"></div>
-  <div id="cursor-ring"></div>
+    <nav>
+        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation">&#9776;</button>
+        <ul id="nav-menu">
+            <li><a href="index.html" class="nav-highlight">Return Home</a></li>
+        </ul>
+    </nav>
 
-  <!-- ===== NAVIGATION ===== -->
-  <nav aria-label="Main navigation">
-    <a href="index.html" class="nav-logo">&gt; peterfarah.com</a>
+    <section style="text-align: center; margin-top: 100px; padding: 60px 20px;">
+        <h1 style="font-size: 4rem; margin-bottom: 10px; color: var(--primary-hover);">404</h1>
+        <h2 class="section-title" style="border: none;">Packet Dropped (Page Not Found)</h2>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">
+            It looks like the resource you are looking for was lost in transit or doesn't exist.
+        </p>
+        <a href="index.html" class="btn">Route Back Home</a>
+    </section>
 
-    <div class="nav-right">
-      <ul class="nav-links">
-        <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
-        <li><a href="blog.html" class="nav-highlight">Research &amp; Blog</a></li>
-      </ul>
-
-      <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
-        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </button>
-
-      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- Mobile Drawer Overlay -->
-  <div class="nav-overlay" id="nav-overlay" aria-hidden="true"></div>
-
-  <!-- Mobile Drawer -->
-  <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
-    <div class="nav-drawer-header">
-      <span class="nav-logo">&gt; server</span>
-      <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
-    </div>
-    <a href="index.html" class="nav-highlight">Home / Profile</a>
-    <a href="blog.html" class="nav-highlight">Research &amp; Blog</a>
-    <div class="nav-drawer-divider"></div>
-    <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
-      <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/></svg>
-      Toggle Theme
-    </button>
-  </aside>
-
-  <!-- ===== SERVER PANEL ===== -->
-  <section class="server-panel reveal">
-    <h2 class="section-title" style="text-align:center;">Service Access Panel</h2>
-    <p style="text-align:center; color:var(--text-muted); margin-bottom:28px; font-size:0.9rem;">
-      Secured via Cloudflare Zero Trust architecture.
-    </p>
-    <a class="btn" href="https://access.peterfarah.com" target="_blank" rel="noopener">Request Access</a>
-    <a class="btn" href="https://ssh.peterfarah.com" target="_blank" rel="noopener">SSH Portal</a>
-    <a class="btn" href="https://grafana.peterfarah.com" target="_blank" rel="noopener">Grafana Dashboard</a>
-    <a class="btn" href="https://up.peterfarah.com" target="_blank" rel="noopener">Uptime Monitor</a>
-    <a class="btn" href="https://hook.peterfarah.com/admin-dashboard" target="_blank" rel="noopener">Web Monitor</a>
-  </section>
-
-  <footer>
-    <p>&copy; 2026 Peter Farah. All rights reserved.</p>
-  </footer>
-
-  <script src="script.js"></script>
+    <footer>
+        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    </footer>
+<script src="script.js"></script>
 </body>
 </html>
