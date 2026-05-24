@@ -33,6 +33,7 @@
       <ul class="nav-links">
         <li><a href="#aqm-research">AQM Research</a></li>
         <li><a href="#home-server">Home Server</a></li>
+        <li><a href="#home-nas">Home NAS</a></li>
         <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
         <li><a href="FUN/AQMgame.html" id="rainbow-btn" class="nav-highlight">AQM Simulation</a></li>
         <li><a href="server.html" class="nav-highlight">Server Access</a></li>
@@ -67,6 +68,7 @@
     </div>
     <a href="#aqm-research">AQM Research</a>
     <a href="#home-server">Home Server Architecture</a>
+    <a href="#home-nas">Home NAS Architecture</a>
     <div class="nav-drawer-divider"></div>
     <a href="index.html" class="nav-highlight">Home / Profile</a>
     <a href="FUN/AQMgame.html" class="nav-highlight">AQM Simulation</a>
@@ -358,6 +360,46 @@
         </ul>
 
         <p>This project demonstrates practical DevOps engineering, API integration, automation pipelines, secure infrastructure exposure, and full observability — all operating continuously in a real-world self-hosted production environment.</p>
+
+      </div>
+    </div>
+  </section>
+
+<section class="reveal blog-post" id="home-nas">
+    <div class="blog-cover">
+      <img src="Files/images/Blog/NAS/NAS_main.jpg" loading="lazy" alt="Synology DS925+ Architecture">
+      <div class="blog-cover-overlay">
+        <h2 class="section-title">Enterprise-Grade Home Storage: Synology DS925+</h2>
+        <span class="btn">Click to Expand &amp; Read</span>
+      </div>
+    </div>
+
+    <div class="blog-content-wrapper">
+      <div class="blog-content">
+
+        <p>
+          To support growing data requirements and ensure reliable backups for the home infrastructure, a dedicated Network Attached Storage (NAS) solution was implemented. The architecture centers around a <strong>Synology DS925+</strong>, populated with dual <strong>18TB Seagate Exos</strong> enterprise-grade hard drives.
+        </p>
+
+        <h3>Storage Configuration &amp; File System</h3>
+        <p>
+          The drives are configured using <strong>Synology Hybrid RAID (SHR1)</strong>, which offers superior flexibility, expansion capabilities, and storage optimization compared to traditional RAID 5 arrays. To guarantee data integrity and protect against bit rot, the volumes leverage the <strong>Btrfs file system</strong>, enabling proactive data scrubbing and advanced snapshot capabilities.
+        </p>
+
+        <h3>Snapshot Retention &amp; Storage Efficiency</h3>
+        <p>
+          A core advantage of this Btrfs setup is the implementation of robust snapshot retention policies. The system takes automated daily snapshots that are retained for 90 days, alongside monthly snapshots kept for a full year. Because the NAS is primarily utilized for mobile photo backups, file edits and deletions are highly infrequent. As a result, these extensive point-in-time snapshots consume very little additional storage space, while still providing an immediate rollback mechanism against accidental deletion or ransomware attacks.
+        </p>
+
+        <h3>Automated Workflows &amp; Cold Storage</h3>
+        <p>
+          The NAS acts as a centralized, self-hosted hub for multiple critical backup streams. Utilizing <strong>Synology Photos</strong>, automated workflows sync mobile media seamlessly over the network, keeping it entirely within a Zero Trust environment. Additionally, the NAS continuously backs up critical files from the primary PC. For ultimate disaster recovery, any data living exclusively on the NAS is manually backed up to an offline cold storage drive every few months, ensuring an air-gapped fallback is always available.
+        </p>
+
+        <h3>Network Integration &amp; Transfer Speeds</h3>
+        <p>
+          To eliminate local network bottlenecks during large file transfers and media syncing, a dedicated <strong>5GHz-capable OpenWrt router</strong> was integrated into the local architecture. This ensures high-speed, low-latency wireless data transfer across the local Wi-Fi, allowing the NAS to operate at peak efficiency without being constrained by standard ISP equipment limitations.
+        </p>
 
       </div>
     </div>
