@@ -1169,33 +1169,42 @@ footer {
 /* ========================================
    CUSTOM CURSOR (desktop/fine pointer only)
 ======================================== */
+
+/* Hidden by default — only revealed on fine-pointer (mouse) devices */
+#cursor-dot,
+#cursor-ring {
+  display: none;
+}
+
 @media (pointer: fine) {
   body { cursor: none; }
   a, button, .btn, .skill-badge, .timeline-card, .blog-cover, .project { cursor: none; }
-}
 
-#cursor-dot {
-  position: fixed;
-  width: 5px; height: 5px;
-  background: var(--primary-hover);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 99999;
-  transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s, background 0.2s;
+  #cursor-dot {
+    display: block;
+    position: fixed;
+    width: 5px; height: 5px;
+    background: var(--primary-hover);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background 0.2s;
+  }
+  #cursor-ring {
+    display: block;
+    position: fixed;
+    width: 24px; height: 24px;
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, border-color 0.2s;
+  }
+  body.cursor-hover #cursor-ring { width: 48px; height: 48px; border-color: var(--accent); }
+  body.cursor-hover #cursor-dot  { width: 4px; height: 4px; }
 }
-#cursor-ring {
-  position: fixed;
-  width: 24px; height: 24px;
-  border: 1px solid rgba(34, 211, 238, 0.4);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 99998;
-  transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s, border-color 0.2s;
-}
-body.cursor-hover #cursor-ring { width: 48px; height: 48px; border-color: var(--accent); }
-body.cursor-hover #cursor-dot  { width: 4px; height: 4px; }
 
 /* ========================================
    MOUSE TRAIL CANVAS
