@@ -14,6 +14,30 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Peter Farah",
+    "url": "https://peterfarah.com",
+    "image": "https://peterfarah.com/Files/images/profile/profile_old.jpg",
+    "jobTitle": "Automation Engineer",
+    "worksFor": { "@type": "Organization", "name": "Murex" },
+    "alumniOf": [
+      { "@type": "CollegeOrUniversity", "name": "Institut Polytechnique de Paris" },
+      { "@type": "CollegeOrUniversity", "name": "American University of Beirut" }
+    ],
+    "knowsAbout": ["Cybersecurity", "Network Engineering", "Active Queue Management", "Ansible", "Kubernetes", "Python", "Cloudflare Zero Trust"],
+    "sameAs": [
+      "https://www.linkedin.com/in/peter-farah-i",
+      "https://github.com/FarahPeter"
+    ],
+    "email": "peter@peterfarah.com",
+    "address": { "@type": "PostalAddress", "addressLocality": "Beirut", "addressCountry": "LB" }
+  }
+  </script>
 </head>
 <body>
 
@@ -44,6 +68,11 @@
         <li><a href="server.html" class="nav-highlight">Server</a></li>
         <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank">CV</a></li>
       </ul>
+
+      <!-- Command palette trigger (desktop) -->
+      <button class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
+        <kbd>⌘K</kbd> Search
+      </button>
 
       <!-- Theme toggle (desktop) -->
       <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
@@ -108,6 +137,26 @@
         <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2v.01L12 13 4 6.01V6h16zM4 18V8l8 5 8-5v10H4z"/></svg>
       </a>
     </div>
+
+    <!-- Stats Strip -->
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-number" data-target="3" data-suffix="+">0</span>
+      <span class="hero-stat-label">Years Experience</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-number" data-target="36" data-suffix="TB">0</span>
+      <span class="hero-stat-label">Homelab Storage</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-number" data-target="50" data-prefix="+" data-suffix="">0</span>
+      <span class="hero-stat-label">Automated Workflows</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-number" data-target="15" data-prefix="+" data-suffix="">0</span>
+      <span class="hero-stat-label">Core Technologies</span>
+    </div>
+  </div>
   </header>
 
   <!-- ===== ABOUT ===== -->
@@ -287,9 +336,9 @@
         <span class="skill-badge" data-level="80" data-label="Advanced">Cloudflare Zero Trust</span>
         <span class="skill-badge" data-level="70" data-label="Intermediate">Systemd</span>
         <span class="skill-badge" data-level="90" data-label="Advanced">API Integration</span>
-        <span class="skill-badge" data-level="50" data-label="Intermediate">Ansible</span>
-        <span class="skill-badge" data-level="60" data-label="Intermediate">Jenkins</span>
-        <span class="skill-badge" data-level="15" data-label="Beginner">Kubernetes</span>
+        <span class="skill-badge" data-level="40" data-label="Intermediate">Ansible</span>
+        <span class="skill-badge" data-level="50" data-label="Intermediate">Jenkins</span>
+        <span class="skill-badge" data-level="20" data-label="Beginner">Kubernetes</span>
       </div>
     </div>
 
@@ -319,36 +368,68 @@
         <li>Request limited access: <a href="https://access.peterfarah.com" target="_blank">access.peterfarah.com</a>.</li>
         <li><a href="blog.html#home-server">Read the full architecture breakdown →</a></li>
       </ul>
+      <div class="tech-tags">
+        <span class="tech-tag tag-python">Python</span>
+        <span class="tech-tag tag-linux">Linux</span>
+        <span class="tech-tag tag-cloud">Prometheus</span>
+        <span class="tech-tag tag-cloud">Grafana</span>
+        <span class="tech-tag tag-cloud">Cloudflare ZT</span>
+        <span class="tech-tag tag-api">YouTube API</span>
+      </div>
     </div>
 
     <div class="project">
       <h3>Client-Server Secure Connection</h3>
       <p>Exchange of symmetric key with asymmetric keys for file transfer. Supports custom certificate exchange signed by a custom certificate authority.</p>
       <a href="https://github.com/FarahPeter/Certificate" target="_blank" rel="noopener">View on GitHub →</a>
+      <div class="tech-tags">
+        <span class="tech-tag tag-python">Python</span>
+        <span class="tech-tag tag-network">TLS/PKI</span>
+        <span class="tech-tag tag-network">Cryptography</span>
+      </div>
     </div>
 
     <div class="project">
       <h3>Galois Field Arithmetic Calculator</h3>
       <p>Instant results for non-trivial arithmetic computations in Galois Fields reaching GF(2^571).</p>
       <a href="https://github.com/FarahPeter/EECE455Project-3" target="_blank" rel="noopener">View on GitHub →</a>
+      <div class="tech-tags">
+        <span class="tech-tag tag-python">Python</span>
+        <span class="tech-tag tag-network">Cryptography</span>
+      </div>
     </div>
 
     <div class="project">
       <h3>Network Attack Implementation &amp; Detection</h3>
       <p>Developed multiple tools including DNS spoofing, TCP SYN flooding/detection, HTTP/TCP flow injection, and ICMP quench local network attacks to study protocol weaknesses.</p>
       <a href="https://github.com/FarahPeter" target="_blank" rel="noopener">View on GitHub →</a>
+      <div class="tech-tags">
+        <span class="tech-tag tag-python">Python</span>
+        <span class="tech-tag tag-c">C</span>
+        <span class="tech-tag tag-network">Scapy</span>
+        <span class="tech-tag tag-network">Raw Sockets</span>
+      </div>
     </div>
 
     <div class="project">
       <h3>Network Cell Analyzer for Android</h3>
       <p>Displays carrier name, network types, dBm, SNR, and frequency band. Built with Java and SQL.</p>
       <a href="https://github.com/FarahPeter/NetworkAnalyzer" target="_blank" rel="noopener">View on GitHub →</a>
+      <div class="tech-tags">
+        <span class="tech-tag tag-java">Java</span>
+        <span class="tech-tag tag-sql">SQL</span>
+        <span class="tech-tag tag-java">Android</span>
+      </div>
     </div>
 
     <div class="project">
       <h3>PHYS210L Calculator</h3>
       <p>Special calculator for the PHYS210L AUB course — scientific rounding, error propagation, prime checking, notes, and cheat sheets.</p>
       <a href="https://github.com/FarahPeter/Phys210L-APP" target="_blank" rel="noopener">View on GitHub →</a>
+      <div class="tech-tags">
+        <span class="tech-tag tag-java">Java</span>
+        <span class="tech-tag tag-java">Android</span>
+      </div>
     </div>
   </section>
 
@@ -369,12 +450,26 @@
     <p>&copy; 2026 Peter Farah. All rights reserved.</p>
   </footer>
 
-
   <!-- Back to Top -->
   <button id="back-to-top" aria-label="Back to top">
     <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
   </button>
 
   <script src="script.js"></script>
+
+  <!-- Command Palette -->
+  <div id="cmd-backdrop" aria-hidden="true"></div>
+  <div id="cmd-palette" role="dialog" aria-label="Command palette" aria-modal="true">
+    <div id="cmd-input-wrap">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false">
+    </div>
+    <div id="cmd-results"></div>
+    <div id="cmd-footer">
+      <span class="cmd-hint"><kbd>↑↓</kbd> navigate</span>
+      <span class="cmd-hint"><kbd>↵</kbd> open</span>
+      <span class="cmd-hint"><kbd>Esc</kbd> close</span>
+    </div>
+  </div>
 </body>
 </html>

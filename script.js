@@ -327,7 +327,7 @@ class TextScramble {
       }).join('');
       if (iter >= original.length) clearInterval(this._iv);
       iter++;
-    }, 10);
+    }, 15);
   }
 }
 
@@ -453,4 +453,257 @@ document.querySelectorAll('.section-title').forEach(title => {
       if (!up) badge.classList.add('status-error');
     })
     .catch(() => {});
+})();
+
+
+// ===== HERO STATS COUNTER ANIMATION =====
+(function initStatsCounter() {
+  const stats = document.querySelectorAll('.hero-stat-number[data-target]');
+  if (!stats.length) return;
+
+  function animateCount(el) {
+    const target  = parseInt(el.dataset.target, 10);
+    const suffix  = el.dataset.suffix  || '';
+    const prefix  = el.dataset.prefix  || '';
+    const duration = 1400;
+    const start    = performance.now();
+
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(eased * target);
+      el.textContent = prefix + current + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const obs = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCount(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  stats.forEach(el => obs.observe(el));
+})();
+
+
+// ===== BLOG POST AUTO TABLE OF CONTENTS =====
+(function initBlogTOC() {
+  document.querySelectorAll('.blog-post').forEach(post => {
+    const cover = post.querySelector('.blog-cover');
+    if (!cover) return;
+
+    cover.addEventListener('click', function onFirstExpand() {
+      // Only build TOC once
+      cover.removeEventListener('click', onFirstExpand);
+      setTimeout(() => buildTOC(post), 50);
+    });
+  });
+
+  function buildTOC(post) {
+    const content = post.querySelector('.blog-content');
+    if (!content) return;
+
+    const headings = content.querySelectorAll('h3, h4');
+    if (headings.length < 3) return; // Not worth it for short posts
+
+    // Assign IDs to headings
+    headings.forEach((h, i) => {
+      if (!h.id) {
+        h.id = 'toc-' + h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + i;
+      }
+    });
+
+    // Build TOC element
+    const toc = document.createElement('div');
+    toc.className = 'blog-toc';
+
+    const tocTitle = document.createElement('div');
+    tocTitle.className = 'blog-toc-title';
+    tocTitle.textContent = 'Table of Contents';
+    tocTitle.addEventListener('click', () => toc.classList.toggle('collapsed'));
+
+    const list = document.createElement('ul');
+    list.className = 'blog-toc-list';
+
+    headings.forEach(h => {
+      const li = document.createElement('li');
+      li.className = h.tagName === 'H4' ? 'toc-h4' : 'toc-h3';
+      const a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const navH = document.querySelector('nav')?.offsetHeight || 64;
+        const top  = h.getBoundingClientRect().top + window.scrollY - navH - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+
+    toc.appendChild(tocTitle);
+    toc.appendChild(list);
+
+    // Insert at top of content
+    content.insertBefore(toc, content.firstChild);
+
+    // Scrollspy: highlight active TOC item
+    const tocLinks = toc.querySelectorAll('a');
+    const scrollSpy = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          tocLinks.forEach(a => {
+            a.classList.toggle('toc-active', a.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+    headings.forEach(h => scrollSpy.observe(h));
+  }
+})();
+
+
+// ===== COMMAND PALETTE =====
+(function initCommandPalette() {
+  const backdrop  = document.getElementById('cmd-backdrop');
+  const palette   = document.getElementById('cmd-palette');
+  const input     = document.getElementById('cmd-input');
+  const results   = document.getElementById('cmd-results');
+  const trigger   = document.getElementById('cmd-trigger');
+  if (!palette || !input || !results) return;
+
+  const COMMANDS = [
+    // Navigation
+    { group: 'Navigate', icon: '👤', title: 'About',              sub: 'Who I am',                    action: () => scrollTo('#about') },
+    { group: 'Navigate', icon: '📅', title: 'Career Timeline',    sub: 'Experience & Education',      action: () => scrollTo('#experience') },
+    { group: 'Navigate', icon: '⚡', title: 'Skills',             sub: 'Tech stack & proficiencies',  action: () => scrollTo('#skills') },
+    { group: 'Navigate', icon: '🔧', title: 'Projects',           sub: 'What I\'ve built',            action: () => scrollTo('#projects') },
+    { group: 'Navigate', icon: '🏆', title: 'Certificates',       sub: 'Honors & certifications',     action: () => scrollTo('#certificates') },
+    // Pages
+    { group: 'Pages',    icon: '📖', title: 'Research & Blog',    sub: 'blog.html',                   action: () => { window.location.href = 'blog.html'; } },
+    { group: 'Pages',    icon: '🔌', title: 'AQM Simulation',     sub: 'Interactive game',            action: () => { window.location.href = 'FUN/AQMgame.html'; } },
+    { group: 'Pages',    icon: '🖥️', title: 'Server Access',      sub: 'Cloudflare Zero Trust panel', action: () => { window.location.href = 'server.html'; } },
+    // Actions
+    { group: 'Actions',  icon: '📄', title: 'Download CV',        sub: 'PDF resume',                  action: () => { window.open('Files/CV/CV_V16/CV-Peter_Farah.pdf', '_blank'); } },
+    { group: 'Actions',  icon: '✉️', title: 'Send Email',         sub: 'peter@peterfarah.com',        action: () => { window.location.href = 'mailto:peter@peterfarah.com'; } },
+    { group: 'Actions',  icon: '🐙', title: 'GitHub',             sub: 'github.com/FarahPeter',       action: () => { window.open('https://github.com/FarahPeter', '_blank'); } },
+    { group: 'Actions',  icon: '💼', title: 'LinkedIn',           sub: 'Connect professionally',      action: () => { window.open('https://www.linkedin.com/in/peter-farah-i', '_blank'); } },
+    { group: 'Actions',  icon: '🌙', title: 'Toggle Theme',       sub: 'Light / Dark mode',           action: () => { document.getElementById('theme-toggle')?.click(); } },
+  ];
+
+  function scrollTo(hash) {
+    const el = document.querySelector(hash);
+    if (!el) return;
+    const navH = document.querySelector('nav')?.offsetHeight || 64;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - navH - 16, behavior: 'smooth' });
+  }
+
+  let selected = 0;
+  let filtered = [];
+
+  function open() {
+    backdrop.classList.add('open');
+    palette.classList.add('open');
+    input.value = '';
+    input.focus();
+    render('');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    backdrop.classList.remove('open');
+    palette.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function render(query) {
+    const q = query.toLowerCase().trim();
+    filtered = q ? COMMANDS.filter(c =>
+      c.title.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
+    ) : COMMANDS;
+
+    selected = 0;
+
+    // Group them
+    const groups = {};
+    filtered.forEach(c => {
+      if (!groups[c.group]) groups[c.group] = [];
+      groups[c.group].push(c);
+    });
+
+    results.innerHTML = '';
+    let flatIndex = 0;
+
+    Object.entries(groups).forEach(([groupName, items]) => {
+      const label = document.createElement('div');
+      label.className = 'cmd-group-label';
+      label.textContent = groupName;
+      results.appendChild(label);
+
+      items.forEach((cmd, i) => {
+        const idx = flatIndex++;
+        const item = document.createElement('div');
+        item.className = 'cmd-item' + (idx === 0 ? ' selected' : '');
+        item.dataset.index = idx;
+        item.innerHTML = `
+          <div class="cmd-item-icon">${cmd.icon}</div>
+          <div class="cmd-item-text">
+            <div class="cmd-item-title">${cmd.title}</div>
+            <div class="cmd-item-sub">${cmd.sub}</div>
+          </div>`;
+        item.addEventListener('mouseenter', () => setSelected(idx));
+        item.addEventListener('click', () => { cmd.action(); close(); });
+        results.appendChild(item);
+      });
+    });
+
+    if (!filtered.length) {
+      results.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:0.85rem;">No results found</div>';
+    }
+  }
+
+  function setSelected(idx) {
+    selected = idx;
+    results.querySelectorAll('.cmd-item').forEach((el, i) => {
+      el.classList.toggle('selected', i === idx);
+    });
+    // Scroll selected into view
+    const sel = results.querySelector('.cmd-item.selected');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }
+
+  function runSelected() {
+    if (!filtered.length) return;
+    filtered[selected]?.action();
+    close();
+  }
+
+  // Events
+  input.addEventListener('input', () => render(input.value));
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(Math.min(selected + 1, filtered.length - 1)); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); setSelected(Math.max(selected - 1, 0)); }
+    if (e.key === 'Enter')     { e.preventDefault(); runSelected(); }
+    if (e.key === 'Escape')    { close(); }
+  });
+
+  backdrop.addEventListener('click', close);
+  trigger?.addEventListener('click', open);
+
+  // Global keyboard shortcut
+  window.addEventListener('keydown', (e) => {
+    const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+    const trigger = isMac ? e.metaKey : e.ctrlKey;
+    if (trigger && e.key === 'k') { e.preventDefault(); palette.classList.contains('open') ? close() : open(); }
+  });
 })();
