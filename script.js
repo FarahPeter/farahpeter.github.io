@@ -327,7 +327,7 @@ class TextScramble {
       }).join('');
       if (iter >= original.length) clearInterval(this._iv);
       iter++;
-    }, 38);
+    }, 10);
   }
 }
 
