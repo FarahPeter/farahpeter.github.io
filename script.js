@@ -327,7 +327,7 @@ class TextScramble {
       }).join('');
       if (iter >= original.length) clearInterval(this._iv);
       iter++;
-    }, 15);
+    }, 38);
   }
 }
 
@@ -705,5 +705,75 @@ document.querySelectorAll('.section-title').forEach(title => {
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
     const trigger = isMac ? e.metaKey : e.ctrlKey;
     if (trigger && e.key === 'k') { e.preventDefault(); palette.classList.contains('open') ? close() : open(); }
+  });
+})();
+
+
+// ===== COPY EMAIL TO CLIPBOARD =====
+(function initCopyEmail() {
+  const btn   = document.getElementById('copy-email-btn');
+  const toast = document.getElementById('copy-toast');
+  if (!btn) return;
+
+  const EMAIL = 'peter@peterfarah.com';
+  let toastTimer = null;
+
+  function showToast() {
+    if (!toast) return;
+    clearTimeout(toastTimer);
+    toast.classList.add('show');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+    } catch {
+      // Fallback for older browsers / non-HTTPS
+      const ta = document.createElement('textarea');
+      ta.value = EMAIL;
+      ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+
+    // Button feedback
+    const original = btn.innerHTML;
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Copied!`;
+    btn.classList.add('copied');
+
+    showToast();
+
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('copied');
+    }, 2400);
+  });
+})();
+
+
+// ===== KEYBOARD FOCUS DETECTION =====
+// Adds 'keyboard-nav' class to body when Tab is used,
+// removes it on mouse click. CSS :focus-visible handles most
+// of this natively, but this gives extra control if needed.
+(function initFocusDetection() {
+  let usingKeyboard = false;
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      usingKeyboard = true;
+      document.body.classList.add('keyboard-nav');
+    }
+  });
+
+  window.addEventListener('mousedown', () => {
+    usingKeyboard = false;
+    document.body.classList.remove('keyboard-nav');
   });
 })();

@@ -54,7 +54,7 @@
 
   <!-- ===== NAVIGATION ===== -->
   <nav aria-label="Main navigation">
-    <a href="https://peterfarah.com" class="nav-logo">&gt; peterfarah.com</a>
+    <a href="index.html" class="nav-logo">&gt; peterfarah.com</a>
 
     <div class="nav-right">
       <!-- Desktop links -->
@@ -138,25 +138,26 @@
       </a>
     </div>
 
-  <!-- Stats Strip -->
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <span class="hero-stat-number" data-target="3" data-suffix="+">0</span>
-      <span class="hero-stat-label">Years Experience</span>
+    <!-- Stats Strip -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-number" data-target="87" data-suffix="%">0%</span>
+        <span class="hero-stat-label">AQM Accuracy</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-number" data-target="100" data-prefix="+" data-suffix="">0</span>
+        <span class="hero-stat-label">Cisco Switches</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-number" data-target="7" data-suffix="">0</span>
+        <span class="hero-stat-label">AQM Algorithms</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-number" data-target="5" data-suffix="+">0</span>
+        <span class="hero-stat-label">Years Experience</span>
+      </div>
     </div>
-    <div class="hero-stat">
-      <span class="hero-stat-number" data-target="36" data-suffix="TB">0</span>
-      <span class="hero-stat-label">Homelab Storage</span>
-    </div>
-    <div class="hero-stat">
-      <span class="hero-stat-number" data-target="50" data-prefix="+" data-suffix="">0</span>
-      <span class="hero-stat-label">Automated Workflows</span>
-    </div>
-    <div class="hero-stat">
-      <span class="hero-stat-number" data-target="15" data-prefix="+" data-suffix="">0</span>
-      <span class="hero-stat-label">Core Technologies</span>
-    </div>
-  </div>
+  </header>
 
   <!-- ===== ABOUT ===== -->
   <section class="reveal" id="about">
@@ -170,6 +171,12 @@
     <div class="btn-group">
       <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="btn" target="_blank">Download CV</a>
       <a href="mailto:peter@peterfarah.com" class="btn">Contact Me</a>
+      <button class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copy Email
+      </button>
     </div>
   </section>
 
@@ -427,7 +434,7 @@
       <a href="https://github.com/FarahPeter/Phys210L-APP" target="_blank" rel="noopener">View on GitHub →</a>
       <div class="tech-tags">
         <span class="tech-tag tag-python">Python</span>
-        <span class="tech-tag">physics</span>
+        <span class="tech-tag tag-python">physics</span>
       </div>
     </div>
   </section>
@@ -453,6 +460,9 @@
   <button id="back-to-top" aria-label="Back to top">
     <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
   </button>
+
+  <!-- Copy Toast -->
+  <div id="copy-toast" role="status" aria-live="polite">✓ peter@peterfarah.com copied</div>
 
   <!-- Command Palette -->
   <div id="cmd-backdrop" aria-hidden="true"></div>

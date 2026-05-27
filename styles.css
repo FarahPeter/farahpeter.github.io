@@ -1587,6 +1587,124 @@ footer {
 /* ========================================
    PRINT STYLESHEET
 ======================================== */
+/* ========================================
+   KEYBOARD FOCUS STYLES
+   Visible only when navigating by keyboard
+   (not on mouse click thanks to :focus-visible)
+======================================== */
+
+/* Remove browser default ugly outlines */
+*:focus { outline: none; }
+
+/* Replace with a clean cyan ring, only for keyboard users */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+a:focus-visible {
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+button:focus-visible,
+.btn:focus-visible {
+  outline-offset: 3px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+
+nav a:focus-visible,
+.nav-drawer a:focus-visible {
+  outline-offset: 2px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+
+.skill-badge:focus-visible {
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+/* ========================================
+   COPY EMAIL TOAST
+======================================== */
+#copy-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--bg-section);
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 16px rgba(74,222,128,0.2);
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.2s;
+}
+#copy-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.copy-email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.copy-email-btn:hover {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green);
+  transform: translateY(-2px);
+}
+.copy-email-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.copy-email-btn:hover svg { transform: scale(1.15); }
+.copy-email-btn.copied {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* ========================================
+   PRINT STYLESHEET
+======================================== */
 @media print {
   body { background: #fff !important; color: #000 !important; }
   nav, .menu-toggle, .btn, .btn-group, #back-to-top, .social-icons,
