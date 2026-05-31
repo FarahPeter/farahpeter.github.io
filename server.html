@@ -8,6 +8,49 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Add these styles to your styles.css file (or leave them here in the head) -->
+  <style>
+    .setup-group {
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border-color, #333);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg-surface, rgba(255, 255, 255, 0.03));
+      transition: all 0.3s ease;
+    }
+    .setup-summary {
+      padding: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      list-style: none; /* Hides the default arrow in some browsers */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-surface-hover, rgba(255, 255, 255, 0.05));
+    }
+    /* Custom Arrow for the summary */
+    .setup-summary::after {
+      content: '▼';
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+    details[open] .setup-summary::after {
+      transform: rotate(180deg);
+    }
+    /* Hide the default webkit arrow */
+    .setup-summary::-webkit-details-marker {
+      display: none;
+    }
+    .setup-content {
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-top: 1px solid var(--border-color, #333);
+    }
+  </style>
 </head>
 <body>
 
@@ -67,11 +110,27 @@
     <p style="text-align:center; color:var(--text-muted); margin-bottom:28px; font-size:0.9rem;">
       Secured via Cloudflare Zero Trust architecture.
     </p>
-    <a class="btn" href="https://access.peterfarah.com" target="_blank" rel="noopener">Request Access</a>
-    <a class="btn" href="https://ssh.peterfarah.com" target="_blank" rel="noopener">SSH Portal</a>
-    <a class="btn" href="https://grafana.peterfarah.com" target="_blank" rel="noopener">Grafana Dashboard</a>
-    <a class="btn" href="https://up.peterfarah.com" target="_blank" rel="noopener">Uptime Monitor</a>
-    <a class="btn" href="https://hook.peterfarah.com/admin-dashboard" target="_blank" rel="noopener">Web Monitor</a>
+
+    <!-- NEW SETUP SECTION (Open by default) -->
+    <details class="setup-group" open>
+      <summary class="setup-summary">New Setup</summary>
+      <div class="setup-content">
+        <a class="btn" href="https://vault.peterfarah.com" target="_blank" rel="noopener">Treasury Vault</a>
+      </div>
+    </details>
+
+    <!-- OLD SETUP SECTION -->
+    <details class="setup-group">
+      <summary class="setup-summary">Old Setup</summary>
+      <div class="setup-content">
+        <a class="btn" href="https://access.peterfarah.com" target="_blank" rel="noopener">Request Access</a>
+        <a class="btn" href="https://ssh.peterfarah.com" target="_blank" rel="noopener">SSH Portal</a>
+        <a class="btn" href="https://grafana.peterfarah.com" target="_blank" rel="noopener">Grafana Dashboard</a>
+        <a class="btn" href="https://up.peterfarah.com" target="_blank" rel="noopener">Uptime Monitor</a>
+        <a class="btn" href="https://hook.peterfarah.com/admin-dashboard" target="_blank" rel="noopener">Web Monitor</a>
+      </div>
+    </details>
+
   </section>
 
   <footer>
