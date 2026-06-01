@@ -401,6 +401,23 @@
           To eliminate local network bottlenecks during large file transfers and media syncing, a dedicated <strong>5GHz-capable OpenWrt router</strong> was integrated into the local architecture. This ensures high-speed, low-latency wireless data transfer across the local Wi-Fi, allowing the NAS to operate at peak efficiency without being constrained by standard ISP equipment limitations.
         </p>
 
+        <h3>Containerized Applications &amp; Observability</h3>
+        <p>
+          Beyond simple storage, the NAS serves as a robust application host running Docker containers. The observability stack includes <strong>Prometheus</strong> and <strong>Grafana</strong> (operating on host networking) alongside an <strong>SNMP exporter</strong> to monitor system health, storage metrics, and network performance. Additionally, the NAS hosts a custom-built Python application (<strong>Treasury Vault</strong>) for financial tracking and bookkeeping.
+        </p>
+        <img src="Files/images/Blog/NAS/containersProject.JPG" loading="lazy" alt="Docker Projects">
+
+        <h3>Centralized Zero Trust Architecture</h3>
+        <p>
+          Instead of exposing services via port forwarding, a centralized <strong>Cloudflare Zero Trust Tunnel</strong> is deployed as a standalone Docker container. Rather than running a separate tunnel for each individual application, this single global gateway handles routing to multiple services (including Grafana, and Treasury Vault) by mapping Cloudflare Public Hostnames directly to the NAS's local IP and corresponding container ports. This architecture drastically simplifies the deployment of new services while maintaining strict access control and isolating the internal network.
+        </p>
+        <img src="Files/images/Blog/NAS/cloudflareapps.JPG" loading="lazy" alt="Cloudflare Zero Trust applications">
+        <ul>
+          <li>Grafana dashboard accessible at <code>nas-grafana.peterfarah.com</code>.</li>
+          <li>No inbound ports opened on the router.</li>
+          <li>Access control policies enforced at the Cloudflare layer.</li>
+        </ul>
+
       </div>
     </div>
   </section>
