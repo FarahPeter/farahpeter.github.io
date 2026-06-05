@@ -5,19 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>404 - Page Not Found | Peter Farah</title>
   <link rel="icon" type="image/x-icon" href="/Files/images/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+  <!-- Background + Cursor -->
+  <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
+  <canvas id="net-canvas"></canvas>
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
   <div id="cursor-ring"></div>
 
   <!-- ===== NAVIGATION ===== -->
   <nav aria-label="Main navigation">
-    <a href="https://peterfarah.com" class="nav-logo">&gt; peterfarah.com</a>
+    <a href="https://peterfarah.com" class="nav-logo">Peter Farah</a>
 
     <div class="nav-right">
       <ul class="nav-links">
@@ -48,7 +52,7 @@
   <!-- Mobile Drawer -->
   <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
     <div class="nav-drawer-header">
-      <span class="nav-logo">&gt; 404</span>
+      <span class="nav-logo">404</span>
       <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
     </div>
     <a href="https://peterfarah.com" class="nav-highlight">Return Home</a>
@@ -60,19 +64,15 @@
   </aside>
 
   <!-- ===== 404 CONTENT ===== -->
-  <section class="reveal" style="text-align:center; margin-top:60px;">
+  <section class="err-wrap reveal">
 
-    <div style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">
-      ERROR 404 &mdash; DESTINATION UNREACHABLE
-    </div>
+    <div class="err-kicker">ERROR 404 &mdash; DESTINATION UNREACHABLE</div>
 
-    <h1 style="font-family:'Syne',sans-serif; font-size:clamp(5rem,20vw,9rem); font-weight:800; line-height:1; letter-spacing:-0.04em; color:var(--accent); margin-bottom:0;">404</h1>
+    <h1 class="err-code">404</h1>
 
-    <h2 style="font-family:'Syne',sans-serif; font-size:clamp(1.1rem,3vw,1.5rem); font-weight:700; color:var(--primary-hover); margin:16px 0 12px;">
-      Packet Dropped &mdash; Page Not Found
-    </h2>
+    <h2 class="err-title">Packet Dropped &mdash; Page Not Found</h2>
 
-    <p style="color:var(--text-muted); max-width:400px; margin:0 auto 32px; font-size:0.9rem; line-height:1.7;">
+    <p class="err-text">
       The resource you requested was lost in transit or never existed. Check the URL, or route back to safety.
     </p>
 
@@ -84,13 +84,13 @@
         <div class="terminal-dot dot-max"></div>
       </div>
       <div class="terminal-body">
-        <span style="color:var(--text-muted);">$</span> traceroute <span style="color:var(--primary-hover);">peterfarah.com<span id="typed-path"></span></span><br>
+        <span style="color:var(--muted);">$</span> traceroute <span style="color:var(--ink);">peterfarah.com<span id="typed-path"></span></span><br>
         <span style="color:#ef4444;">ERR</span> No route to host &mdash; TTL expired in transit<br>
-        <span style="color:var(--text-muted);">$</span> <span id="cursor-blink" style="display:inline-block; width:8px; height:14px; background:var(--accent); vertical-align:middle; animation:blink-cursor 0.8s step-end infinite;"></span>
+        <span style="color:var(--muted);">$</span> <span id="cursor-blink" style="display:inline-block; width:8px; height:14px; background:var(--accent); vertical-align:middle; animation:blink-cursor 0.8s step-end infinite;"></span>
       </div>
     </div>
 
-    <a href="https://peterfarah.com" class="btn" style="font-size:1rem; padding:12px 28px;">
+    <a href="https://peterfarah.com" class="btn btn-primary" style="font-size:1rem; padding:13px 30px;">
       Route Back Home
     </a>
 
@@ -100,10 +100,9 @@
     <p>&copy; 2026 Peter Farah. All rights reserved.</p>
   </footer>
 
-  <script src="/script.js"></script>
+  <script src="script.js"></script>
 
   <script>
-    // Type the current bad path into the terminal
     (function() {
       const el = document.getElementById('typed-path');
       if (!el) return;

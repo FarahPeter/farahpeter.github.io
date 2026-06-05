@@ -11,13 +11,16 @@
   <meta property="og:url" content="https://peterfarah.com/blog.html">
   <meta property="og:type" content="website">
   <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Canvas & Cursor -->
+  <!-- Background + Cursor -->
+  <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
+  <canvas id="net-canvas"></canvas>
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
   <div id="cursor-ring"></div>
@@ -27,7 +30,7 @@
 
   <!-- ===== NAVIGATION ===== -->
   <nav aria-label="Main navigation">
-    <a href="https://peterfarah.com" class="nav-logo">&gt; peterfarah.com</a>
+    <a href="https://peterfarah.com" class="nav-logo">Peter Farah</a>
 
     <div class="nav-right">
       <ul class="nav-links">
@@ -63,7 +66,7 @@
   <!-- Mobile Drawer -->
   <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
     <div class="nav-drawer-header">
-      <span class="nav-logo">&gt; blog</span>
+      <span class="nav-logo">Research</span>
       <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
     </div>
     <a href="#aqm-research">AQM Research</a>
@@ -82,7 +85,8 @@
 
   <!-- ===== PAGE HEADER ===== -->
   <div class="blog-page-header">
-    <h1>Research &amp; Technical Blog</h1>
+    <span class="kicker">Research Log</span>
+    <h1>Research &amp; <span class="grad">Technical Blog</span></h1>
     <p class="page-subtitle">Deep dives into network analysis and automation</p>
   </div>
 
@@ -93,13 +97,14 @@
     <div class="blog-cover">
       <img src="Files/images/Blog/AQMResearche/LAB.png" loading="lazy" alt="AQM Research Architecture Diagram">
       <div class="blog-cover-overlay">
-        <h2 class="section-title">Research on Active Queue Management (AQM) Classification and Analysis</h2>
-        <span class="btn">Click to Expand &amp; Read</span>
+        <h2 class="blog-title">Research on Active Queue Management (AQM) Classification and Analysis</h2>
+        <span class="btn cover-toggle">Click to Expand &amp; Read</span>
       </div>
     </div>
 
     <div class="blog-content-wrapper">
       <div class="blog-content">
+        <div class="blog-content-inner">
 
         <p>
           During my research internship at <strong>Institut Polytechnique de Paris</strong> and later at <strong>Telecom Sud-Paris</strong>, I developed a full testbed and classification framework capable of identifying which <strong>Active Queue Management (AQM)</strong> algorithm is running in a bottleneck router. The system was designed to distinguish between algorithms such as <strong>CoDel</strong>, <strong>FQ-CoDel</strong>, <strong>Cake</strong>, <strong>PIE</strong>, <strong>RED</strong>, <strong>FIFO</strong>, and <strong>FQ</strong>. The ultimate goal was to analyse how these queue disciplines affect congestion, latency, and fairness, and to build a detection system that operates without privileged access to the router.
@@ -135,7 +140,7 @@
 
         <div style="text-align:center; margin:24px 0;">
           <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" loading="lazy" alt="AQM Research Architecture Diagram">
-          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">Figure 1 – Overall architecture of the AQM classification and analysis framework.</p>
+          <p style="font-size:0.8rem; color:var(--muted); margin-top:8px;">Figure 1 – Overall architecture of the AQM classification and analysis framework.</p>
         </div>
 
         <h3>Detailed Architecture Components</h3>
@@ -205,7 +210,7 @@
         </ul>
 
         <h3>Results</h3>
-        <p style="font-size:0.82rem; color:var(--text-muted);">Legend: <span style="color:#2563eb;">Blue</span> = Ideal Testbench &nbsp;|&nbsp; <span style="color:#ea580c;">Orange</span> = Ideal Testbench with remote server &nbsp;|&nbsp; <span style="color:#16a34a;">Green</span> = Home network tests</p>
+        <p style="font-size:0.82rem; color:var(--muted);">Legend: <span style="color:#60a5fa;">Blue</span> = Ideal Testbench &nbsp;|&nbsp; <span style="color:#f59e0b;">Orange</span> = Ideal Testbench with remote server &nbsp;|&nbsp; <span style="color:#22d3ee;">Cyan</span> = Home network tests</p>
         <img src="Files/images/Blog/AQMResearche/Results.jpg" loading="lazy" alt="AQM Research Results">
         <p>
           The developed framework achieved <strong>high classification accuracy</strong> under a wide range of network conditions, including variations in bitrate, queue length, and packet size. In controlled testbed environments, the system consistently distinguished between all tested AQM algorithms with strong separation in their RTT profiles. When evaluated in a real-world scenario involving a live client and router over an operational network, the classifier maintained an overall accuracy of <strong>87%</strong>, demonstrating its robustness outside laboratory conditions.
@@ -235,6 +240,7 @@
         </p>
         <p><em>Future extensions</em> include integrating reinforcement learning to predict queue type adaptively and simulating all AQMs to generate on-the-fly perfect templates given network parameters.</p>
 
+        </div>
       </div>
     </div>
   </section>
@@ -246,13 +252,14 @@
     <div class="blog-cover">
       <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Home Server Architecture">
       <div class="blog-cover-overlay">
-        <h2 class="section-title">Home Server Infrastructure, Automation &amp; Observability Platform</h2>
-        <span class="btn">Click to Expand &amp; Read</span>
+        <h2 class="blog-title">Home Server Infrastructure, Automation &amp; Observability Platform</h2>
+        <span class="btn cover-toggle">Click to Expand &amp; Read</span>
       </div>
     </div>
 
     <div class="blog-content-wrapper">
       <div class="blog-content">
+        <div class="blog-content-inner">
 
         <p>
           I designed and deployed a self-hosted Ubuntu server environment operating as a personal cloud, automation engine, and monitoring platform. The system runs continuously and hosts multiple production-grade Python services, supported by a full observability stack and secured through a Zero Trust architecture.
@@ -361,21 +368,26 @@
 
         <p>This project demonstrates practical DevOps engineering, API integration, automation pipelines, secure infrastructure exposure, and full observability — all operating continuously in a real-world self-hosted production environment.</p>
 
+        </div>
       </div>
     </div>
   </section>
 
-<section class="reveal blog-post" id="home-nas">
+  <!-- ========================================
+       BLOG POST 3: Home NAS
+  ======================================== -->
+  <section class="reveal blog-post" id="home-nas">
     <div class="blog-cover">
       <img src="Files/images/Blog/NAS/NAS_main.jpg" loading="lazy" alt="Synology DS925+ Architecture">
       <div class="blog-cover-overlay">
-        <h2 class="section-title">Enterprise-Grade Home Storage: Synology DS925+</h2>
-        <span class="btn">Click to Expand &amp; Read</span>
+        <h2 class="blog-title">Enterprise-Grade Home Storage: Synology DS925+</h2>
+        <span class="btn cover-toggle">Click to Expand &amp; Read</span>
       </div>
     </div>
 
     <div class="blog-content-wrapper">
       <div class="blog-content">
+        <div class="blog-content-inner">
 
         <p>
           To support growing data requirements and ensure reliable backups for the home infrastructure, a dedicated Network Attached Storage (NAS) solution was implemented. The architecture centers around a <strong>Synology DS925+</strong>, populated with dual <strong>18TB Seagate Exos</strong> enterprise-grade hard drives.
@@ -418,6 +430,7 @@
           <li>Access control policies enforced at the Cloudflare layer.</li>
         </ul>
 
+        </div>
       </div>
     </div>
   </section>
