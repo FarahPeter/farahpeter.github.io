@@ -572,9 +572,3 @@ footer p { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted)
   #cursor-dot, #cursor-ring, #mouse-trail { display: none; }
 }
 
-/* reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
-  .reveal { opacity: 1; transform: none; }
-  .skill-fill { transform: scaleX(1); }
-}

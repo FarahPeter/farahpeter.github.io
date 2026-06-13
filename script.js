@@ -7,7 +7,7 @@
 
   const $  = (s, c) => (c || document).querySelector(s);
   const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduceMotion = false; // animations always on (was: matchMedia('(prefers-reduced-motion: reduce)').matches)
   const finePointer  = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   /* ============================== THEME ============================== */
