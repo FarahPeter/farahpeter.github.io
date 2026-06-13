@@ -30,21 +30,17 @@
   /* ============================== CUSTOM CURSOR ============================== */
   (function cursor() {
     if (!finePointer) return;
-    const dot = $('#cursor-dot'), ring = $('#cursor-ring');
-    if (!dot || !ring) return;
-    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    const glow = $('#cursor-dot');               // repurposed: a soft glow under the native arrow
+    if (!glow) return;
+    let mx = innerWidth / 2, my = innerHeight / 2;
     window.addEventListener('mousemove', e => {
       mx = e.clientX; my = e.clientY;
-      dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+      // small offset so the glow sits under the arrow body rather than its tip
+      glow.style.transform = `translate(${mx + 7}px, ${my + 9}px) translate(-50%, -50%)`;
     });
-    (function loop() {
-      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
-      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
-      requestAnimationFrame(loop);
-    })();
     const hov = 'a, button, summary, .blog-cover, .cmd-item, input, .skill, .project, .hero-stat, .tile-hover';
-    document.addEventListener('mouseover', e => { if (e.target.closest(hov)) ring.classList.add('hover'); });
-    document.addEventListener('mouseout',  e => { if (e.target.closest(hov)) ring.classList.remove('hover'); });
+    document.addEventListener('mouseover', e => { if (e.target.closest(hov)) glow.classList.add('hover'); });
+    document.addEventListener('mouseout',  e => { if (e.target.closest(hov)) glow.classList.remove('hover'); });
 
     const cv = $('#mouse-trail');
     if (cv && !reduceMotion) {
@@ -52,15 +48,15 @@
       function size() { cv.width = innerWidth; cv.height = innerHeight; }
       size(); window.addEventListener('resize', size);
       const pts = [];
-      window.addEventListener('mousemove', e => { pts.push({ x: e.clientX, y: e.clientY, life: 1 }); if (pts.length > 20) pts.shift(); });
+      window.addEventListener('mousemove', e => { pts.push({ x: e.clientX, y: e.clientY, life: 1 }); if (pts.length > 10) pts.shift(); });
       (function draw() {
         ctx.clearRect(0, 0, cv.width, cv.height);
         for (let k = 0; k < pts.length; k++) {
-          const p = pts[k]; p.life -= 0.05;
+          const p = pts[k]; p.life -= 0.08;
           if (p.life <= 0) continue;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, (k / pts.length) * 5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(77, 141, 255, ${p.life * 0.22})`;
+          ctx.arc(p.x, p.y, (k / pts.length) * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(77, 141, 255, ${p.life * 0.12})`;
           ctx.fill();
         }
         requestAnimationFrame(draw);
