@@ -302,6 +302,7 @@
       { label: 'Home Server Architecture', sub: 'blog', icon: ico.hash, href: 'blog.html#home-server' },
       { label: 'Home NAS Architecture', sub: 'blog', icon: ico.hash, href: 'blog.html#home-nas' },
       { label: 'AQM Simulation Game', sub: 'lab', icon: ico.ext, href: 'FUN/AQMgame.html' },
+      { label: 'Interactive Hub', sub: 'page', icon: ico.doc, href: 'fun.html' },
       { label: 'Service Access Panel', sub: 'page', icon: ico.doc, href: 'server.html' },
       { label: 'Download CV', sub: 'pdf', icon: ico.ext, href: 'Files/CV/CV_V16/CV-Peter_Farah.pdf', blank: true },
       { label: 'Email Peter', sub: 'contact', icon: ico.mail, href: 'mailto:peter@peterfarah.com' },

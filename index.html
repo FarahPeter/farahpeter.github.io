@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07112e">
   <title>Peter Farah | Cybersecurity &amp; Network Engineer</title>
   <meta name="description" content="Portfolio of Peter Farah, Cybersecurity and Network Engineer specialising in AQM research, infrastructure automation, and threat intelligence.">
   <meta property="og:title" content="Peter Farah | Cybersecurity &amp; Network Engineer">
@@ -24,7 +25,7 @@
     "name": "Peter Farah",
     "url": "https://peterfarah.com",
     "image": "https://peterfarah.com/Files/images/profile/profile_old.jpg",
-    "jobTitle": "Automation Engineer",
+    "jobTitle": "Infrastructure Automation Engineer",
     "worksFor": { "@type": "Organization", "name": "Murex" },
     "alumniOf": [
       { "@type": "CollegeOrUniversity", "name": "Institut Polytechnique de Paris" },
@@ -65,7 +66,7 @@
         <li><a href="#certificates">Certificates</a></li>
         <li><a href="blog.html" class="nav-highlight">Research</a></li>
         <li><a href="server.html" class="nav-highlight">Server</a></li>
-        <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank">CV</a></li>
+        <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">CV</a></li>
       </ul>
 
       <button class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
@@ -107,7 +108,7 @@
     <div class="nav-drawer-divider"></div>
     <a href="blog.html" class="nav-highlight">Research &amp; Blog</a>
     <a href="server.html" class="nav-highlight">Server Access</a>
-    <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank">Download CV</a>
+    <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">Download CV</a>
     <div class="nav-drawer-divider"></div>
     <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
       <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -124,7 +125,7 @@
       <div class="tile tile-hover hero-intro">
         <span class="hero-hello">Hi, I'm</span>
         <h1 class="hero-name">Peter Farah</h1>
-        <p class="hero-role"><span class="typing-effect" data-text="Infrastructure automation Engineer">Infrastructure automation Engineer</span></p>
+        <p class="hero-role"><span class="typing-effect" data-text="Infrastructure Automation Engineer">Infrastructure Automation Engineer</span></p>
         <div class="social-icons">
           <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener" aria-label="LinkedIn">
             <svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.8v2.2h.1c.5-1 1.8-2.2 3.8-2.2 4 0 4.8 2.6 4.8 6V24h-4v-7.7c0-1.8 0-4-2.5-4s-3 2-3 3.9V24h-4V8z"/></svg>
@@ -137,7 +138,7 @@
           </a>
         </div>
         <div class="btn-group">
-          <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="btn btn-primary" target="_blank">Download CV</a>
+          <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="btn btn-primary" target="_blank" rel="noopener">Download CV</a>
           <a href="mailto:peter@peterfarah.com" class="btn">Contact Me</a>
           <button class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -171,11 +172,11 @@
         <span class="hero-stat-label">Homelab Storage</span>
       </div>
       <div class="tile tile-hover hero-stat">
-        <span class="hero-stat-number" data-target="50" data-prefix="+" data-suffix="">0</span>
+        <span class="hero-stat-number" data-target="50" data-suffix="+">0</span>
         <span class="hero-stat-label">Automated Workflows</span>
       </div>
       <div class="tile tile-hover hero-stat">
-        <span class="hero-stat-number" data-target="15" data-prefix="+" data-suffix="">0</span>
+        <span class="hero-stat-number" data-target="15" data-suffix="+">0</span>
         <span class="hero-stat-label">Core Technologies</span>
       </div>
     </div>
@@ -366,6 +367,7 @@
         <div class="skill"><span class="skill-name">Ansible</span><span class="skill-tag">Intermediate</span><span class="skill-track"><span class="skill-fill" style="--lvl:40%"></span></span></div>
         <div class="skill"><span class="skill-name">Jenkins</span><span class="skill-tag">Intermediate</span><span class="skill-track"><span class="skill-fill" style="--lvl:50%"></span></span></div>
         <div class="skill"><span class="skill-name">Kubernetes</span><span class="skill-tag">Beginner</span><span class="skill-track"><span class="skill-fill" style="--lvl:20%"></span></span></div>
+        <div class="skill"><span class="skill-name">Terraform</span><span class="skill-tag">Intermediate</span><span class="skill-track"><span class="skill-fill" style="--lvl:40%"></span></span></div>
       </div>
 
       <div class="tile tile-hover skills-container s3">
@@ -420,8 +422,8 @@
           <li>Built a custom Python-based FTP server to securely transfer media from mobile devices.</li>
           <li>Implemented infrastructure monitoring using Prometheus and Grafana.</li>
           <li>Integrated Cloudflare Zero Trust Tunnel to securely expose internal services without port forwarding.</li>
-          <li>Secure SSH access via <a href="https://ssh.peterfarah.com" target="_blank">ssh.peterfarah.com</a> &middot; Grafana at <a href="https://grafana.peterfarah.com" target="_blank">grafana.peterfarah.com</a> &middot; Uptime at <a href="https://up.peterfarah.com" target="_blank">up.peterfarah.com</a>.</li>
-          <li>Request limited access: <a href="https://access.peterfarah.com" target="_blank">access.peterfarah.com</a>.</li>
+          <li>Secure SSH access via <a href="https://ssh.peterfarah.com" target="_blank" rel="noopener">ssh.peterfarah.com</a> &middot; Grafana at <a href="https://grafana.peterfarah.com" target="_blank" rel="noopener">grafana.peterfarah.com</a> &middot; Uptime at <a href="https://up.peterfarah.com" target="_blank" rel="noopener">up.peterfarah.com</a>.</li>
+          <li>Request limited access: <a href="https://access.peterfarah.com" target="_blank" rel="noopener">access.peterfarah.com</a>.</li>
           <li><a href="blog.html#home-server">Read the full architecture breakdown →</a></li>
         </ul>
         <div class="tech-tags">

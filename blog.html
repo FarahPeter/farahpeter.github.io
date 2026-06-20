@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07112e">
   <title>Peter Farah | Research &amp; Technical Blog</title>
   <meta name="description" content="Technical write-ups on AQM classification research, home server infrastructure, and network automation by Peter Farah.">
   <meta property="og:title" content="Peter Farah | Research &amp; Technical Blog">
@@ -54,7 +55,7 @@
         </svg>
       </button>
 
-      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation">
+      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -335,12 +336,13 @@
 
         <h4>3. Uptime Monitoring</h4>
         <ul>
-          <li>Deployed Uptime Kuma to monitor:</li>
-          <ul>
-            <li>Ubuntu server availability</li>
-            <li>peterfarah.com</li>
-            <li>farmavetservices.com</li>
-          </ul>
+          <li>Deployed Uptime Kuma to monitor:
+            <ul>
+              <li>Ubuntu server availability</li>
+              <li>peterfarah.com</li>
+              <li>farmavetservices.com</li>
+            </ul>
+          </li>
           <li>Alerting mechanisms for downtime detection.</li>
         </ul>
         <img src="Files/images/Blog/HomeServer/Uptime.JPG" loading="lazy" alt="Uptime Kuma dashboard">
@@ -352,7 +354,7 @@
           <li>Secure SSH access via <code>ssh.peterfarah.com</code>.</li>
           <li>Grafana dashboard accessible at <code>grafana.peterfarah.com</code>.</li>
           <li>Uptime dashboard accessible at <code>up.peterfarah.com</code>.</li>
-          <li>Request Limited access: <a href="https://access.peterfarah.com" target="_blank"><code>access.peterfarah.com</code></a>.</li>
+          <li>Request Limited access: <a href="https://access.peterfarah.com" target="_blank" rel="noopener"><code>access.peterfarah.com</code></a>.</li>
           <li>No inbound ports opened on the router.</li>
           <li>Access control policies enforced at the Cloudflare layer.</li>
         </ul>
