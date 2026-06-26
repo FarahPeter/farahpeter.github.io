@@ -1,7 +1,7 @@
 # Architecture & File Index — farahpeter.github.io
 
 > The technical map of the project. Pair with `docs/PROJECT_CONTEXT.md` (the
-> "what & why") and the root `AGENTS.md` (working rules + model routing).
+> "what & why") and the root `CLAUDE.md` (working rules + model routing).
 
 ---
 

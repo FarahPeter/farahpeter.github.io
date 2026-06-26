@@ -3,7 +3,7 @@
 > Written for a future AI assistant. Read this first to understand **what this
 > project is** before touching anything. For the technical map (files, JS/CSS
 > modules, conventions, what to ignore), read `docs/ARCHITECTURE.md`.
-> For working rules and model routing, read the root `AGENTS.md`.
+> For working rules and model routing, read the root `CLAUDE.md`.
 
 ---
 
@@ -75,7 +75,7 @@ variables instead of hard-coding colors.
 - **Hosting:** GitHub Pages, repo `https://github.com/FarahPeter/farahpeter.github.io`, served from the repo root.
 - **Custom domain:** `peterfarah.com` (set in `CNAME`).
 - **No build pipeline:** it's a static site. A push to the default branch deploys it. There is nothing to compile or transpile.
-- **SEO / crawler files:** `sitemap.xml`, `robots.txt`, and `llms.txt`. (`llms.txt` is a deliberate, public-facing "instructions for AI crawlers" easter-egg about the owner — it is **site content/marketing, not developer documentation**. Don't confuse it with the files in `docs/` or `AGENTS.md`, and don't delete it as part of any "AI docs cleanup".)
+- **SEO / crawler files:** `sitemap.xml`, `robots.txt`, and `llms.txt`. (`llms.txt` is a deliberate, public-facing "instructions for AI crawlers" easter-egg about the owner — it is **site content/marketing, not developer documentation**. Don't confuse it with the files in `docs/` or `CLAUDE.md`, and don't delete it as part of any "AI docs cleanup".)
 
 ---
 
@@ -116,4 +116,4 @@ low-priority — out of scope for this context pass.
 ## 8. Pointers
 
 - **Technical map / file-by-file index / conventions →** `docs/ARCHITECTURE.md`
-- **Working rules + which model to use →** `AGENTS.md` (repo root)
+- **Working rules + which model to use →** `CLAUDE.md` (repo root)

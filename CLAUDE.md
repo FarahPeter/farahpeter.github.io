@@ -1,4 +1,4 @@
-# AGENTS.md — instructions for AI assistants working on this repo
+# CLAUDE.md — instructions for AI assistants working on this repo
 
 **Project:** `farahpeter.github.io` — Peter Farah's personal portfolio. A
 **static** site (plain HTML + CSS + vanilla JS) deployed on **GitHub Pages** at
