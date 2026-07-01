@@ -16,6 +16,35 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── blog.html page-specific polish ── */
+
+    /* Page header: tighten subtitle spacing to align with section-head rhythm */
+    .blog-page-header { padding-bottom: 18px; }
+    .blog-page-header .page-subtitle {
+      margin-top: 12px;
+      font-size: 1rem;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+    }
+
+    /* Centered figure wrapper (replaces inline text-align + margin) */
+    .fig {
+      text-align: center;
+      margin: 24px 0;
+    }
+
+    /* Figure caption: mono, muted, centered, small */
+    .fig-cap {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 0;
+      letter-spacing: 0.01em;
+    }
+  </style>
 </head>
 <body>
 
@@ -139,9 +168,9 @@
           <li><strong>Completion</strong> — Both sides close the connection.</li>
         </ol>
 
-        <div style="text-align:center; margin:24px 0;">
+        <div class="fig">
           <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" loading="lazy" alt="AQM Research Architecture Diagram">
-          <p style="font-size:0.8rem; color:var(--muted); margin-top:8px;">Figure 1 – Overall architecture of the AQM classification and analysis framework.</p>
+          <p class="fig-cap">Figure 1 – Overall architecture of the AQM classification and analysis framework.</p>
         </div>
 
         <h3>Detailed Architecture Components</h3>
@@ -266,7 +295,7 @@
           I designed and deployed a self-hosted Ubuntu server environment operating as a personal cloud, automation engine, and monitoring platform. The system runs continuously and hosts multiple production-grade Python services, supported by a full observability stack and secured through a Zero Trust architecture.
         </p>
 
-        <div style="text-align:center; margin:20px 0;">
+        <div class="fig">
           <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Full Architecture Diagram">
         </div>
 

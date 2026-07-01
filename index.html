@@ -126,6 +126,7 @@
         <span class="hero-hello">Hi, I'm</span>
         <h1 class="hero-name">Peter Farah</h1>
         <p class="hero-role"><span class="typing-effect" data-text="Infrastructure Automation Engineer">Infrastructure Automation Engineer</span></p>
+        <p class="hero-tagline">Low-level networking, infrastructure automation, and threat intelligence.</p>
         <div class="social-icons">
           <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener" aria-label="LinkedIn">
             <svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.8v2.2h.1c.5-1 1.8-2.2 3.8-2.2 4 0 4.8 2.6 4.8 6V24h-4v-7.7c0-1.8 0-4-2.5-4s-3 2-3 3.9V24h-4V8z"/></svg>
@@ -151,6 +152,7 @@
 
       <div class="tile tile-hover hero-photo">
         <img id="profile-image" src="Files/images/profile/profile_old.jpg" alt="Portrait of Peter Farah" loading="eager">
+        <span class="photo-geo" aria-hidden="true">BEIRUT &middot; 33.89&deg;N 35.50&deg;E</span>
       </div>
 
       <div class="tile tile-hover hero-now">
@@ -161,21 +163,21 @@
 
     </div>
 
-    <!-- Stats -->
-    <div class="hero-stats">
-      <div class="tile tile-hover hero-stat">
+    <!-- Stats — one full-width glass strip -->
+    <div class="tile hero-stats">
+      <div class="hero-stat">
         <span class="hero-stat-number" data-target="3" data-suffix="+">0</span>
         <span class="hero-stat-label">Years Experience</span>
       </div>
-      <div class="tile tile-hover hero-stat">
+      <div class="hero-stat">
         <span class="hero-stat-number" data-target="36" data-suffix="TB">0</span>
         <span class="hero-stat-label">Homelab Storage</span>
       </div>
-      <div class="tile tile-hover hero-stat">
+      <div class="hero-stat">
         <span class="hero-stat-number" data-target="50" data-suffix="+">0</span>
         <span class="hero-stat-label">Automated Workflows</span>
       </div>
-      <div class="tile tile-hover hero-stat">
+      <div class="hero-stat">
         <span class="hero-stat-number" data-target="15" data-suffix="+">0</span>
         <span class="hero-stat-label">Core Technologies</span>
       </div>
@@ -185,6 +187,7 @@
   <!-- ===== ABOUT ===== -->
   <section class="reveal" id="about">
     <div class="section-head">
+      <span class="head-num" aria-hidden="true">01</span>
       <span class="kicker">About</span>
       <h2 class="section-title">Engineering <span class="grad">at the edge of the network</span></h2>
     </div>
@@ -201,17 +204,18 @@
   <!-- ===== EXPERIENCE & EDUCATION ===== -->
   <section class="reveal" id="experience">
     <div class="section-head">
+      <span class="head-num" aria-hidden="true">02</span>
       <span class="kicker">Journey</span>
       <h2 class="section-title">Experience &amp; <span class="grad">Education</span></h2>
     </div>
 
     <div class="xp-list">
 
-      <div class="xp-row">
+      <div class="xp-row xp-current">
         <div class="xp-rail"><span class="xp-date">Mar 2026 – Present</span><span class="xp-place">Beirut, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3>Infrastructure Automation Engineer | Murex</h3>
+          <h3><span class="xp-role">Infrastructure Automation Engineer</span><span class="xp-org">Murex</span></h3>
         </div>
       </div>
 
@@ -219,7 +223,7 @@
         <div class="xp-rail"><span class="xp-date">Sep 2023 – Dec 2025</span><span class="xp-place">France</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-edu">Education</span>
-          <h3>Institut Polytechnique de Paris</h3>
+          <h3><span class="xp-role">Institut Polytechnique de Paris</span></h3>
           <p class="text-muted">Master of Computer Science, Cybersecurity</p>
           <p>Graduated with highest distinction in M2. Focused on secure protocols, modern networking, network security, security-oriented programming, and advanced network filtering.</p>
         </div>
@@ -229,7 +233,7 @@
         <div class="xp-rail"><span class="xp-date">Sep 2024 – Oct 2025</span><span class="xp-place">Évry &amp; Palaiseau, France</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3>Network Security Researcher | Polytechnique &amp; Telecom Sud-Paris</h3>
+          <h3><span class="xp-role">Network Security Researcher</span><span class="xp-org">Polytechnique &amp; Telecom Sud-Paris</span></h3>
           <ul>
             <li><strong>Research Focus:</strong> Investigating protection mechanisms in routers against fairness attacks in TCP, focusing on Active Queue Management (AQM) algorithms — CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, and FQ.</li>
             <li><strong>Architecture:</strong> Developed a testbed utilising custom C code to measure bottleneck bitrates, verify bottleneck types, and generate UDP traffic to capture RTT traces.</li>
@@ -243,7 +247,7 @@
         <div class="xp-rail"><span class="xp-date">Apr 2024 – Jul 2024</span><span class="xp-place">Paris, France</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3>SOC R&amp;D Intern | Exeo</h3>
+          <h3><span class="xp-role">SOC R&amp;D Intern</span><span class="xp-org">Exeo</span></h3>
           <ul>
             <li>Integrated Bitdefender and Grafana via Python and SQL for security posture visualisation.</li>
             <li>Developed full vertical integration of Grafana, Prometheus, SNMP devices (Cisco/Fortigate), and various APIs to provide clients with full visibility over their network.</li>
@@ -256,7 +260,7 @@
         <div class="xp-rail"><span class="xp-date">Mar 2023 – Aug 2023</span><span class="xp-place">Verdun, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3>Cybersecurity and Network Engineer | Dar</h3>
+          <h3><span class="xp-role">Cybersecurity and Network Engineer</span><span class="xp-org">Dar</span></h3>
           <ul>
             <li>Managed and deployed hardened configurations across 100+ access layer Cisco switches.</li>
             <li>Maintained and automated Fortigate firewall and proxy operations to enhance security.</li>
@@ -270,7 +274,7 @@
         <div class="xp-rail"><span class="xp-date">Oct 2018 – Dec 2022</span><span class="xp-place">Beirut, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-edu">Education</span>
-          <h3>American University of Beirut</h3>
+          <h3><span class="xp-role">American University of Beirut</span></h3>
           <p class="text-muted">Bachelor of Engineering – BE</p>
           <p>Dean's Honor List. Core coursework in cryptography, network security, and internet security.</p>
         </div>
@@ -280,7 +284,7 @@
         <div class="xp-rail"><span class="xp-date">Jun 2022 – Dec 2022</span><span class="xp-place">Beirut, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3>Cyber Threat Intelligence Officer Intern | POTECH</h3>
+          <h3><span class="xp-role">Cyber Threat Intelligence Officer Intern</span><span class="xp-org">POTECH</span></h3>
           <ul>
             <li>Developed Python scripts (under NDA) to automate reconnaissance through web scraping.</li>
             <li>Orchestrated takedown operations via interactions with APIs and web bots.</li>
@@ -292,7 +296,7 @@
         <div class="xp-rail"><span class="xp-date">Jun 2021 – Aug 2021</span><span class="xp-place">Beirut, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3>Human-Centered Design Specialist Intern | AUB</h3>
+          <h3><span class="xp-role">Human-Centered Design Specialist Intern</span><span class="xp-org">AUB</span></h3>
           <ul>
             <li>Inter-Disciplinary Practice Program (IDPP).</li>
             <li>Engaged in human-centered design and user research to create innovative, user-friendly solutions.</li>
@@ -304,7 +308,7 @@
         <div class="xp-rail"><span class="xp-date">Sep 2003 – Jun 2018</span><span class="xp-place">Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-edu">Education</span>
-          <h3>College Mariste Champville</h3>
+          <h3><span class="xp-role">College Mariste Champville</span></h3>
           <p class="text-muted">Lebanese Baccalaureate</p>
           <p>Ranked 1st in Mathematics, Physics, and Chemistry.</p>
         </div>
@@ -314,7 +318,7 @@
         <div class="xp-rail"><span class="xp-date">Sep 2015 – Jun 2018</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3>Tutor | Self-Employed</h3>
+          <h3><span class="xp-role">Tutor</span><span class="xp-org">Self-Employed</span></h3>
           <ul>
             <li>Mathematics, physics, and chemistry tutor.</li>
           </ul>
@@ -327,6 +331,7 @@
   <!-- ===== SKILLS ===== -->
   <section class="reveal" id="skills">
     <div class="section-head">
+      <span class="head-num" aria-hidden="true">03</span>
       <span class="kicker">Toolbox</span>
       <h2 class="section-title">Skills &amp; <span class="grad">Proficiency</span></h2>
     </div>
@@ -383,6 +388,7 @@
   <!-- ===== PROJECTS ===== -->
   <section class="reveal" id="projects">
     <div class="section-head">
+      <span class="head-num" aria-hidden="true">04</span>
       <span class="kicker">Build Log</span>
       <h2 class="section-title">Selected <span class="grad">Projects</span></h2>
     </div>
@@ -390,49 +396,83 @@
     <div class="projects-grid">
 
       <div class="tile tile-hover project feature">
-        <h3>Synology DS925+ NAS &amp; Self-Hosted App Platform</h3>
-        <ul>
-          <li>Built around a Synology DS925+ with 2&times;18&nbsp;TB Seagate Exos drives in SHR-1, giving single-drive fault tolerance.</li>
-          <li>Primary role is private photo storage &mdash; automatically backing up phone photos for me and my family.</li>
-          <li>Added and configured an OpenWrt router for faster local file transfers over 5&nbsp;GHz Wi-Fi.</li>
-          <li>Scheduled daily and monthly snapshots for point-in-time data recovery and ransomware protection.</li>
-          <li>Added a dedicated 2&nbsp;TB SSD as its own volume to host containerized apps via Synology's built-in Container Manager.</li>
-          <li>Runs a Cloudflare Zero Trust agent to securely expose selected services without any port forwarding.</li>
-          <li>Self-hosted monitoring stack &mdash; Grafana, Prometheus, and a Prometheus agent &mdash; for metrics and dashboards.</li>
-          <li>Custom Python treasury app and a Python poker odds &amp; decision-making app, both written by me.</li>
-          <li>Hosts a full Django e-commerce shop I built for a friend: <a href="https://shop.farmavetservices.com" target="_blank" rel="noopener">shop.farmavetservices.com</a>.</li>
-        </ul>
-        <div class="tech-tags">
-          <span class="tech-tag tag-linux">Synology DSM</span>
-          <span class="tech-tag tag-cloud">Docker</span>
-          <span class="tech-tag tag-python">Python</span>
-          <span class="tech-tag tag-python">Django</span>
-          <span class="tech-tag tag-cloud">Prometheus</span>
-          <span class="tech-tag tag-cloud">Grafana</span>
-          <span class="tech-tag tag-cloud">Cloudflare ZT</span>
-          <span class="tech-tag tag-network">OpenWrt</span>
+        <div class="project-main">
+          <h3>Synology DS925+ NAS &amp; Self-Hosted App Platform</h3>
+          <ul>
+            <li>Built around a Synology DS925+ with 2&times;18&nbsp;TB Seagate Exos drives in SHR-1, giving single-drive fault tolerance.</li>
+            <li>Primary role is private photo storage &mdash; automatically backing up phone photos for me and my family.</li>
+            <li>Added and configured an OpenWrt router for faster local file transfers over 5&nbsp;GHz Wi-Fi.</li>
+            <li>Scheduled daily and monthly snapshots for point-in-time data recovery and ransomware protection.</li>
+            <li>Added a dedicated 2&nbsp;TB SSD as its own volume to host containerized apps via Synology's built-in Container Manager.</li>
+            <li>Runs a Cloudflare Zero Trust agent to securely expose selected services without any port forwarding.</li>
+            <li>Self-hosted monitoring stack &mdash; Grafana, Prometheus, and a Prometheus agent &mdash; for metrics and dashboards.</li>
+            <li>Custom Python treasury app and a Python poker odds &amp; decision-making app, both written by me.</li>
+            <li>Hosts a full Django e-commerce shop I built for a friend: <a href="https://shop.farmavetservices.com" target="_blank" rel="noopener">shop.farmavetservices.com</a>.</li>
+          </ul>
+        </div>
+        <div class="project-side">
+          <svg class="project-topology" viewBox="0 0 120 120" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="var(--accent)" stroke-width="1.2" opacity="0.55">
+              <line x1="60" y1="24" x2="26" y2="60"/><line x1="60" y1="24" x2="94" y2="60"/>
+              <line x1="26" y1="60" x2="60" y2="96"/><line x1="94" y1="60" x2="60" y2="96"/>
+              <line x1="26" y1="60" x2="94" y2="60"/><line x1="60" y1="24" x2="60" y2="96"/>
+            </g>
+            <g fill="var(--bg)" stroke="var(--accent-2)" stroke-width="1.6">
+              <circle cx="60" cy="24" r="6"/><circle cx="26" cy="60" r="6"/>
+              <circle cx="94" cy="60" r="6"/><circle cx="60" cy="96" r="6"/>
+            </g>
+            <circle cx="60" cy="60" r="8" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+            <circle cx="60" cy="60" r="2.6" fill="var(--accent-2)"/>
+          </svg>
+          <div class="tech-tags">
+            <span class="tech-tag tag-linux">Synology DSM</span>
+            <span class="tech-tag tag-cloud">Docker</span>
+            <span class="tech-tag tag-python">Python</span>
+            <span class="tech-tag tag-python">Django</span>
+            <span class="tech-tag tag-cloud">Prometheus</span>
+            <span class="tech-tag tag-cloud">Grafana</span>
+            <span class="tech-tag tag-cloud">Cloudflare ZT</span>
+            <span class="tech-tag tag-network">OpenWrt</span>
+          </div>
         </div>
       </div>
 
       <div class="tile tile-hover project feature">
-        <h3>Home Lab Server &amp; Monitoring Infrastructure</h3>
-        <ul>
-          <li>Designed and deployed a self-hosted Ubuntu server (VM-based) to run production-grade Python services.</li>
-          <li>Developed a fully automated Python pipeline for YouTube video generation and upload.</li>
-          <li>Built a custom Python-based FTP server to securely transfer media from mobile devices.</li>
-          <li>Implemented infrastructure monitoring using Prometheus and Grafana.</li>
-          <li>Integrated Cloudflare Zero Trust Tunnel to securely expose internal services without port forwarding.</li>
-          <li>Secure SSH access via <a href="https://ssh.peterfarah.com" target="_blank" rel="noopener">ssh.peterfarah.com</a> &middot; Grafana at <a href="https://grafana.peterfarah.com" target="_blank" rel="noopener">grafana.peterfarah.com</a> &middot; Uptime at <a href="https://up.peterfarah.com" target="_blank" rel="noopener">up.peterfarah.com</a>.</li>
-          <li>Request limited access: <a href="https://access.peterfarah.com" target="_blank" rel="noopener">access.peterfarah.com</a>.</li>
-          <li><a href="blog.html#home-server">Read the full architecture breakdown →</a></li>
-        </ul>
-        <div class="tech-tags">
-          <span class="tech-tag tag-python">Python</span>
-          <span class="tech-tag tag-linux">Linux</span>
-          <span class="tech-tag tag-cloud">Prometheus</span>
-          <span class="tech-tag tag-cloud">Grafana</span>
-          <span class="tech-tag tag-cloud">Cloudflare ZT</span>
-          <span class="tech-tag tag-api">YouTube API</span>
+        <div class="project-main">
+          <h3>Home Lab Server &amp; Monitoring Infrastructure</h3>
+          <ul>
+            <li>Designed and deployed a self-hosted Ubuntu server (VM-based) to run production-grade Python services.</li>
+            <li>Developed a fully automated Python pipeline for YouTube video generation and upload.</li>
+            <li>Built a custom Python-based FTP server to securely transfer media from mobile devices.</li>
+            <li>Implemented infrastructure monitoring using Prometheus and Grafana.</li>
+            <li>Integrated Cloudflare Zero Trust Tunnel to securely expose internal services without port forwarding.</li>
+            <li>Secure SSH access via <a href="https://ssh.peterfarah.com" target="_blank" rel="noopener">ssh.peterfarah.com</a> &middot; Grafana at <a href="https://grafana.peterfarah.com" target="_blank" rel="noopener">grafana.peterfarah.com</a> &middot; Uptime at <a href="https://up.peterfarah.com" target="_blank" rel="noopener">up.peterfarah.com</a>.</li>
+            <li>Request limited access: <a href="https://access.peterfarah.com" target="_blank" rel="noopener">access.peterfarah.com</a>.</li>
+            <li><a href="blog.html#home-server">Read the full architecture breakdown →</a></li>
+          </ul>
+        </div>
+        <div class="project-side">
+          <svg class="project-topology" viewBox="0 0 120 120" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="var(--accent)" stroke-width="1.2" opacity="0.55">
+              <line x1="60" y1="20" x2="60" y2="52"/>
+              <line x1="60" y1="60" x2="24" y2="92"/><line x1="60" y1="60" x2="60" y2="92"/><line x1="60" y1="60" x2="96" y2="92"/>
+              <line x1="24" y1="92" x2="60" y2="92"/><line x1="60" y1="92" x2="96" y2="92"/>
+            </g>
+            <g fill="var(--bg)" stroke="var(--accent-2)" stroke-width="1.6">
+              <circle cx="60" cy="20" r="6"/><circle cx="24" cy="92" r="6"/>
+              <circle cx="60" cy="92" r="6"/><circle cx="96" cy="92" r="6"/>
+            </g>
+            <rect x="50" y="50" width="20" height="20" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+            <circle cx="60" cy="60" r="2.6" fill="var(--accent-2)"/>
+          </svg>
+          <div class="tech-tags">
+            <span class="tech-tag tag-python">Python</span>
+            <span class="tech-tag tag-linux">Linux</span>
+            <span class="tech-tag tag-cloud">Prometheus</span>
+            <span class="tech-tag tag-cloud">Grafana</span>
+            <span class="tech-tag tag-cloud">Cloudflare ZT</span>
+            <span class="tech-tag tag-api">YouTube API</span>
+          </div>
         </div>
       </div>
 
@@ -496,15 +536,16 @@
   <!-- ===== CERTIFICATES ===== -->
   <section class="reveal" id="certificates">
     <div class="section-head">
+      <span class="head-num" aria-hidden="true">05</span>
       <span class="kicker">Credentials</span>
       <h2 class="section-title">Certificates &amp; <span class="grad">Honors</span></h2>
     </div>
     <ul class="cert-list">
-      <li class="tile"><strong>Institut Polytechnique de Paris:</strong> Graduated with the highest honors</li>
-      <li class="tile"><strong>American University of Beirut:</strong> Dean's Honor List</li>
-      <li class="tile"><strong>Bitdefender Certified:</strong> Sales Specialist, MSP Technical Specialist, Technical Solutions Professional (July 2024)</li>
-      <li class="tile"><strong>Fortinet:</strong> Security Driven Networking Workshop Completion</li>
-      <li class="tile"><strong>IELTS:</strong> CEFR level C1 (Nov 2022)</li>
+      <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>Institut Polytechnique de Paris:</strong> Graduated with the highest honors</li>
+      <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>American University of Beirut:</strong> Dean's Honor List</li>
+      <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>Bitdefender Certified:</strong> Sales Specialist, MSP Technical Specialist, Technical Solutions Professional (July 2024)</li>
+      <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>Fortinet:</strong> Security Driven Networking Workshop Completion</li>
+      <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>IELTS:</strong> CEFR level C1 (Nov 2022)</li>
     </ul>
   </section>
 

@@ -88,7 +88,15 @@
     function init() {
       w = cv.width = innerWidth; h = cv.height = innerHeight;
       const n = COUNT(); nodes = [];
-      for (let i = 0; i < n; i++) nodes.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22 });
+      for (let i = 0; i < n; i++) {
+        // ~30% of nodes are "big" (larger radius + brighter); ~70% small/faint
+        const big = Math.random() < 0.3;
+        nodes.push({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
+          r: big ? 2.4 : 1.3, a: big ? 0.7 : 0.32
+        });
+      }
       COL = rgb();
     }
     init(); window.addEventListener('resize', init);
@@ -119,7 +127,7 @@
           }
         }
       }
-      for (const nd of nodes) { ctx.beginPath(); ctx.arc(nd.x, nd.y, 1.5, 0, Math.PI * 2); ctx.fillStyle = `rgba(${COL}, 0.45)`; ctx.fill(); }
+      for (const nd of nodes) { ctx.beginPath(); ctx.arc(nd.x, nd.y, nd.r, 0, Math.PI * 2); ctx.fillStyle = `rgba(${COL}, ${nd.a})`; ctx.fill(); }
       for (let k = packets.length - 1; k >= 0; k--) {
         const p = packets[k]; p.t += p.speed;
         if (p.t >= 1) { packets.splice(k, 1); continue; }
@@ -350,6 +358,115 @@
     function scrollActive() { const el = $$('.cmd-item', results)[active]; if (el) el.scrollIntoView({ block: 'nearest' }); }
     window.addEventListener('keydown', e => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); pal.classList.contains('open') ? close() : open(); }
+    });
+  })();
+
+  /* ============================== CURSOR SPOTLIGHT ============================== */
+  /* Delegated, rAF-throttled pointer tracking. Sets element-local --mx/--my (px)
+     on the nearest spotlight-capable card so its CSS radial glow follows the cursor. */
+  (function spotlight() {
+    if (!finePointer) return;
+    const SEL = '.tile-hover, .hub-card, .blog-cover';
+    let px = 0, py = 0, cur = null, queued = false;
+    function apply() {
+      queued = false;
+      if (!cur) return;
+      const r = cur.getBoundingClientRect();
+      cur.style.setProperty('--mx', (px - r.left) + 'px');
+      cur.style.setProperty('--my', (py - r.top) + 'px');
+    }
+    document.addEventListener('pointermove', e => {
+      const el = e.target.closest ? e.target.closest(SEL) : null;
+      cur = el; px = e.clientX; py = e.clientY;
+      if (el && !queued) { queued = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+  })();
+
+  /* ============================== 3D TILT (HERO PHOTO) ============================== */
+  (function tilt() {
+    if (!finePointer) return;
+    const el = $('.hero-photo');
+    if (!el) return;
+    const MAX = 4; // degrees
+    let queued = false, px = 0, py = 0;
+    function apply() {
+      queued = false;
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const rx = Math.max(-MAX, Math.min(MAX, -((py - cy) / (r.height / 2)) * MAX));
+      const ry = Math.max(-MAX, Math.min(MAX,  ((px - cx) / (r.width  / 2)) * MAX));
+      el.style.transform = `perspective(800px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+    }
+    el.addEventListener('pointermove', e => {
+      px = e.clientX; py = e.clientY;
+      el.classList.add('tilt-3d');
+      if (!queued) { queued = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+    el.addEventListener('pointerleave', () => {
+      el.style.transform = '';
+      el.classList.remove('tilt-3d');
+    }, { passive: true });
+  })();
+
+  /* ============================== MAGNETIC BUTTONS ============================== */
+  /* Pull the element a few px toward the cursor via --mag-x/--mag-y (composed
+     into the element's CSS transform so the hover lift still applies). */
+  (function magnetic() {
+    if (!finePointer) return;
+    const els = $$('.btn, .copy-email-btn, .social-icons a');
+    if (!els.length) return;
+    const MAX = 4; // px
+    els.forEach(el => {
+      let queued = false, px = 0, py = 0;
+      function apply() {
+        queued = false;
+        const r = el.getBoundingClientRect();
+        const dx = (px - (r.left + r.width / 2)) / (r.width / 2);
+        const dy = (py - (r.top + r.height / 2)) / (r.height / 2);
+        el.style.setProperty('--mag-x', (Math.max(-1, Math.min(1, dx)) * MAX).toFixed(2) + 'px');
+        el.style.setProperty('--mag-y', (Math.max(-1, Math.min(1, dy)) * MAX).toFixed(2) + 'px');
+      }
+      el.addEventListener('pointermove', e => {
+        px = e.clientX; py = e.clientY;
+        if (!queued) { queued = true; requestAnimationFrame(apply); }
+      }, { passive: true });
+      el.addEventListener('pointerleave', () => {
+        el.style.setProperty('--mag-x', '0px');
+        el.style.setProperty('--mag-y', '0px');
+      }, { passive: true });
+    });
+  })();
+
+  /* ============================== REVEAL STAGGER ============================== */
+  /* When a .reveal section enters, assign an incremental --i to its grid items
+     so their CSS entrance transitions fan out. Watches the .in class via an
+     observer so it composes with the existing reveal module (semantics intact). */
+  (function stagger() {
+    const sections = $$('.reveal');
+    if (!sections.length) return;
+    const GROUPS = [
+      ['.projects-grid', ':scope > .project'],
+      ['.skills-grid',   ':scope > .skills-container'],
+      ['.cert-list',     ':scope > li'],
+      ['.xp-list',       ':scope > .xp-row']
+    ];
+    function assign(section) {
+      GROUPS.forEach(([container, child]) => {
+        const box = section.querySelector(container);
+        if (!box) return;
+        let kids;
+        try { kids = box.querySelectorAll(child); }
+        catch (e) { kids = box.children; }
+        Array.prototype.forEach.call(kids, (k, i) => k.style.setProperty('--i', i));
+      });
+    }
+    if (!('MutationObserver' in window)) { sections.forEach(assign); return; }
+    sections.forEach(section => {
+      if (section.classList.contains('in')) { assign(section); return; }
+      const mo = new MutationObserver(() => {
+        if (section.classList.contains('in')) { assign(section); mo.disconnect(); }
+      });
+      mo.observe(section, { attributes: true, attributeFilter: ['class'] });
     });
   })();
 

@@ -46,7 +46,7 @@
             border: 1px solid var(--accent-line);
         }
 
-        /* ── Interactive Hub Grid Styles ── */
+        /* ── Interactive Hub Grid ── */
         .hub-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -54,142 +54,148 @@
             margin-top: 20px;
         }
 
+        /* hub-card: layout only — glass/tile/tile-hover in styles.css handle appearance */
         .hub-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 30px;
+            padding: 26px;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            min-height: 0;
         }
 
-        [data-theme="light"] .hub-card {
-            background: rgba(0, 0, 0, 0.015);
-        }
-
+        /* Lift + accent ring on hover (complements tile-hover spotlight) */
         .hub-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-6px);
             border-color: var(--accent-line);
-            box-shadow: var(--shadow-glow);
+            box-shadow: var(--shadow-glow), inset 0 1px 0 var(--specular);
+        }
+        .hub-card:hover::after {
+            background: linear-gradient(135deg, var(--ring-hi), var(--ring-accent) 55%, var(--accent-line) 100%);
         }
 
-        /* Subtle glowing top border accent for each card */
-        .hub-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--text-muted);
-            transition: background 0.3s ease;
+        /* ── Accent chip ── */
+        /* Three cycling brand accents */
+        .acc-1 { --card-accent: var(--accent);   --card-accent-dark: color-mix(in srgb, var(--accent)   60%, #000); }
+        .acc-2 { --card-accent: var(--accent-2);  --card-accent-dark: color-mix(in srgb, var(--accent-2)  60%, #000); }
+        .acc-3 { --card-accent: var(--accent-3);  --card-accent-dark: color-mix(in srgb, var(--accent-3)  60%, #000); }
+
+        /* Gradient icon chip */
+        .card-chip {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--card-accent), color-mix(in srgb, var(--card-accent) 35%, transparent));
+            box-shadow: 0 4px 16px -4px color-mix(in srgb, var(--card-accent) 55%, transparent),
+                        inset 0 1px 0 rgba(255,255,255,0.3);
+            border: 1px solid color-mix(in srgb, var(--card-accent) 45%, transparent);
+            color: #fff;
         }
-
-        /* Card specific accents on hover */
-        .card-aqm:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
-        .card-sketch:hover::before { background: #00fff9; box-shadow: 0 0 10px #00fff9; }
-        .card-crypto:hover::before { background: #c084fc; box-shadow: 0 0 10px #c084fc; }
-        .card-nmap:hover::before { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
-        .card-json:hover::before { background: #eab308; box-shadow: 0 0 10px #eab308; }
-        .card-subnet:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
-        .card-chmod:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
-        .card-cron:hover::before { background: #facc15; box-shadow: 0 0 10px #facc15; }
-        .card-entropy:hover::before { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
-        .card-ports:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
-        .card-regex:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
-        .card-firewall:hover::before { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
-        .card-base64:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
-        .card-url:hover::before { background: #facc15; box-shadow: 0 0 10px #facc15; }
-        .card-jwt:hover::before { background: #c084fc; box-shadow: 0 0 10px #c084fc; }
-        .card-mac:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
-        .card-password:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
-        .card-dns:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
-        .card-hashing:hover::before { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
-        .card-pwd-strength:hover::before { background: #facc15; box-shadow: 0 0 10px #facc15; }
-        .card-whois:hover::before { background: #00fff9; box-shadow: 0 0 10px #00fff9; }
-        .card-ping:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
-        .card-cidr:hover::before { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
-
-
-        .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+        [data-theme="light"] .card-chip {
+            color: #fff;
+        }
+        .card-chip svg {
+            width: 22px;
+            height: 22px;
         }
 
         .card-title {
-            color: var(--primary-hover);
-            font-size: 1.4rem;
+            color: var(--ink);
+            font-size: 1.2rem;
             font-weight: 700;
             margin: 0 0 10px 0;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.02em;
+            font-family: var(--font-display);
         }
 
         .card-desc {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            flex-grow: 1; /* Pushes the button to the bottom */
+            color: var(--muted);
+            font-size: 0.93rem;
+            line-height: 1.65;
+            margin-bottom: 20px;
+            flex-grow: 1;
         }
 
         .card-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
+        /* ── Launch button ── */
         .hub-launch-btn {
-            display: block;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             width: 100%;
-            padding: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 0.05em;
+            padding: 11px 16px;
+            font-family: var(--font-mono);
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: 13px;
+            border: 1px solid color-mix(in srgb, var(--card-accent) 55%, transparent);
+            color: var(--card-accent);
+            background: color-mix(in srgb, var(--card-accent) 8%, transparent);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            transition: background 0.25s var(--ease), border-color 0.25s, color 0.2s, transform 0.25s var(--ease), box-shadow 0.25s;
+        }
+        .hub-launch-btn:hover {
+            background: color-mix(in srgb, var(--card-accent) 18%, transparent);
+            border-color: var(--card-accent);
+            color: var(--card-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px -6px color-mix(in srgb, var(--card-accent) 40%, transparent);
+        }
+        [data-theme="light"] .hub-launch-btn:hover {
+            color: var(--card-accent);
         }
 
-        /* ── Filter Buttons Styles ── */
+        /* ── Filter pills ── */
         .filter-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 30px;
             justify-content: center;
         }
 
         .filter-btn {
-            background: transparent;
+            background: var(--glass);
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
             border: 1px solid var(--glass-border-2);
             color: var(--muted);
-            padding: 8px 18px;
-            border-radius: 20px;
+            padding: 8px 20px;
+            border-radius: 999px;
             cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            transition: background 0.25s var(--ease), border-color 0.25s, color 0.2s, transform 0.2s var(--ease);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
         }
-
         .filter-btn:hover {
             border-color: var(--accent-line);
             color: var(--accent-bright);
             transform: translateY(-2px);
         }
-
         .filter-btn.active {
-            background: var(--accent);
+            background: linear-gradient(110deg, var(--accent), var(--accent-2));
             color: #021024;
-            border-color: var(--accent);
-            font-weight: bold;
+            border-color: transparent;
+            font-weight: 600;
+        }
+        [data-theme="light"] .filter-btn.active {
+            color: #fff;
         }
 
-        /* Animation class for hiding cards */
+        /* Hide filtered-out cards */
         .hub-card.hidden {
             display: none !important;
         }
@@ -258,7 +264,7 @@
 
     <header>
         <h1>Interactive Hub</h1>
-        <h2 class="page-subtitle">Simulators, tools, and playgrounds</h2>
+        <p class="page-subtitle">Simulators, tools, and playgrounds</p>
     </header>
 
     <section class="reveal" style="max-width: 1100px; background: transparent; border: none; box-shadow: none; padding: 0 20px;">
@@ -274,8 +280,12 @@
 
         <div class="hub-grid">
 
-            <div class="hub-card card-aqm">
-                <div class="card-icon">⚡</div>
+            <div class="hub-card card-aqm tile tile-hover acc-1">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="2 12 6 6 10 16 14 8 18 14 22 10"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">AQM Network Visualizer</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Networking</span>
@@ -284,7 +294,7 @@
                 <p class="card-desc">
                     A live UDP traffic simulation displaying the real-time RTT signatures of 7 different Active Queue Management algorithms including CoDel, PIE, and Cake.
                 </p>
-                <a href="FUN/AQMgame.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Launch Sim</a>
+                <a href="FUN/AQMgame.html" class="btn hub-launch-btn">Launch Sim</a>
             </div>
 
             <!--
@@ -315,8 +325,12 @@
             </div>
             -->
 
-            <div class="hub-card card-sketch">
-                <div class="card-icon">✏️</div>
+            <div class="hub-card card-sketch tile tile-hover acc-2">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Diagram Sketcher</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Tool</span>
@@ -325,11 +339,16 @@
                 <p class="card-desc">
                     An interactive whiteboard tailored for network topology design. Includes intelligent shapes, a text tool, and a robust undo/redo history stack.
                 </p>
-                <a href="FUN/sketch.html" class="btn hub-launch-btn" style="border-color: #00fff9; color: #00fff9;">Open Sketcher</a>
+                <a href="FUN/sketch.html" class="btn hub-launch-btn">Open Sketcher</a>
             </div>
 
-            <div class="hub-card card-crypto">
-                <div class="card-icon">🔐</div>
+            <div class="hub-card card-crypto tile tile-hover acc-3">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Crypto Playground</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
@@ -338,11 +357,16 @@
                 <p class="card-desc">
                     A secure, client-side cryptographic sandbox. Perform real-time AES symmetric encryption, Base64/Hex encoding, and SHA/MD5 hashing instantly as you type.
                 </p>
-                <a href="FUN/crypto.html" class="btn hub-launch-btn" style="border-color: #c084fc; color: #c084fc;">Enter Lab</a>
+                <a href="FUN/crypto.html" class="btn hub-launch-btn">Enter Lab</a>
             </div>
 
-            <div class="hub-card card-jwt">
-                <div class="card-icon">🎟️</div>
+            <div class="hub-card card-jwt tile tile-hover acc-1">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                        <path d="M13 5v2M13 17v2M13 11v2"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">JWT Decoder</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
@@ -351,11 +375,16 @@
                 <p class="card-desc">
                     Instantly decode and inspect JSON Web Tokens (JWT). View headers and payloads with syntax highlighting and format validation.
                 </p>
-                <a href="FUN/jwt.html" class="btn hub-launch-btn" style="border-color: #c084fc; color: #c084fc;">Open Decoder</a>
+                <a href="FUN/jwt.html" class="btn hub-launch-btn">Open Decoder</a>
             </div>
 
-            <div class="hub-card card-password">
-                <div class="card-icon">🔑</div>
+            <div class="hub-card card-password tile tile-hover acc-2">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="7.5" cy="15.5" r="5.5"/>
+                        <path d="M21 2l-9.6 9.6M15.5 7.5l3 3"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Password Generator</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
@@ -365,11 +394,15 @@
                 <p class="card-desc">
                     Generate strong, secure, and highly randomized passwords locally in your browser. Customize length and character sets.
                 </p>
-                <a href="FUN/password.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Generate Password</a>
+                <a href="FUN/password.html" class="btn hub-launch-btn">Generate Password</a>
             </div>
 
-            <div class="hub-card card-pwd-strength">
-                <div class="card-icon">💪</div>
+            <div class="hub-card card-pwd-strength tile tile-hover acc-3">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Password Strength</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
@@ -378,11 +411,17 @@
                 <p class="card-desc">
                     Analyze the strength, entropy, and estimated crack time of your passwords locally without sending data to a server.
                 </p>
-                <a href="FUN/password-strength.html" class="btn hub-launch-btn" style="border-color: #facc15; color: #facc15;">Check Strength</a>
+                <a href="FUN/password-strength.html" class="btn hub-launch-btn">Check Strength</a>
             </div>
 
-            <div class="hub-card card-hashing">
-                <div class="card-icon">🗄️</div>
+            <div class="hub-card card-hashing tile tile-hover acc-1">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M3 5v14a9 3 0 0 0 18 0V5"/>
+                        <path d="M3 12a9 3 0 0 0 18 0"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">File Hasher</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
@@ -392,11 +431,20 @@
                 <p class="card-desc">
                     Calculate MD5, SHA-1, and SHA-256 hashes of files directly in your browser. Works completely offline with large file support.
                 </p>
-                <a href="FUN/hashing.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open Hasher</a>
+                <a href="FUN/hashing.html" class="btn hub-launch-btn">Open Hasher</a>
             </div>
 
-            <div class="hub-card card-nmap">
-                <div class="card-icon">🎯</div>
+            <div class="hub-card card-nmap tile tile-hover acc-2">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="3"/>
+                        <line x1="12" y1="2" x2="12" y2="5"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                        <line x1="2" y1="12" x2="5" y2="12"/>
+                        <line x1="19" y1="12" x2="22" y2="12"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Nmap Builder</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
@@ -406,11 +454,16 @@
                 <p class="card-desc">
                     A visual interface to build complex Nmap commands. Select scan types, timing templates, and flags without memorizing the man page.
                 </p>
-                <a href="FUN/nmap.html" class="btn hub-launch-btn" style="border-color: #ef4444; color: #ef4444;">Launch Builder</a>
+                <a href="FUN/nmap.html" class="btn hub-launch-btn">Launch Builder</a>
             </div>
 
-            <div class="hub-card card-dns">
-                <div class="card-icon">🔎</div>
+            <div class="hub-card card-dns tile tile-hover acc-3">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">DNS Lookup Tool</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -419,11 +472,16 @@
                 <p class="card-desc">
                     Perform instant DNS lookups using Google's DNS-over-HTTPS. Query A, AAAA, MX, TXT, CNAME, and NS records directly from your browser.
                 </p>
-                <a href="FUN/dns.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open DNS Lookup</a>
+                <a href="FUN/dns.html" class="btn hub-launch-btn">Open DNS Lookup</a>
             </div>
 
-            <div class="hub-card card-whois">
-                <div class="card-icon">📖</div>
+            <div class="hub-card card-whois tile tile-hover acc-1">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">WHOIS Lookup</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -432,7 +490,7 @@
                 <p class="card-desc">
                     Query registration and ownership information for domains or IP addresses instantly using a free public API.
                 </p>
-                <a href="FUN/whois.html" class="btn hub-launch-btn" style="border-color: #00fff9; color: #00fff9;">Open WHOIS Lookup</a>
+                <a href="FUN/whois.html" class="btn hub-launch-btn">Open WHOIS Lookup</a>
             </div>
 
             <!--
@@ -450,8 +508,13 @@
             </div>
             -->
 
-            <div class="hub-card card-json">
-                <div class="card-icon">❴❵</div>
+            <div class="hub-card card-json tile tile-hover acc-2">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">JSON Beautifier</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -460,11 +523,18 @@
                 <p class="card-desc">
                     A fast, client-side JSON formatter and validator. Paste raw JSON payloads to instantly beautify and syntax-highlight them for readability.
                 </p>
-                <a href="FUN/json.html" class="btn hub-launch-btn" style="border-color: #eab308; color: #eab308;">Open Beautifier</a>
+                <a href="FUN/json.html" class="btn hub-launch-btn">Open Beautifier</a>
             </div>
 
-            <div class="hub-card card-base64">
-                <div class="card-icon">🔤</div>
+            <div class="hub-card card-base64 tile tile-hover acc-3">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="17 1 21 5 17 9"/>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                        <polyline points="7 23 3 19 7 15"/>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Base64 Encode/Decode</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -473,11 +543,16 @@
                 <p class="card-desc">
                     A simple and fast client-side tool to encode and decode text to and from Base64 format. Great for quick string manipulation.
                 </p>
-                <a href="FUN/base64.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open Tool</a>
+                <a href="FUN/base64.html" class="btn hub-launch-btn">Open Tool</a>
             </div>
 
-            <div class="hub-card card-url">
-                <div class="card-icon">🔗</div>
+            <div class="hub-card card-url tile tile-hover acc-1">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">URL Encode/Decode</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -486,11 +561,17 @@
                 <p class="card-desc">
                     Easily encode and decode URL strings and parameters. Fix messy links or prepare payloads for web requests instantly.
                 </p>
-                <a href="FUN/urlencode.html" class="btn hub-launch-btn" style="border-color: #facc15; color: #facc15;">Open Tool</a>
+                <a href="FUN/urlencode.html" class="btn hub-launch-btn">Open Tool</a>
             </div>
 
-            <div class="hub-card card-mac">
-                <div class="card-icon">🖥️</div>
+            <div class="hub-card card-mac tile tile-hover acc-2">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">MAC Formatter</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -499,11 +580,17 @@
                 <p class="card-desc">
                     Convert lists of MAC addresses between different formats (Cisco, Linux, Windows) with a single click. Ideal for bulk config updates.
                 </p>
-                <a href="FUN/mac.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Open Formatter</a>
+                <a href="FUN/mac.html" class="btn hub-launch-btn">Open Formatter</a>
             </div>
 
-            <div class="hub-card card-subnet">
-                <div class="card-icon">🌐</div>
+            <div class="hub-card card-subnet tile tile-hover acc-3">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Subnet Calculator</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -512,11 +599,18 @@
                 <p class="card-desc">
                     A fast, client-side IPv4 Subnet and CIDR calculator. Instantly calculates Network Addresses, Broadcast IPs, Wildcard Masks, and Usable Host boundaries.
                 </p>
-                <a href="FUN/subnet.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Open Tool</a>
+                <a href="FUN/subnet.html" class="btn hub-launch-btn">Open Tool</a>
             </div>
 
-            <div class="hub-card card-cidr">
-                <div class="card-icon">🧮</div>
+            <div class="hub-card card-cidr tile tile-hover acc-1">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">CIDR Tool</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -525,11 +619,16 @@
                 <p class="card-desc">
                     Convert between CIDR notation and IP address ranges quickly. Calculate exact start/end addresses or find optimal CIDR blocks.
                 </p>
-                <a href="FUN/cidr.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Open CIDR Tool</a>
+                <a href="FUN/cidr.html" class="btn hub-launch-btn">Open CIDR Tool</a>
             </div>
 
-            <div class="hub-card card-chmod">
-                <div class="card-icon">🐧</div>
+            <div class="hub-card card-chmod tile tile-hover acc-2">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 17 10 11 4 5"/>
+                        <line x1="12" y1="19" x2="20" y2="19"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">CHMOD Calculator</h3>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
@@ -538,15 +637,20 @@
                 <p class="card-desc">
                     A visual file permission generator. Toggle Read, Write, and Execute switches to instantly output the precise Octal command and Symbolic strings for Linux files.
                 </p>
-                <a href="FUN/chmod.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open Tool</a>
+                <a href="FUN/chmod.html" class="btn hub-launch-btn">Open Tool</a>
             </div>
 
-            <div class="hub-card card-cron">
-                <div class="card-icon">⏱️</div>
+            <div class="hub-card card-cron tile tile-hover acc-3">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Cron Translator</h3>
                 <div class="card-tags"><span class="skill-badge">Utility</span><span class="skill-badge">DevOps</span></div>
                 <p class="card-desc">Type raw Linux cron scheduling syntax and instantly decode it into plain, human-readable English.</p>
-                <a href="FUN/cron.html" class="btn hub-launch-btn" style="border-color: #facc15; color: #facc15;">Open Tool</a>
+                <a href="FUN/cron.html" class="btn hub-launch-btn">Open Tool</a>
             </div>
 
             <!--
@@ -560,12 +664,17 @@
             -->
 
 
-            <div class="hub-card card-ports">
-                <div class="card-icon">🔌</div>
+            <div class="hub-card card-ports tile tile-hover acc-1">
+                <div class="card-chip" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v5M12 17v5M4.22 4.22l3.54 3.54M16.24 16.24l3.54 3.54M2 12h5M17 12h5M4.22 19.78l3.54-3.54M16.24 7.76l3.54-3.54"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </div>
                 <h3 class="card-title">Port Database</h3>
                 <div class="card-tags"><span class="skill-badge">Utility</span><span class="skill-badge">Networking</span></div>
                 <p class="card-desc">A lightning-fast reference list of the most critical IANA-registered TCP/UDP service ports.</p>
-                <a href="FUN/ports.html" class="btn hub-launch-btn" style="border-color: #3b82f6; color: #3b82f6;">Open Database</a>
+                <a href="FUN/ports.html" class="btn hub-launch-btn">Open Database</a>
             </div>
 
         </div>

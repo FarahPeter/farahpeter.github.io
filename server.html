@@ -11,6 +11,43 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── server.html page-specific polish ── */
+
+    /* Service button row: name left, host mono/muted right, then ↗ arrow */
+    .btn.svc {
+      display: flex;        /* override inline-flex so it stretches full width */
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .svc-name {
+      flex: 1;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .svc-host {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      margin-right: 8px;   /* gap before the ↗ pseudo */
+      align-self: center;
+      /* sit between svc-name (natural order 0→1) and ::before (order 2) */
+      order: 1;
+    }
+
+    /* Minor panel polish: center the status console header */
+    .server-panel .section-head {
+      padding-bottom: 6px;
+    }
+    /* symmetric rule under the centered heading (global one fades left→right) */
+    .server-panel .section-head::after {
+      background: linear-gradient(90deg, transparent, var(--accent-line) 30%, var(--accent-line) 70%, transparent);
+    }
+    .server-panel .status-line {
+      margin-top: 4px;
+    }
+  </style>
 </head>
 <body>
 
@@ -82,9 +119,9 @@
     <details class="setup-group" open>
       <summary class="setup-summary">NAS + docker</summary>
       <div class="setup-content">
-        <a class="btn" href="https://nas-vault.peterfarah.com" target="_blank" rel="noopener">Treasury Vault</a>
-        <a class="btn" href="https://nas-grafana.peterfarah.com" target="_blank" rel="noopener">Grafana</a>
-        <a class="btn" href="https://nas-poker.peterfarah.com" target="_blank" rel="noopener">Poker Sim</a>
+        <a class="btn svc" href="https://nas-vault.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Treasury Vault</span><span class="svc-host">nas-vault.peterfarah.com</span></a>
+        <a class="btn svc" href="https://nas-grafana.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Grafana</span><span class="svc-host">nas-grafana.peterfarah.com</span></a>
+        <a class="btn svc" href="https://nas-poker.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Poker Sim</span><span class="svc-host">nas-poker.peterfarah.com</span></a>
         <!-- <a class="btn" href="https://nas-rust-electricity.peterfarah.com" target="_blank" rel="noopener">Rust Electricity Sim</a> -->
       </div>
     </details>

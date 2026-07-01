@@ -10,6 +10,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    /* ── 404.html page-specific polish ── */
+
+    /* Align err-wrap vertical spacing with the nav height token */
+    .err-wrap {
+      padding-top: calc(var(--nav-h) + 100px);
+    }
+
+    /* Terminal block: constrained width, centered, left-aligned content */
+    .err-terminal {
+      max-width: 460px;
+      margin: 0 auto 36px;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
 
@@ -78,7 +93,7 @@
     </p>
 
     <!-- Terminal-style error block -->
-    <div class="terminal-block" style="max-width:460px; margin:0 auto 36px; text-align:left;">
+    <div class="terminal-block err-terminal">
       <div class="terminal-header">
         <div class="terminal-dot dot-close"></div>
         <div class="terminal-dot dot-min"></div>
