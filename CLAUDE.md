@@ -13,19 +13,22 @@ default branch, it's live.
 
 ## Model routing
 
-Choose the model by task phase. **"max" = run the model at its maximum reasoning /
-thinking effort.**
+Routing is implemented by the **`planner` skill** (`.claude/skills/planner/`)
+plus three implementer subagents (`.claude/agents/`). Use the planner skill for
+any code change; it plans in the main session and delegates implementation.
+**"max" = maximum reasoning / thinking effort** (delegation prompts start with
+`ultrathink`).
 
-**If Fable 5 is available:**
-- **Planning / design / architecture →  Fable 5 (max)**
-- **Implementation / editing / code →  Opus 4.8 (max)**
+- **Planning / design / review → main session** (Fable 5 max when available;
+  otherwise Opus 4.8 max). The planner never types code except one-line fixes.
+- **Security-related implementation → `implementer-security`** (`model:
+  inherit` — Fable 5 max when available).
+- **Hard implementation → `implementer-hard`** (Opus 4.8 max).
+- **Simple implementation → `implementer-simple`** (Sonnet, latest, max).
 
-**Otherwise (Fable 5 not available):**
-- **Planning / design / architecture →  Opus 4.8 (max)**
-- **Implementation / editing / code →  Sonnet 4.6 (max)**
-
-Rule of thumb: do the thinking/planning with the stronger reasoning model from
-the active row, then switch to the implementation model to actually write code.
+Triage rule of thumb: security beats difficulty; when unsure between tiers,
+escalate. The point is to spend the strongest model's tokens on thinking and
+reviewing, not on typing simple code.
 
 ---
 
