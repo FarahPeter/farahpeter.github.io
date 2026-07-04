@@ -26,6 +26,13 @@
        drive them.
        ============================================================ -->
   <style>
+    /* ---- CRITICAL: styles.css sets body{overflow-x:hidden}, which computes
+       to overflow hidden/auto and turns <body> into a scroll container — that
+       makes every position:sticky stage inert (it sticks to body's scrollport,
+       which never scrolls). overflow-x:clip clips identically WITHOUT creating
+       a scroll container, so the stages pin to the real viewport. ---- */
+    body { overflow-x: clip; }
+
     /* ---- override the global `section` shell (max-width/padding) ---- */
     .jn-story { position: relative; }
     .jn-scene { max-width: none; margin: 0; padding: 0; position: relative; }
@@ -100,10 +107,11 @@
     html.jn-on .jn-cue { display: flex; }
     @keyframes jn-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
 
-    /* decorative parallax orbs */
+    /* decorative ambience orbs (static — per-frame transforms on huge blurred
+       layers are a known Chromium ghost-layer / jank trigger) */
     .jn-orb {
       position: absolute; border-radius: 50%; filter: blur(70px); pointer-events: none;
-      z-index: -1; will-change: transform;
+      z-index: -1;
     }
     .jn-orb-a { width: 40vw; height: 40vw; top: 6%; left: -6%; background: radial-gradient(circle at 50% 50%, var(--aurora-1), transparent 70%); }
     .jn-orb-b { width: 34vw; height: 34vw; bottom: 4%; right: -4%; background: radial-gradient(circle at 50% 50%, var(--aurora-3), transparent 70%); }
@@ -164,6 +172,17 @@
     .jn-card h3 { font-size: 1.24rem; margin-bottom: 4px; }
     .jn-card h3 .jn-org { color: var(--accent-bright); font-weight: 500; display: block; font-size: 0.95rem; margin-top: 3px; }
     .jn-card p { font-size: 0.94rem; color: var(--text); margin: 8px 0 0; }
+    /* Per-frame-animated glass: live backdrop sampling while transforming is
+       expensive and leaves stale compositing layers (the "ghost pill" bug in
+       Chromium) — moving cards use a solid glass fill instead. */
+    .jn-card, .jn-gcard {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: var(--glass-strong);
+    }
+    /* keep the nav's compositor layer alive/stable while it auto-hides over
+       the animating scenes (prevents the stale-layer artifact) */
+    nav { will-change: transform; }
 
     /* ---------------- S4 CRAFT (horizontal gallery) ---------------- */
     .jn-craft-scene .jn-stage { place-items: center; }
@@ -266,11 +285,19 @@
     .jn-finale-sub { color: var(--muted); margin-top: 14px; font-size: clamp(1rem, 2.4vw, 1.2rem); }
     .jn-finale-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; will-change: transform, opacity; }
 
-    /* ---------------- chapter dot-rail ---------------- */
-    .jn-rail {
-      position: fixed; right: 26px; top: 50%; transform: translateY(-50%);
+    /* ---------------- chapter dot-rail ----------------
+       The rail is a <nav>, so it inherits the site navbar's element styles
+       (glass pill, 1100px width, left:50%, ring pseudo) — reset them all. */
+    nav.jn-rail {
+      position: fixed; left: auto; right: 26px; top: 50%; bottom: auto;
+      transform: translateY(-50%);
+      width: auto; max-width: none; height: auto; padding: 0;
+      background: none; border: 0; border-radius: 0; box-shadow: none;
+      -webkit-backdrop-filter: none; backdrop-filter: none;
       z-index: 950; display: flex; flex-direction: column; gap: 16px;
+      justify-content: center;
     }
+    nav.jn-rail::after { content: none; }
     .jn-rail button {
       display: flex; align-items: center; gap: 10px; background: none; border: none;
       cursor: pointer; padding: 0; flex-direction: row-reverse;
@@ -296,7 +323,7 @@
 
     /* ================= RESPONSIVE ================= */
     @media (max-width: 900px) {
-      .jn-rail { display: none; }
+      nav.jn-rail { display: none; }
     }
     @media (max-width: 768px) {
       .jn-statement { max-width: 18ch; }
@@ -774,11 +801,8 @@
       const sub   = document.getElementById('jn-hero-sub');
       const inter = document.getElementById('jn-hero-inter');
       const cue   = document.getElementById('jn-cue');
-      const orbA  = document.getElementById('jn-orb-a');
-      const orbB  = document.getElementById('jn-orb-b');
       if (!name || !block || !inter) return null;
       return function (p) {
-        const amp = isMobile() ? 0.6 : 1;
         // name zoom-through (p 0 → 0.45) — transform-only (letter-spacing would relayout)
         const zp = easeOutCubic(seg(p, 0, 0.45));
         const scale = lerp(1, 1.55, zp);
@@ -793,9 +817,6 @@
         inter.style.transform = 'translateY(' + lerp(50, 0, rise).toFixed(1) + 'px)';
         // cue fades by p 0.08
         if (cue) cue.style.opacity = (1 - seg(p, 0, 0.08)).toFixed(3);
-        // parallax orbs (opposite directions)
-        if (orbA) orbA.style.transform = 'translateY(' + (p * -8 * amp).toFixed(2) + 'vh)';
-        if (orbB) orbB.style.transform = 'translateY(' + (p *  8 * amp).toFixed(2) + 'vh)';
         if (sub) sub.style.opacity = fade.toFixed(3);
       };
     });
@@ -840,20 +861,21 @@
         path.style.strokeDashoffset = (1 - draw).toFixed(4);
         beats.forEach(function (beat, i) {
           const c = centers[i];
-          const half = 0.14;
-          // enter as focus approaches, dim as it passes
-          const enter = seg(p, c - half, c);
-          const leave = seg(p, c + half * 0.5, c + half * 1.6);
+          // enter as focus approaches; fade FULLY out before the next beat owns
+          // the overlay slot (beats share grid-area 1/1 — residual opacity stacks)
+          const enter = seg(p, c - 0.13, c - 0.01);
+          const isLast = i === beats.length - 1;
+          const l = isLast ? 0 : easeInOutCubic(seg(p, c + 0.05, c + 0.15));
           const e = easeOutCubic(enter);
-          beat.style.opacity = (e * (1 - leave * 0.55)).toFixed(3);
-          const ty = lerp(60 * amp, 0, e) + leave * 20;
+          beat.style.opacity = (e * (1 - l)).toFixed(3);
+          const ty = lerp(60 * amp, 0, e) - 34 * l;
           const rx = lerp(8, 0, e);
-          const sc = 1 - leave * 0.04;
+          const sc = 1 - l * 0.05;
           beat.style.transform = 'perspective(900px) translateY(' + ty.toFixed(1) + 'px) rotateX(' + rx.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
           // node ring pulse near its beat
           const g = nodes[i];
           if (g) {
-            const np = seg(p, c - half, c + half * 0.4);
+            const np = seg(p, c - 0.13, c - 0.06);
             g.style.opacity = easeOutCubic(np).toFixed(3);
           }
         });
@@ -924,9 +946,10 @@
         trail.style.strokeDashoffset = (1 - travel * 0.98).toFixed(4);
         // hop pulses + notes
         hops.forEach(function (h, i) {
-          const win = 0.12;
-          const on = seg(p, h - win, h);
-          const offp = seg(p, h + win * 0.4, h + win * 1.8);
+          // notes share one overlay slot — each fades FULLY out before the
+          // next starts (crossfading text in the same slot reads as garble)
+          const on = seg(p, h - 0.09, h - 0.01);
+          const offp = seg(p, h + 0.03, h + 0.115);
           const ring = rings[i];
           if (ring) {
             const e = easeOutExpo(on);
