@@ -19,11 +19,11 @@
 
   <!-- ============================================================
        journey.html — page-scoped scrollytelling styles.
-       All classes/ids are jn- prefixed. The default (no-JS /
-       reduced-motion) state keeps every scene a normal, fully
-       readable static section. html.jn-on (added by the inline
-       engine only when motion is allowed) pins the stages and
-       hides the initial states so the scroll engine can drive them.
+       All classes/ids are jn- prefixed. The default (no-JS) state
+       keeps every scene a normal, fully readable static section.
+       html.jn-on (added by the inline engine on load) pins the
+       stages and hides the initial states so the scroll engine can
+       drive them.
        ============================================================ -->
   <style>
     /* ---- override the global `section` shell (max-width/padding) ---- */
@@ -706,9 +706,9 @@
 
   <!-- ============================================================
        journey.html — scrollytelling engine
-       Vanilla ES6, one IIFE. Progressive enhancement: if the OS
-       requests reduced motion the engine never activates and the
-       scenes stay ordinary readable sections. Writes only transform
+       Vanilla ES6, one IIFE. Animations always on (site convention —
+       see `reduceMotion` in script.js); the static stacked layout is
+       kept as the no-JS fallback. Writes only transform
        / opacity (and a few scene-scoped custom props); one passive
        scroll listener flips a dirty flag, one rAF loop reads scrollY
        once per frame and updates only the on-screen scenes.
@@ -718,7 +718,11 @@
     'use strict';
 
     const root = document.documentElement;
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* Animations always on — matches the site-wide convention in script.js
+       (`reduceMotion = false`). The static stacked layout remains as the
+       no-JS fallback. To honor the OS "reduce motion" setting instead,
+       restore the matchMedia check below. */
+    const prefersReduced = false; // was: window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     /* No motion → leave the page as a plain static article. Still wire the
        dot-rail as simple jump links (native smooth scroll handles the rest). */
