@@ -52,7 +52,7 @@ in `script.js` (`palette` module), and `sitemap.xml`.
 
 ## Repo at a glance
 ```
-index.html  blog.html  fun.html  server.html  404.html   ← pages (root)
+index.html  journey.html  blog.html  fun.html  server.html  404.html   ← pages (root)
 styles.css  script.js                                     ← shared, site-wide
 Files/                                                     ← CV, images, favicon
 FUN/AQMgame.html                                           ← live tool (rest of FUN/: ignore)

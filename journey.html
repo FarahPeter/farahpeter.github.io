@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07112e">
+  <title>Peter Farah | Journey</title>
+  <meta name="description" content="An immersive scroll through Peter Farah's journey — from Beirut to Paris and back: networks, research, automation, and a homelab that never sleeps.">
+  <meta property="og:title" content="Peter Farah | Journey">
+  <meta property="og:description" content="An immersive scroll through Peter Farah's journey — from Beirut to Paris and back: networks, research, automation, and a homelab that never sleeps.">
+  <meta property="og:image" content="https://peterfarah.com/Files/images/profile/profile_old.jpg">
+  <meta property="og:url" content="https://peterfarah.com/journey.html">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- ============================================================
+       journey.html — page-scoped scrollytelling styles.
+       All classes/ids are jn- prefixed. The default (no-JS /
+       reduced-motion) state keeps every scene a normal, fully
+       readable static section. html.jn-on (added by the inline
+       engine only when motion is allowed) pins the stages and
+       hides the initial states so the scroll engine can drive them.
+       ============================================================ -->
+  <style>
+    /* ---- override the global `section` shell (max-width/padding) ---- */
+    .jn-story { position: relative; }
+    .jn-scene { max-width: none; margin: 0; padding: 0; position: relative; }
+    .jn-stage { width: 100%; }
+
+    /* Inner content max-width helper */
+    .jn-wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; width: 100%; }
+    .jn-visually-hidden {
+      position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ================= DEFAULT (static, progressive-enhancement) =================
+       Scenes read as ordinary stacked sections. Nothing is hidden, nothing pinned. */
+    .jn-scene { padding: 72px 0; }
+    .jn-stage { display: block; }
+
+    /* ================= html.jn-on : pinned scrollytelling mode ================= */
+    html.jn-on .jn-scene {
+      height: calc(var(--jn-len, 3) * 100vh);
+      padding: 0;
+    }
+    html.jn-on .jn-stage {
+      position: sticky; top: 0;
+      height: 100vh; height: 100svh;
+      overflow: hidden;
+      display: grid; place-items: center;
+    }
+
+    /* ---------------- S1 HERO ---------------- */
+    .jn-hero { text-align: center; position: relative; }
+    .jn-hero-kicker {
+      font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--accent-bright); margin-bottom: 20px;
+      display: block;
+    }
+    .jn-hero-name {
+      font-family: var(--font-display); font-weight: 700; line-height: 0.92;
+      letter-spacing: -0.045em; margin: 0;
+      font-size: clamp(3.2rem, 16vw, 11rem);
+      background: linear-gradient(115deg, var(--ink) 12%, var(--accent) 42%, var(--accent-2) 62%, var(--accent-3) 82%, var(--ink) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 3px 26px var(--accent-glow));
+      will-change: transform;
+    }
+    .jn-hero-name span { display: block; }
+    .jn-hero-sub {
+      font-family: var(--font-mono); color: var(--text); margin-top: 26px;
+      font-size: clamp(0.9rem, 2.2vw, 1.15rem); letter-spacing: 0.02em;
+    }
+    /* interstitial line that rises after the zoom-through */
+    .jn-hero-inter {
+      display: none; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+      font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em;
+      font-size: clamp(1.6rem, 5.4vw, 3.4rem); color: var(--ink);
+      opacity: 0; pointer-events: none; will-change: transform, opacity;
+    }
+    html.jn-on .jn-hero-inter { display: block; }
+    .jn-hero-inter .jn-grad {
+      background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    /* scroll cue */
+    .jn-cue {
+      position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%);
+      display: none; flex-direction: column; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .jn-cue svg { width: 20px; height: 20px; stroke: var(--accent-bright); animation: jn-bob 1.8s var(--ease) infinite; }
+    html.jn-on .jn-cue { display: flex; }
+    @keyframes jn-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+    /* decorative parallax orbs */
+    .jn-orb {
+      position: absolute; border-radius: 50%; filter: blur(70px); pointer-events: none;
+      z-index: -1; will-change: transform;
+    }
+    .jn-orb-a { width: 40vw; height: 40vw; top: 6%; left: -6%; background: radial-gradient(circle at 50% 50%, var(--aurora-1), transparent 70%); }
+    .jn-orb-b { width: 34vw; height: 34vw; bottom: 4%; right: -4%; background: radial-gradient(circle at 50% 50%, var(--aurora-3), transparent 70%); }
+
+    /* ---------------- S2 STATEMENT ---------------- */
+    .jn-statement {
+      font-family: var(--font-display); font-weight: 600; text-align: center;
+      font-size: clamp(1.6rem, 5vw, 2.6rem); line-height: 1.32;
+      max-width: 24ch; margin: 0 auto; letter-spacing: -0.015em;
+      color: var(--ink); will-change: transform, opacity;
+    }
+    .jn-w { transition: none; }
+    html.jn-on .jn-w { opacity: 0.14; }
+    .jn-key {
+      background: linear-gradient(110deg, var(--accent), var(--accent-2) 65%, var(--accent-3));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      font-style: normal;
+    }
+
+    /* ---------------- S3 TIMELINE ---------------- */
+    .jn-route-scene .jn-stage { place-items: stretch; }
+    .jn-route-inner {
+      position: relative; width: 100%; height: 100%;
+      display: grid; place-items: center;
+    }
+    .jn-route-svg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .jn-route-path { fill: none; stroke: url(#jn-route-grad); stroke-width: 3; stroke-linecap: round; }
+    html.jn-on .jn-route-path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .jn-route-node { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
+    .jn-route-node-core { fill: var(--accent-2); }
+    html.jn-on .jn-route-node-g { opacity: 0; }
+
+    .jn-beats {
+      position: relative; z-index: 2; width: 100%;
+      max-width: var(--maxw); margin: 0 auto; padding: 0 22px;
+      display: grid; place-items: center;
+    }
+    .jn-beats { gap: 22px; }
+    .jn-beat {
+      width: min(430px, 86vw);
+      will-change: transform, opacity;
+    }
+    /* static: beats stack as a readable list; jn-on: overlaid + engine-driven */
+    html.jn-on .jn-beat { grid-area: 1 / 1; opacity: 0; }
+    .jn-beat-geo {
+      display: block; font-family: var(--font-mono); font-size: 0.66rem;
+      letter-spacing: 0.14em; color: var(--accent-bright); margin-bottom: 12px;
+    }
+    .jn-card { padding: 26px 28px; }
+    .jn-card .jn-when {
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-bright);
+      display: inline-block; padding: 3px 9px; border-radius: 7px; margin-bottom: 12px;
+      background: var(--accent-soft); border: 1px solid var(--accent-line);
+    }
+    .jn-card h3 { font-size: 1.24rem; margin-bottom: 4px; }
+    .jn-card h3 .jn-org { color: var(--accent-bright); font-weight: 500; display: block; font-size: 0.95rem; margin-top: 3px; }
+    .jn-card p { font-size: 0.94rem; color: var(--text); margin: 8px 0 0; }
+
+    /* ---------------- S4 CRAFT (horizontal gallery) ---------------- */
+    .jn-craft-scene .jn-stage { place-items: center; }
+    .jn-gallery { position: relative; width: 100%; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
+    html.jn-on .jn-gallery { height: 100%; overflow: hidden; }
+    /* static (no-JS / reduced motion): cards stack vertically, all readable */
+    .jn-track { display: block; padding: 0 22px; will-change: transform; }
+    .jn-track .jn-gcard { margin: 0 auto 26px; max-width: 780px; }
+    html.jn-on .jn-track {
+      display: flex; gap: 26px; align-items: stretch;
+      padding-left: max(22px, calc((100vw - min(70vw, 780px)) / 2));
+      padding-right: max(22px, calc((100vw - min(70vw, 780px)) / 2));
+    }
+    html.jn-on .jn-track .jn-gcard { margin: 0; flex: 0 0 min(70vw, 780px); min-height: 62vh; }
+    .jn-gcard {
+      padding: 40px 42px; display: flex; flex-direction: column;
+      position: relative;
+    }
+    .jn-gcard-vis { position: absolute; top: 34px; right: 40px; width: 118px; height: 66px; opacity: 0.9; will-change: transform; }
+    .jn-gcard-vis svg { width: 100%; height: 100%; }
+    .jn-gcard-tag {
+      font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent-bright); margin-bottom: 16px;
+    }
+    .jn-gcard h3 { font-size: clamp(1.5rem, 3.4vw, 2.1rem); margin-bottom: 16px; letter-spacing: -0.02em; }
+    .jn-gcard p { font-size: 1rem; color: var(--text); max-width: 46ch; }
+    .jn-gstat { margin-top: auto; display: flex; align-items: baseline; gap: 12px; padding-top: 22px; }
+    .jn-gstat-num {
+      font-family: var(--font-display); font-weight: 700; font-size: clamp(2.4rem, 6vw, 3.6rem);
+      line-height: 1;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .jn-gstat-lbl { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); max-width: 12ch; }
+    .jn-gcard-link {
+      font-family: var(--font-mono); font-size: 0.8rem; margin-top: 20px; align-self: flex-start;
+      display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; border-radius: 999px;
+      color: var(--accent-bright); background: var(--accent-soft); border: 1px solid var(--accent-line);
+      transition: transform .25s var(--ease), border-color .25s, background .25s;
+    }
+    .jn-gcard-link:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--glass-2); }
+    /* progress ticks under the track */
+    .jn-ticks { display: none; justify-content: center; gap: 12px; }
+    html.jn-on .jn-ticks { display: flex; }
+    .jn-tick { width: 34px; height: 4px; border-radius: 3px; background: var(--hairline); transition: background .3s, box-shadow .3s; }
+    .jn-tick.jn-tick-on { background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 12px var(--accent-glow); }
+
+    /* ---------------- S5 PACKET FLOW ---------------- */
+    .jn-flow-scene .jn-stage { place-items: center; }
+    .jn-flow-inner { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 22px; }
+    .jn-flow-svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .jn-flow-route { fill: none; stroke: var(--accent-line); stroke-width: 2; stroke-dasharray: 6 7; opacity: 0.5; }
+    .jn-flow-trail { fill: none; stroke: url(#jn-flow-grad); stroke-width: 3.5; stroke-linecap: round; }
+    html.jn-on .jn-flow-trail { stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .jn-flow-node { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
+    .jn-flow-ring { fill: none; stroke: var(--accent-2); stroke-width: 2; opacity: 0; will-change: transform, opacity; transform-box: fill-box; transform-origin: center; }
+    .jn-flow-node-lbl { font-family: var(--font-mono); font-size: 12px; fill: var(--accent-bright); letter-spacing: 0.08em; }
+    .jn-packet { fill: var(--accent-2); filter: drop-shadow(0 0 6px var(--accent-glow)); }
+    html.jn-on .jn-packet { opacity: 0; }
+    .jn-flow-caption {
+      text-align: center; margin-top: 26px;
+      font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em;
+      font-size: clamp(1.5rem, 4.6vw, 2.6rem); will-change: transform, opacity;
+    }
+    html.jn-on .jn-flow-caption { position: absolute; left: 0; right: 0; bottom: 6%; margin: 0; opacity: 0; }
+    .jn-flow-caption .jn-grad {
+      background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    /* per-hop one-liners — static: readable stacked list; jn-on: centered grid overlay */
+    .jn-hop-notes { text-align: center; display: grid; gap: 8px; margin-top: 18px; place-items: center; }
+    html.jn-on .jn-hop-notes { position: absolute; left: 0; right: 0; top: 14%; min-height: 3.2em; margin: 0; gap: 0; }
+    .jn-hop-note {
+      font-family: var(--font-mono); font-size: clamp(0.82rem, 2.2vw, 1rem);
+      color: var(--text); padding: 0 22px; margin: 0;
+      will-change: opacity;
+    }
+    html.jn-on .jn-hop-note { grid-area: 1 / 1; opacity: 0; }
+    .jn-hop-note b { color: var(--accent-bright); font-weight: 500; }
+
+    /* ---------------- S6 FINALE ---------------- */
+    .jn-finale-scene .jn-stage { place-items: center; }
+    .jn-finale { text-align: center; max-width: 640px; margin: 0 auto; padding: 0 22px; }
+    .jn-portrait {
+      width: clamp(140px, 34vw, 216px); aspect-ratio: 1; margin: 0 auto 26px;
+      border-radius: var(--radius-xl); overflow: hidden;
+      box-shadow: 0 0 0 1px var(--ring-accent), 0 0 0 6px var(--accent-soft), var(--shadow-lg);
+      will-change: transform, opacity;
+    }
+    .jn-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .jn-finale-name { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-bright); margin-bottom: 12px; display: block; }
+    .jn-finale-line {
+      font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em;
+      font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.05; color: var(--ink); margin: 0;
+    }
+    .jn-finale-line .jn-grad {
+      background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .jn-finale-sub { color: var(--muted); margin-top: 14px; font-size: clamp(1rem, 2.4vw, 1.2rem); }
+    .jn-finale-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; will-change: transform, opacity; }
+
+    /* ---------------- chapter dot-rail ---------------- */
+    .jn-rail {
+      position: fixed; right: 26px; top: 50%; transform: translateY(-50%);
+      z-index: 950; display: flex; flex-direction: column; gap: 16px;
+    }
+    .jn-rail button {
+      display: flex; align-items: center; gap: 10px; background: none; border: none;
+      cursor: pointer; padding: 0; flex-direction: row-reverse;
+    }
+    .jn-rail-dot {
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+      background: transparent; border: 1.5px solid var(--faint);
+      box-shadow: inset 0 0 0 0 var(--accent);
+      transition: border-color .3s, box-shadow .3s, transform .3s;
+    }
+    .jn-rail button:hover .jn-rail-dot { border-color: var(--accent-bright); }
+    .jn-rail button.jn-rail-active .jn-rail-dot {
+      border-color: var(--accent); box-shadow: inset 0 0 0 4px var(--accent), 0 0 12px var(--accent-glow);
+      transform: scale(1.1);
+    }
+    .jn-rail-lbl {
+      font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.12em;
+      color: var(--muted); white-space: nowrap; opacity: 0;
+      transform: translateX(6px); transition: opacity .25s, transform .25s;
+      pointer-events: none;
+    }
+    .jn-rail button:hover .jn-rail-lbl, .jn-rail button.jn-rail-active .jn-rail-lbl { opacity: 1; transform: translateX(0); }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 900px) {
+      .jn-rail { display: none; }
+    }
+    @media (max-width: 768px) {
+      .jn-statement { max-width: 18ch; }
+      .jn-gcard { padding: 30px 26px; }
+      html.jn-on .jn-track .jn-gcard { flex: 0 0 85vw; min-height: 58vh; }
+      html.jn-on .jn-track {
+        padding-left: max(16px, calc((100vw - 85vw) / 2));
+        padding-right: max(16px, calc((100vw - 85vw) / 2));
+      }
+      .jn-gcard-vis { top: 26px; right: 26px; width: 92px; height: 52px; }
+      .jn-beat { width: min(92vw, 400px); }
+      .jn-flow-node-lbl { font-size: 10px; }
+      .jn-hero-inter { padding: 0 18px; }
+    }
+
+    /* light-theme touch-ups where new tinted surfaces need it */
+    [data-theme="light"] .jn-orb { filter: blur(80px); opacity: 0.8; }
+    [data-theme="light"] .jn-flow-route { stroke: var(--accent-line); opacity: 0.6; }
+  </style>
+</head>
+<body>
+
+  <!-- Background + Cursor -->
+  <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
+  <canvas id="net-canvas"></canvas>
+  <canvas id="mouse-trail"></canvas>
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- Scroll Progress -->
+  <div id="vertical-scroll-track"><div id="vertical-scroll-progress"></div></div>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav aria-label="Main navigation">
+    <a href="index.html" class="nav-logo">Peter Farah</a>
+
+    <div class="nav-right">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#experience">Timeline</a></li>
+        <li><a href="index.html#skills">Skills</a></li>
+        <li><a href="index.html#projects">Projects</a></li>
+        <li><a href="index.html#certificates">Certificates</a></li>
+        <li><a href="journey.html" class="nav-highlight" aria-current="page">Journey</a></li>
+        <li><a href="blog.html" class="nav-highlight">Research</a></li>
+        <li><a href="server.html" class="nav-highlight">Server</a></li>
+        <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">CV</a></li>
+      </ul>
+
+      <button class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
+        <kbd>⌘K</kbd> Search
+      </button>
+
+      <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
+      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Drawer Overlay -->
+  <div class="nav-overlay" id="nav-overlay" aria-hidden="true"></div>
+
+  <!-- Mobile Drawer -->
+  <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
+    <div class="nav-drawer-header">
+      <span class="nav-logo">Menu</span>
+      <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
+    </div>
+    <a href="index.html#about">About</a>
+    <a href="index.html#experience">Career Timeline</a>
+    <a href="index.html#skills">Skills</a>
+    <a href="index.html#projects">Projects</a>
+    <a href="index.html#certificates">Certificates &amp; Honors</a>
+    <div class="nav-drawer-divider"></div>
+    <a href="journey.html" class="nav-highlight" aria-current="page">Journey</a>
+    <a href="blog.html" class="nav-highlight">Research &amp; Blog</a>
+    <a href="server.html" class="nav-highlight">Server Access</a>
+    <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">Download CV</a>
+    <div class="nav-drawer-divider"></div>
+    <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
+      <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+      </svg>
+      Toggle Theme
+    </button>
+  </aside>
+
+  <!-- ===== CHAPTER DOT-RAIL (desktop ≥900px) ===== -->
+  <nav class="jn-rail" id="jn-rail" aria-label="Chapters">
+    <button type="button" data-target="jn-s1"><span class="jn-rail-lbl">01 Intro</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s2"><span class="jn-rail-lbl">02 Who</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s3"><span class="jn-rail-lbl">03 Route</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s4"><span class="jn-rail-lbl">04 Craft</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s5"><span class="jn-rail-lbl">05 The Hop</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s6"><span class="jn-rail-lbl">06 Hello</span><span class="jn-rail-dot"></span></button>
+  </nav>
+
+  <!-- ============================================================
+       THE STORY
+       ============================================================ -->
+  <main class="jn-story">
+
+    <!-- ===== S1 · HERO ===== -->
+    <section class="jn-scene" id="jn-s1" data-len="3" aria-label="Introduction">
+      <div class="jn-stage">
+        <span class="jn-orb jn-orb-a" id="jn-orb-a" aria-hidden="true"></span>
+        <span class="jn-orb jn-orb-b" id="jn-orb-b" aria-hidden="true"></span>
+
+        <div class="jn-hero">
+          <div id="jn-hero-block">
+            <span class="jn-hero-kicker">// journey</span>
+            <h1 class="jn-hero-name" id="jn-hero-name"><span>PETER</span><span>FARAH</span></h1>
+            <p class="jn-hero-sub" id="jn-hero-sub">Infrastructure Automation Engineer — Beirut, Lebanon</p>
+          </div>
+          <p class="jn-hero-inter" id="jn-hero-inter">From Beirut to Paris <span class="jn-grad">and back.</span></p>
+        </div>
+
+        <div class="jn-cue" id="jn-cue" aria-hidden="true">
+          <span>Scroll</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S2 · STATEMENT ===== -->
+    <section class="jn-scene" id="jn-s2" data-len="3" aria-label="What I do">
+      <div class="jn-stage">
+        <h2 class="jn-visually-hidden">What I do</h2>
+        <p class="jn-statement" id="jn-statement">I work in the space between packets — <em class="jn-key">low-level networking</em>, <em class="jn-key">infrastructure automation</em>, and <em class="jn-key">threat intelligence</em>. I like systems I can measure, automate, and trust.</p>
+      </div>
+    </section>
+
+    <!-- ===== S3 · JOURNEY TIMELINE ===== -->
+    <section class="jn-scene jn-route-scene" id="jn-s3" data-len="5" aria-label="Route">
+      <div class="jn-stage">
+        <h2 class="jn-visually-hidden">The route — Beirut to Paris and back</h2>
+        <div class="jn-route-inner">
+          <svg class="jn-route-svg" id="jn-route-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs>
+              <linearGradient id="jn-route-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="var(--accent)"/>
+                <stop offset="1" stop-color="var(--accent-2)"/>
+              </linearGradient>
+            </defs>
+            <path class="jn-route-path" id="jn-route-path" pathLength="1"
+              d="M 150 120 C 340 120 360 260 500 270 C 640 280 700 150 830 170 C 900 182 900 300 780 340 C 560 410 420 380 400 480 C 385 560 560 590 830 590"/>
+            <!-- node markers (positions match the 4 waypoints) -->
+            <g id="jn-route-nodes">
+              <g class="jn-route-node-g" data-beat="0"><circle class="jn-route-node" cx="150" cy="120" r="11"/><circle class="jn-route-node-core" cx="150" cy="120" r="4"/></g>
+              <g class="jn-route-node-g" data-beat="1"><circle class="jn-route-node" cx="830" cy="170" r="11"/><circle class="jn-route-node-core" cx="830" cy="170" r="4"/></g>
+              <g class="jn-route-node-g" data-beat="2"><circle class="jn-route-node" cx="400" cy="480" r="11"/><circle class="jn-route-node-core" cx="400" cy="480" r="4"/></g>
+              <g class="jn-route-node-g" data-beat="3"><circle class="jn-route-node" cx="830" cy="590" r="11"/><circle class="jn-route-node-core" cx="830" cy="590" r="4"/></g>
+            </g>
+          </svg>
+
+          <div class="jn-beats" id="jn-beats">
+            <div class="jn-beat" data-beat="0">
+              <span class="jn-beat-geo">BEIRUT · 33.89°N 35.50°E</span>
+              <div class="tile jn-card">
+                <span class="jn-when">2018 – 2022 · Beirut</span>
+                <h3>American University of Beirut<span class="jn-org">B.E. Computer &amp; Communication Engineering</span></h3>
+                <p>Dean's Honor List.</p>
+              </div>
+            </div>
+            <div class="jn-beat" data-beat="1">
+              <span class="jn-beat-geo">PARIS · 48.86°N 2.35°E</span>
+              <div class="tile jn-card">
+                <span class="jn-when">2023 – 2025 · Paris</span>
+                <h3>Institut Polytechnique de Paris<span class="jn-org">M.Sc. Computer Science, Cybersecurity</span></h3>
+                <p>Graduated with highest distinction in M2.</p>
+              </div>
+            </div>
+            <div class="jn-beat" data-beat="2">
+              <span class="jn-beat-geo">ÉVRY · PALAISEAU</span>
+              <div class="tile jn-card">
+                <span class="jn-when">2024 – 2025 · Évry &amp; Palaiseau</span>
+                <h3>Network Security Researcher<span class="jn-org">Polytechnique &amp; Télécom SudParis</span></h3>
+                <p>Fingerprinting AQM algorithms from RTT traces. Plus SOC R&amp;D at Exeo, Paris.</p>
+              </div>
+            </div>
+            <div class="jn-beat" data-beat="3">
+              <span class="jn-beat-geo">BEIRUT · 33.89°N 35.50°E</span>
+              <div class="tile jn-card">
+                <span class="jn-when">2026 – now · Beirut</span>
+                <h3>Infrastructure Automation Engineer<span class="jn-org">Murex</span></h3>
+                <p>Ansible · Jenkins · Git · Kubernetes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S4 · CRAFT (horizontal gallery) ===== -->
+    <section class="jn-scene jn-craft-scene" id="jn-s4" data-len="4" aria-label="Craft">
+      <div class="jn-stage">
+        <h2 class="jn-visually-hidden">The craft — research, homelab, automation, security</h2>
+        <div class="jn-gallery">
+          <div class="jn-track" id="jn-track">
+
+            <article class="tile jn-gcard">
+              <div class="jn-gcard-vis" aria-hidden="true">
+                <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 50 H20 V30 H38 V44 H56 V18 H74 V38 H92 V26 H110 V50 H118" stroke="var(--accent-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="jn-gcard-tag">Research</span>
+              <h3>Name that queue.</h3>
+              <p>A custom C testbed plus a two-stage DTW classifier that identifies which AQM algorithm a network runs — CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, FQ.</p>
+              <div class="jn-gstat">
+                <span class="jn-gstat-num" data-count="7" data-cardidx="0">7</span>
+                <span class="jn-gstat-lbl">algorithms fingerprinted</span>
+              </div>
+              <a class="jn-gcard-link" href="blog.html#aqm-research">Read the write-up →</a>
+            </article>
+
+            <article class="tile jn-gcard">
+              <div class="jn-gcard-vis" aria-hidden="true">
+                <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g stroke="var(--accent-2)" stroke-width="1.6" opacity="0.75">
+                    <line x1="60" y1="12" x2="26" y2="40"/><line x1="60" y1="12" x2="94" y2="40"/><line x1="26" y1="40" x2="94" y2="40"/>
+                  </g>
+                  <g fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6">
+                    <circle cx="60" cy="12" r="5"/><circle cx="26" cy="40" r="5"/><circle cx="94" cy="40" r="5"/>
+                  </g>
+                </svg>
+              </div>
+              <span class="jn-gcard-tag">Homelab</span>
+              <h3>Production values at home.</h3>
+              <p>Synology NAS in SHR-1, Docker apps, Prometheus + Grafana, Cloudflare Zero Trust — zero open ports.</p>
+              <div class="jn-gstat">
+                <span class="jn-gstat-num" data-count="36" data-suffix=" TB" data-cardidx="1">36 TB</span>
+                <span class="jn-gstat-lbl">storage</span>
+              </div>
+              <a class="jn-gcard-link" href="blog.html#home-nas">Read the write-up →</a>
+            </article>
+
+            <article class="tile jn-gcard">
+              <div class="jn-gcard-vis" aria-hidden="true">
+                <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g stroke="var(--accent-2)" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M20 20 L40 33 L20 46"/><line x1="48" y1="46" x2="72" y2="46"/>
+                    <circle cx="92" cy="33" r="9" fill="none" stroke="var(--accent)"/>
+                    <path d="M92 27 V33 L96 37" stroke="var(--accent)"/>
+                  </g>
+                </svg>
+              </div>
+              <span class="jn-gcard-tag">Automation</span>
+              <h3>If I do it twice, it's a pipeline.</h3>
+              <p>Ansible, Jenkins, Git, and Kubernetes at Murex; an automated YouTube pipeline and a custom FTP ingestion service at home.</p>
+              <div class="jn-gstat">
+                <span class="jn-gstat-num" data-count="50" data-suffix="+" data-cardidx="2">50+</span>
+                <span class="jn-gstat-lbl">automated workflows</span>
+              </div>
+              <a class="jn-gcard-link" href="index.html#experience">See experience →</a>
+            </article>
+
+            <article class="tile jn-gcard">
+              <div class="jn-gcard-vis" aria-hidden="true">
+                <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M60 8 L86 18 V34 C86 48 74 56 60 60 C46 56 34 48 34 34 V18 Z" fill="none" stroke="var(--accent)" stroke-width="2"/>
+                  <path d="M50 33 L57 41 L72 25" stroke="var(--accent-2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="jn-gcard-tag">Security</span>
+              <h3>Defense in depth, in practice.</h3>
+              <p>SOC R&amp;D at Exeo, threat-intel takedown ops at POTECH, hardened configs across 100+ Cisco switches at Dar.</p>
+              <div class="jn-gstat">
+                <span class="jn-gstat-num" data-count="100" data-suffix="+" data-cardidx="3">100+</span>
+                <span class="jn-gstat-lbl">switches hardened</span>
+              </div>
+              <a class="jn-gcard-link" href="index.html#projects">See projects →</a>
+            </article>
+
+          </div>
+
+          <div class="jn-ticks" id="jn-ticks" aria-hidden="true">
+            <span class="jn-tick"></span><span class="jn-tick"></span><span class="jn-tick"></span><span class="jn-tick"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S5 · PACKET FLOW ===== -->
+    <section class="jn-scene jn-flow-scene" id="jn-s5" data-len="4" aria-label="Packet flow">
+      <div class="jn-stage">
+        <h2 class="jn-visually-hidden">A packet's journey — client to router to tunnel to home server</h2>
+        <div class="jn-flow-inner">
+          <svg class="jn-flow-svg" id="jn-flow-svg" viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs>
+              <linearGradient id="jn-flow-grad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="var(--accent)"/>
+                <stop offset="1" stop-color="var(--accent-2)"/>
+              </linearGradient>
+            </defs>
+            <!-- dashed guide + drawn trail share the same geometry -->
+            <path class="jn-flow-route" id="jn-flow-route" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130 C 870 130 900 210 900 250"/>
+            <path class="jn-flow-trail" id="jn-flow-trail" pathLength="1" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130 C 870 130 900 210 900 250"/>
+
+            <!-- nodes + pulse rings + labels -->
+            <g data-hop="0">
+              <circle class="jn-flow-ring" cx="110" cy="250" r="18"/>
+              <circle class="jn-flow-node" cx="110" cy="250" r="10"/>
+              <text class="jn-flow-node-lbl" x="110" y="292" text-anchor="middle">CLIENT</text>
+            </g>
+            <g data-hop="1">
+              <circle class="jn-flow-ring" cx="340" cy="150" r="18"/>
+              <circle class="jn-flow-node" cx="340" cy="150" r="10"/>
+              <text class="jn-flow-node-lbl" x="340" y="126" text-anchor="middle">ROUTER · AQM</text>
+            </g>
+            <g data-hop="2">
+              <circle class="jn-flow-ring" cx="560" cy="250" r="18"/>
+              <circle class="jn-flow-node" cx="560" cy="250" r="10"/>
+              <text class="jn-flow-node-lbl" x="560" y="292" text-anchor="middle">TUNNEL · ZERO TRUST</text>
+            </g>
+            <g data-hop="3">
+              <circle class="jn-flow-ring" cx="800" cy="130" r="18"/>
+              <circle class="jn-flow-node" cx="800" cy="130" r="10"/>
+              <text class="jn-flow-node-lbl" x="800" y="106" text-anchor="middle">HOME SERVER</text>
+            </g>
+
+            <!-- travelling packet -->
+            <circle class="jn-packet" id="jn-packet" cx="110" cy="250" r="6"/>
+          </svg>
+
+          <div class="jn-hop-notes" id="jn-hop-notes">
+            <p class="jn-hop-note" data-hop="0"><b>CLIENT</b> — every story here starts with a packet</p>
+            <p class="jn-hop-note" data-hop="1"><b>ROUTER · AQM</b> — queues decide who waits; my research taught a classifier to name them</p>
+            <p class="jn-hop-note" data-hop="2"><b>TUNNEL · ZERO TRUST</b> — no port forwarding, ever</p>
+            <p class="jn-hop-note" data-hop="3"><b>HOME SERVER</b> — landing on hardware I run myself</p>
+          </div>
+
+          <p class="jn-flow-caption" id="jn-flow-caption"><span class="jn-grad">I care about every hop.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S6 · FINALE ===== -->
+    <section class="jn-scene jn-finale-scene" id="jn-s6" data-len="2.5" aria-label="Hello">
+      <div class="jn-stage">
+        <div class="jn-finale">
+          <div class="jn-portrait" id="jn-portrait">
+            <img src="Files/images/profile/profile_old.jpg" alt="Portrait of Peter Farah" loading="lazy">
+          </div>
+          <span class="jn-finale-name">Peter Farah</span>
+          <h2 class="jn-finale-line">That's the <span class="jn-grad">short version.</span></h2>
+          <p class="jn-finale-sub">The long one has dashboards.</p>
+          <div class="jn-finale-cta" id="jn-finale-cta">
+            <a href="index.html" class="btn btn-primary">Full Profile</a>
+            <a href="blog.html" class="btn">Research</a>
+            <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="btn" target="_blank" rel="noopener">Download CV</a>
+            <button class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy Email
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+  </footer>
+
+  <!-- Back to Top -->
+  <button id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
+  </button>
+
+  <!-- Copy Toast -->
+  <div id="copy-toast" role="status" aria-live="polite">✓ peter@peterfarah.com copied</div>
+
+  <!-- Command Palette -->
+  <div id="cmd-backdrop" aria-hidden="true"></div>
+  <div id="cmd-palette" role="dialog" aria-label="Command palette" aria-modal="true">
+    <div id="cmd-input-wrap">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false">
+    </div>
+    <div id="cmd-results"></div>
+    <div id="cmd-footer">
+      <span class="cmd-hint"><kbd>↑↓</kbd> navigate</span>
+      <span class="cmd-hint"><kbd>↵</kbd> open</span>
+      <span class="cmd-hint"><kbd>Esc</kbd> close</span>
+    </div>
+  </div>
+
+  <!-- Shared site chrome / interactions -->
+  <script src="script.js"></script>
+
+  <!-- ============================================================
+       journey.html — scrollytelling engine
+       Vanilla ES6, one IIFE. Progressive enhancement: if the OS
+       requests reduced motion the engine never activates and the
+       scenes stay ordinary readable sections. Writes only transform
+       / opacity (and a few scene-scoped custom props); one passive
+       scroll listener flips a dirty flag, one rAF loop reads scrollY
+       once per frame and updates only the on-screen scenes.
+       ============================================================ -->
+  <script>
+  (function () {
+    'use strict';
+
+    const root = document.documentElement;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* No motion → leave the page as a plain static article. Still wire the
+       dot-rail as simple jump links (native smooth scroll handles the rest). */
+    if (prefersReduced) {
+      wireRailStaticFallback();
+      return;
+    }
+
+    root.classList.add('jn-on');
+
+    /* ---------------------------- helpers ---------------------------- */
+    const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+    const lerp  = (a, b, t) => a + (b - a) * t;
+    /* normalized sub-progress of p within [a, b] */
+    const seg   = (p, a, b) => clamp((p - a) / (b - a), 0, 1);
+    const easeOutCubic   = t => 1 - Math.pow(1 - t, 3);
+    const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const easeOutExpo    = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+    const MOBILE_LEN = 0.65; // mobile scenes are ~65% of desktop scroll length
+
+    /* ---------------------------- scene registry ---------------------------- */
+    const scenes = [];
+    let vpH = window.innerHeight;
+
+    function registerScene(id, buildUpdate) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const stage = el.querySelector('.jn-stage');
+      if (!stage) return;
+      const update = buildUpdate(el, stage);
+      if (!update) return;
+      const baseLen = parseFloat(el.dataset.len) || 3;
+      const scene = { el, stage, top: 0, height: 0, update, active: false, baseLen: baseLen };
+      applyLen(scene);
+      scenes.push(scene);
+    }
+
+    /* Drive the CSS scene height from data-len (--jn-len), shrinking on mobile. */
+    function applyLen(scene) {
+      const len = isMobile() ? Math.max(1.5, scene.baseLen * MOBILE_LEN) : scene.baseLen;
+      scene.el.style.setProperty('--jn-len', len.toFixed(3));
+    }
+
+    /* ===================== S1 · HERO ===================== */
+    registerScene('jn-s1', function () {
+      const name  = document.getElementById('jn-hero-name');
+      const block = document.getElementById('jn-hero-block');
+      const sub   = document.getElementById('jn-hero-sub');
+      const inter = document.getElementById('jn-hero-inter');
+      const cue   = document.getElementById('jn-cue');
+      const orbA  = document.getElementById('jn-orb-a');
+      const orbB  = document.getElementById('jn-orb-b');
+      if (!name || !block || !inter) return null;
+      return function (p) {
+        const amp = isMobile() ? 0.6 : 1;
+        // name zoom-through (p 0 → 0.45) — transform-only (letter-spacing would relayout)
+        const zp = easeOutCubic(seg(p, 0, 0.45));
+        const scale = lerp(1, 1.55, zp);
+        name.style.transform = 'scale(' + scale.toFixed(3) + ')';
+        // name + sub fade out (p 0.35 → 0.55)
+        const fade = 1 - seg(p, 0.35, 0.55);
+        block.style.opacity = fade.toFixed(3);
+        // interstitial rises, holds, fades
+        const rise = easeOutCubic(seg(p, 0.45, 0.8));
+        const outo = 1 - seg(p, 0.9, 1);
+        inter.style.opacity = (rise * outo).toFixed(3);
+        inter.style.transform = 'translateY(' + lerp(50, 0, rise).toFixed(1) + 'px)';
+        // cue fades by p 0.08
+        if (cue) cue.style.opacity = (1 - seg(p, 0, 0.08)).toFixed(3);
+        // parallax orbs (opposite directions)
+        if (orbA) orbA.style.transform = 'translateY(' + (p * -8 * amp).toFixed(2) + 'vh)';
+        if (orbB) orbB.style.transform = 'translateY(' + (p *  8 * amp).toFixed(2) + 'vh)';
+        if (sub) sub.style.opacity = fade.toFixed(3);
+      };
+    });
+
+    /* ===================== S2 · STATEMENT ===================== */
+    registerScene('jn-s2', function () {
+      const para = document.getElementById('jn-statement');
+      if (!para) return null;
+      // Split text nodes into per-word spans, preserving the .jn-key emphasis.
+      const words = [];
+      splitWords(para, words);
+      const n = words.length;
+      if (!n) return null;
+      return function (p) {
+        // sequential light-up with slight overlap across p 0.05 → 0.85
+        const lit = seg(p, 0.05, 0.85);
+        const span = 1 / n;
+        for (let i = 0; i < n; i++) {
+          const start = i * span * 0.85;      // overlap: each word starts before prev fully done
+          const local = clamp((lit - start) / (span * 1.6), 0, 1);
+          words[i].style.opacity = (0.14 + local * 0.86).toFixed(3);
+        }
+        // handoff: whole block scales to .96 + fades to .5 (p 0.9 → 1)
+        const off = seg(p, 0.9, 1);
+        para.style.transform = 'scale(' + lerp(1, 0.96, off).toFixed(3) + ')';
+        para.style.opacity = lerp(1, 0.5, off).toFixed(3);
+      };
+    });
+
+    /* ===================== S3 · JOURNEY TIMELINE ===================== */
+    registerScene('jn-s3', function (el) {
+      const path  = document.getElementById('jn-route-path');
+      const beats = Array.from(el.querySelectorAll('.jn-beat'));
+      const nodes = Array.from(el.querySelectorAll('.jn-route-node-g'));
+      if (!path || !beats.length) return null;
+      // 4 beats at path waypoints — focus windows spread across the draw
+      const centers = [0.20, 0.42, 0.64, 0.86];
+      return function (p) {
+        const amp = isMobile() ? 0.6 : 1;
+        // draw the route (p 0.05 → 0.95)
+        const draw = seg(p, 0.05, 0.95);
+        path.style.strokeDashoffset = (1 - draw).toFixed(4);
+        beats.forEach(function (beat, i) {
+          const c = centers[i];
+          const half = 0.14;
+          // enter as focus approaches, dim as it passes
+          const enter = seg(p, c - half, c);
+          const leave = seg(p, c + half * 0.5, c + half * 1.6);
+          const e = easeOutCubic(enter);
+          beat.style.opacity = (e * (1 - leave * 0.55)).toFixed(3);
+          const ty = lerp(60 * amp, 0, e) + leave * 20;
+          const rx = lerp(8, 0, e);
+          const sc = 1 - leave * 0.04;
+          beat.style.transform = 'perspective(900px) translateY(' + ty.toFixed(1) + 'px) rotateX(' + rx.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
+          // node ring pulse near its beat
+          const g = nodes[i];
+          if (g) {
+            const np = seg(p, c - half, c + half * 0.4);
+            g.style.opacity = easeOutCubic(np).toFixed(3);
+          }
+        });
+      };
+    });
+
+    /* ===================== S4 · CRAFT GALLERY ===================== */
+    registerScene('jn-s4', function (el) {
+      const track = document.getElementById('jn-track');
+      const cards = Array.from(el.querySelectorAll('.jn-gcard'));
+      const vis   = Array.from(el.querySelectorAll('.jn-gcard-vis'));
+      const ticks = Array.from(el.querySelectorAll('.jn-tick'));
+      const nums  = Array.from(el.querySelectorAll('.jn-gstat-num'));
+      if (!track || !cards.length) return null;
+      let maxShift = 0;
+      // recompute the horizontal travel distance on demand (cached via measure)
+      function calcShift() {
+        // scrollWidth includes the symmetric edge padding → last card lands centered
+        const trackW = track.scrollWidth;
+        maxShift = Math.max(0, trackW - window.innerWidth);
+      }
+      calcShift();
+      el.addEventListener('jn-remeasure', calcShift);
+      const cardCount = cards.length;
+      return function (p) {
+        // horizontal scrub (p 0.05 → 0.95) with easeInOut
+        const t = easeInOutCubic(seg(p, 0.05, 0.95));
+        track.style.transform = 'translateX(' + (-maxShift * t).toFixed(1) + 'px)';
+        // which card is centered → light its tick
+        const centerIdx = clamp(Math.round(t * (cardCount - 1)), 0, cardCount - 1);
+        ticks.forEach(function (tk, i) { tk.classList.toggle('jn-tick-on', i === centerIdx); });
+        // inner visuals parallax slightly slower than the track (subtle depth)
+        vis.forEach(function (v) { v.style.transform = 'translateX(' + (maxShift * t * 0.06).toFixed(1) + 'px)'; });
+        // scroll-scrubbed counters
+        nums.forEach(function (numEl) {
+          const idx = parseInt(numEl.dataset.cardidx || '0', 10);
+          const target = parseInt(numEl.dataset.count || '0', 10);
+          const suffix = numEl.dataset.suffix || '';
+          const cardStart = 0.05 + (idx / cardCount) * 0.9;
+          const val = Math.round(target * seg(p, cardStart, cardStart + 0.12));
+          numEl.textContent = val + suffix;
+        });
+      };
+    });
+
+    /* ===================== S5 · PACKET FLOW ===================== */
+    registerScene('jn-s5', function (el) {
+      const trail   = document.getElementById('jn-flow-trail');
+      const route   = document.getElementById('jn-flow-route');
+      const packet  = document.getElementById('jn-packet');
+      const caption = document.getElementById('jn-flow-caption');
+      const rings   = Array.from(el.querySelectorAll('.jn-flow-ring'));
+      const notes   = Array.from(el.querySelectorAll('.jn-hop-note'));
+      if (!trail || !route || !packet) return null;
+      let L = 0;
+      try { L = route.getTotalLength(); } catch (e) { L = 0; }
+      const hops = [0.10, 0.35, 0.60, 0.85];
+      return function (p) {
+        // packet travels p 0.05 → 0.9 (eased)
+        const travel = easeInOutCubic(seg(p, 0.05, 0.9));
+        if (L > 0) {
+          let pt;
+          try { pt = route.getPointAtLength(travel * L); } catch (e) { pt = null; }
+          if (pt) { packet.setAttribute('cx', pt.x.toFixed(1)); packet.setAttribute('cy', pt.y.toFixed(1)); }
+        }
+        packet.style.opacity = seg(p, 0.05, 0.1).toFixed(3);
+        // trail draws slightly lagging the packet
+        trail.style.strokeDashoffset = (1 - travel * 0.98).toFixed(4);
+        // hop pulses + notes
+        hops.forEach(function (h, i) {
+          const win = 0.12;
+          const on = seg(p, h - win, h);
+          const offp = seg(p, h + win * 0.4, h + win * 1.8);
+          const ring = rings[i];
+          if (ring) {
+            const e = easeOutExpo(on);
+            ring.style.opacity = (e * (1 - offp)).toFixed(3);
+            ring.style.transform = 'scale(' + lerp(0.6, 1.25, e).toFixed(3) + ')';
+          }
+          const note = notes[i];
+          if (note) note.style.opacity = (easeOutCubic(on) * (1 - offp)).toFixed(3);
+        });
+        // end caption (p 0.88 → 1)
+        if (caption) {
+          const cp = easeOutCubic(seg(p, 0.88, 1));
+          caption.style.opacity = cp.toFixed(3);
+          caption.style.transform = 'translateY(' + lerp(24, 0, cp).toFixed(1) + 'px)';
+        }
+      };
+    });
+
+    /* ===================== S6 · FINALE ===================== */
+    registerScene('jn-s6', function () {
+      const portrait = document.getElementById('jn-portrait');
+      const cta = document.getElementById('jn-finale-cta');
+      if (!portrait) return null;
+      return function (p) {
+        // portrait scales 0.86 → 1 + fades in (p 0 → 0.35)
+        const e = easeOutCubic(seg(p, 0, 0.35));
+        portrait.style.opacity = e.toFixed(3);
+        portrait.style.transform = 'scale(' + lerp(0.86, 1, e).toFixed(3) + ')';
+        // CTA row appears (p 0.35 → 0.6), then stays interactive
+        if (cta) {
+          const ce = easeOutCubic(seg(p, 0.35, 0.6));
+          cta.style.opacity = ce.toFixed(3);
+          cta.style.transform = 'translateY(' + lerp(24, 0, ce).toFixed(1) + 'px)';
+        }
+      };
+    });
+
+    /* ---------------------------- measurement ---------------------------- */
+    function measure() {
+      vpH = window.innerHeight;
+      // re-apply scene lengths first (mobile/desktop breakpoint may have flipped)
+      scenes.forEach(applyLen);
+      const scrollY = window.pageYOffset || root.scrollTop;
+      scenes.forEach(function (s) {
+        const r = s.el.getBoundingClientRect();
+        s.top = r.top + scrollY;
+        s.height = s.el.offsetHeight;
+        s.el.dispatchEvent(new Event('jn-remeasure'));
+      });
+      dirty = true;
+    }
+
+    /* ---------------------------- rAF loop ---------------------------- */
+    let dirty = true, ticking = false;
+    function onScroll() { dirty = true; requestTick(); }
+    function requestTick() {
+      if (!ticking) { ticking = true; requestAnimationFrame(frame); }
+    }
+    function frame() {
+      ticking = false;
+      if (!dirty) return;
+      dirty = false;
+      const y = window.pageYOffset || root.scrollTop;
+      for (let i = 0; i < scenes.length; i++) {
+        const s = scenes[i];
+        if (!s.active) continue;
+        const denom = s.height - vpH;
+        const p = denom > 0 ? clamp((y - s.top) / denom, 0, 1) : (y >= s.top ? 1 : 0);
+        s.update(p);
+      }
+    }
+
+    /* ---------------------------- active set (IO) ---------------------------- */
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          const s = scenes.find(function (x) { return x.el === en.target; });
+          if (s) s.active = en.isIntersecting;
+        });
+        dirty = true; requestTick();
+      }, { rootMargin: '50% 0px 50% 0px', threshold: 0 });
+      scenes.forEach(function (s) { io.observe(s.el); });
+    } else {
+      scenes.forEach(function (s) { s.active = true; });
+    }
+
+    /* ---------------------------- chapter dot-rail ---------------------------- */
+    (function rail() {
+      const railEl = document.getElementById('jn-rail');
+      if (!railEl) return;
+      const buttons = Array.from(railEl.querySelectorAll('button'));
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const target = document.getElementById(btn.dataset.target);
+          if (!target) return;
+          const scrollY = window.pageYOffset || root.scrollTop;
+          const top = target.getBoundingClientRect().top + scrollY;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        });
+      });
+      // sync active dot with the scene nearest viewport center
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            const id = en.target.id;
+            buttons.forEach(function (b) { b.classList.toggle('jn-rail-active', b.dataset.target === id); });
+          });
+        }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+        scenes.forEach(function (s) { io.observe(s.el); });
+      }
+    })();
+
+    /* ---------------------------- word splitter ---------------------------- */
+    /* Walk the paragraph's child nodes: wrap each word of a text node in a
+       <span class="jn-w">; for the .jn-key <em> emphasis, wrap its words too
+       but keep the jn-key class so the accent gradient survives. */
+    function splitWords(container, out) {
+      const kids = Array.from(container.childNodes);
+      container.textContent = '';
+      kids.forEach(function (node) {
+        if (node.nodeType === 3) {
+          appendWords(container, node.textContent, out, false);
+        } else if (node.nodeType === 1) {
+          const isKey = node.classList && node.classList.contains('jn-key');
+          appendWords(container, node.textContent, out, isKey);
+        }
+      });
+    }
+    function appendWords(container, text, out, isKey) {
+      // split on spaces but keep the spaces as plain text between spans
+      const parts = text.split(/(\s+)/);
+      parts.forEach(function (part) {
+        if (part === '') return;
+        if (/^\s+$/.test(part)) {
+          container.appendChild(document.createTextNode(part));
+        } else {
+          const span = document.createElement('span');
+          span.className = isKey ? 'jn-w jn-key' : 'jn-w';
+          span.textContent = part;
+          container.appendChild(span);
+          out.push(span);
+        }
+      });
+    }
+
+    /* ---------------------------- reduced-motion rail fallback ---------------------------- */
+    function wireRailStaticFallback() {
+      const railEl = document.getElementById('jn-rail');
+      if (!railEl) return;
+      Array.from(railEl.querySelectorAll('button')).forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const target = document.getElementById(btn.dataset.target);
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    /* ---------------------------- wiring ---------------------------- */
+    let resizeTimer = null;
+    function onResize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(measure, 150);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    window.addEventListener('load', function () { measure(); requestTick(); });
+
+    // initial pass (fonts may still be loading; the load handler re-measures)
+    measure();
+    requestTick();
+
+  })();
+  </script>
+</body>
+</html>

@@ -305,6 +305,7 @@
       { label: 'Projects', sub: 'section', icon: ico.hash, href: onIndex ? '#projects' : 'index.html#projects' },
       { label: 'Certificates & Honors', sub: 'section', icon: ico.hash, href: onIndex ? '#certificates' : 'index.html#certificates' },
       { label: 'Home / Profile', sub: 'page', icon: ico.doc, href: 'index.html' },
+      { label: 'Journey — My Story', sub: 'page', icon: ico.doc, href: 'journey.html' },
       { label: 'Research & Blog', sub: 'page', icon: ico.doc, href: 'blog.html' },
       { label: 'AQM Research Write-up', sub: 'blog', icon: ico.hash, href: 'blog.html#aqm-research' },
       { label: 'Home Server Architecture', sub: 'blog', icon: ico.hash, href: 'blog.html#home-server' },

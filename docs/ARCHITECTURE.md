@@ -37,6 +37,7 @@ scripts.)
 | File | Lines | Role |
 |------|-------|------|
 | `index.html` | ~540 | Landing/profile. Hero "bento" grid, count-up stats, About, Experience & Education timeline, Skills (proficiency bars), Projects, Certificates. Contains JSON-LD `Person` structured data. |
+| `journey.html` | ~1100 | "Journey" — immersive Apple-style scrollytelling intro. Six pinned, scroll-scrubbed scenes (hero, statement, route timeline, craft gallery, packet flow, finale). Self-contained: page-scoped `<style>` + inline engine, all `jn-` prefixed; static fallback when JS is off or `prefers-reduced-motion` is set. |
 | `blog.html` | ~450 | Research blog. Three expandable write-ups: `#aqm-research`, `#home-server`, `#home-nas`. |
 | `fun.html` | ~543 | "Interactive Hub" — filterable grid of cards linking into `FUN/`. Has a page-specific `<style>` block (hub grid) and a small inline filter script. |
 | `server.html` | ~115 | "Service Access Panel" — buttons linking to self-hosted services behind Cloudflare Zero Trust. Some service groups are commented out. **Not** related to `server*.py`. |
@@ -52,7 +53,7 @@ scripts.)
 | File | Role |
 |------|------|
 | `CNAME` | Custom domain: `peterfarah.com`. |
-| `sitemap.xml` | Lists `/`, `blog.html`, `server.html`, `AQMgame.html`. |
+| `sitemap.xml` | Lists `/`, `blog.html`, `journey.html`, `fun.html`, `server.html`, `AQMgame.html`. |
 | `robots.txt` | Allows all; points to sitemap. |
 | `llms.txt` | Public "instructions for AI crawlers" easter-egg about the owner. **Site content, not dev docs — keep it.** |
 

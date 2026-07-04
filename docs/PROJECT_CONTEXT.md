@@ -29,6 +29,7 @@ default branch publishes it live.
   2. **Research blog** (`blog.html`) — three long-form technical write-ups.
   3. **Interactive Hub** (`fun.html`) — a grid of standalone in-browser tools/simulators.
   4. **Service Access Panel** (`server.html`) — links to Peter's self-hosted services (behind Cloudflare Zero Trust).
+  5. **Journey** (`journey.html`) — immersive scroll-driven ("scrollytelling") introduction: Beirut → Paris → Beirut, research, homelab, automation.
 
 ---
 
