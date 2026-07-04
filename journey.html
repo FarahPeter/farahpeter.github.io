@@ -265,7 +265,7 @@
 
     /* ---------------- S6 FINALE ---------------- */
     .jn-finale-scene .jn-stage { place-items: center; }
-    .jn-finale { text-align: center; max-width: 640px; margin: 0 auto; padding: 0 22px; }
+    .jn-finale { text-align: center; max-width: 640px; margin: 0 auto; padding: 0 22px; will-change: transform; }
     .jn-portrait {
       width: clamp(140px, 34vw, 216px); aspect-ratio: 1; margin: 0 auto 26px;
       border-radius: var(--radius-xl); overflow: hidden;
@@ -631,9 +631,10 @@
                 <stop offset="1" stop-color="var(--accent-2)"/>
               </linearGradient>
             </defs>
-            <!-- dashed guide + drawn trail share the same geometry -->
-            <path class="jn-flow-route" id="jn-flow-route" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130 C 870 130 900 210 900 250"/>
-            <path class="jn-flow-trail" id="jn-flow-trail" pathLength="1" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130 C 870 130 900 210 900 250"/>
+            <!-- dashed guide + drawn trail share the same geometry, ending
+                 exactly on the HOME SERVER node (the packet's destination) -->
+            <path class="jn-flow-route" id="jn-flow-route" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130"/>
+            <path class="jn-flow-trail" id="jn-flow-trail" pathLength="1" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130"/>
 
             <!-- nodes + pulse rings + labels -->
             <g data-hop="0">
@@ -771,9 +772,30 @@
     const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
     const MOBILE_LEN = 0.65; // mobile scenes are ~65% of desktop scroll length
 
+    /* For each point, the fraction of the path's length nearest to it.
+       One-time sample; locks scroll timings to the drawn geometry instead of
+       hand-tuned constants (which drift whenever the path is edited). */
+    function pathFractions(path, pts) {
+      let L = 0;
+      try { L = path.getTotalLength(); } catch (e) { return null; }
+      if (!(L > 0) || !pts || !pts.length) return null;
+      const N = 240, sx = [], sy = [];
+      for (let i = 0; i <= N; i++) {
+        const pt = path.getPointAtLength(L * i / N);
+        sx.push(pt.x); sy.push(pt.y);
+      }
+      return pts.map(function (p) {
+        let best = 0, bd = Infinity;
+        for (let i = 0; i <= N; i++) {
+          const d = (sx[i] - p.x) * (sx[i] - p.x) + (sy[i] - p.y) * (sy[i] - p.y);
+          if (d < bd) { bd = d; best = i; }
+        }
+        return best / N;
+      });
+    }
+
     /* ---------------------------- scene registry ---------------------------- */
     const scenes = [];
-    let vpH = window.innerHeight;
 
     function registerScene(id, buildUpdate) {
       const el = document.getElementById(id);
@@ -783,7 +805,7 @@
       const update = buildUpdate(el, stage);
       if (!update) return;
       const baseLen = parseFloat(el.dataset.len) || 3;
-      const scene = { el, stage, top: 0, height: 0, update, active: false, baseLen: baseLen };
+      const scene = { el, stage, top: 0, height: 0, stageH: 0, update, active: false, baseLen: baseLen };
       applyLen(scene);
       scenes.push(scene);
     }
@@ -810,10 +832,11 @@
         // name + sub fade out (p 0.35 → 0.55)
         const fade = 1 - seg(p, 0.35, 0.55);
         block.style.opacity = fade.toFixed(3);
-        // interstitial rises, holds, fades
+        // interstitial rises, then HOLDS through p=1 so it rides the unpin
+        // out of view (fading it out here left a blank viewport sliding
+        // through during the S1 → S2 handoff)
         const rise = easeOutCubic(seg(p, 0.45, 0.8));
-        const outo = 1 - seg(p, 0.9, 1);
-        inter.style.opacity = (rise * outo).toFixed(3);
+        inter.style.opacity = rise.toFixed(3);
         inter.style.transform = 'translateY(' + lerp(50, 0, rise).toFixed(1) + 'px)';
         // cue fades by p 0.08
         if (cue) cue.style.opacity = (1 - seg(p, 0, 0.08)).toFixed(3);
@@ -852,32 +875,53 @@
       const beats = Array.from(el.querySelectorAll('.jn-beat'));
       const nodes = Array.from(el.querySelectorAll('.jn-route-node-g'));
       if (!path || !beats.length) return null;
-      // 4 beats at path waypoints — focus windows spread across the draw
-      const centers = [0.20, 0.42, 0.64, 0.86];
+      /* Beat + node timing is derived from the path geometry itself: sample
+         each node's fraction of the total length, then map fractions into
+         scroll-space so a card appears exactly as the line reaches its node.
+         (The old hand-tuned centers drifted — dots appeared while the line
+         was still far away.) */
+      let nodePts = [];
+      for (let i = 0; i < nodes.length; i++) {
+        const core = nodes[i].querySelector('.jn-route-node-core');
+        if (!core) { nodePts = null; break; }
+        nodePts.push({ x: parseFloat(core.getAttribute('cx')), y: parseFloat(core.getAttribute('cy')) });
+      }
+      const fracs = (nodePts && pathFractions(path, nodePts)) || [0, 0.40, 0.74, 1];
+      /* The draw keeps a small stub visible at p=0 so the scene never slides
+         in as a blank stage (also avoids the round-linecap dot artifact at
+         dashoffset=1). */
+      const STUB = 0.02, DRAW_END = 0.92;
+      const drawAt = function (p) { return STUB + (1 - STUB) * seg(p, 0, DRAW_END); };
+      const pAt = function (f) { return f <= STUB ? 0 : DRAW_END * (f - STUB) / (1 - STUB); };
+      const centers = fracs.map(pAt);
+      /* Per-beat windows. Exits are clamped so each card is FULLY gone before
+         the next one enters — beats share grid-area 1/1, so any overlap reads
+         as two semi-transparent cards stacked on top of each other. The first
+         beat enters "before" p=0, i.e. it is already visible while the scene
+         slides into view. */
+      const win = centers.map(function (c, i) {
+        const nextEnter = i < centers.length - 1 ? centers[i + 1] - 0.10 : Infinity;
+        const exitB = Math.min(c + 0.12, nextEnter - 0.01);
+        const exitA = Math.min(c + 0.05, exitB - 0.04);
+        return { enterA: c - 0.10, enterB: c - 0.01, exitA: exitA, exitB: exitB };
+      });
       return function (p) {
         const amp = isMobile() ? 0.6 : 1;
-        // draw the route (p 0.05 → 0.95)
-        const draw = seg(p, 0.05, 0.95);
+        const draw = drawAt(p);
         path.style.strokeDashoffset = (1 - draw).toFixed(4);
         beats.forEach(function (beat, i) {
-          const c = centers[i];
-          // enter as focus approaches; fade FULLY out before the next beat owns
-          // the overlay slot (beats share grid-area 1/1 — residual opacity stacks)
-          const enter = seg(p, c - 0.13, c - 0.01);
+          const w = win[i];
+          const e = easeOutCubic(seg(p, w.enterA, w.enterB));
           const isLast = i === beats.length - 1;
-          const l = isLast ? 0 : easeInOutCubic(seg(p, c + 0.05, c + 0.15));
-          const e = easeOutCubic(enter);
+          const l = isLast ? 0 : easeInOutCubic(seg(p, w.exitA, w.exitB));
           beat.style.opacity = (e * (1 - l)).toFixed(3);
           const ty = lerp(60 * amp, 0, e) - 34 * l;
           const rx = lerp(8, 0, e);
           const sc = 1 - l * 0.05;
           beat.style.transform = 'perspective(900px) translateY(' + ty.toFixed(1) + 'px) rotateX(' + rx.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
-          // node ring pulse near its beat
+          // node dot pops exactly as the drawn line arrives at it
           const g = nodes[i];
-          if (g) {
-            const np = seg(p, c - 0.13, c - 0.06);
-            g.style.opacity = easeOutCubic(np).toFixed(3);
-          }
+          if (g) g.style.opacity = easeOutCubic(seg(draw, fracs[i] - 0.035, fracs[i] - 0.005)).toFixed(3);
         });
       };
     });
@@ -909,13 +953,15 @@
         ticks.forEach(function (tk, i) { tk.classList.toggle('jn-tick-on', i === centerIdx); });
         // inner visuals parallax slightly slower than the track (subtle depth)
         vis.forEach(function (v) { v.style.transform = 'translateX(' + (maxShift * t * 0.06).toFixed(1) + 'px)'; });
-        // scroll-scrubbed counters
+        // scroll-scrubbed counters, keyed to the eased track position so each
+        // one finishes counting just as its card reaches center (card idx is
+        // centered at t = idx / (cardCount - 1))
         nums.forEach(function (numEl) {
           const idx = parseInt(numEl.dataset.cardidx || '0', 10);
           const target = parseInt(numEl.dataset.count || '0', 10);
           const suffix = numEl.dataset.suffix || '';
-          const cardStart = 0.05 + (idx / cardCount) * 0.9;
-          const val = Math.round(target * seg(p, cardStart, cardStart + 0.12));
+          const tc = idx / (cardCount - 1);
+          const val = Math.round(target * (idx === 0 ? seg(t, 0, 0.09) : seg(t, tc - 0.18, tc - 0.02)));
           numEl.textContent = val + suffix;
         });
       };
@@ -929,27 +975,37 @@
       const caption = document.getElementById('jn-flow-caption');
       const rings   = Array.from(el.querySelectorAll('.jn-flow-ring'));
       const notes   = Array.from(el.querySelectorAll('.jn-hop-note'));
+      const nodeEls = Array.from(el.querySelectorAll('.jn-flow-node'));
       if (!trail || !route || !packet) return null;
       let L = 0;
       try { L = route.getTotalLength(); } catch (e) { L = 0; }
-      const hops = [0.10, 0.35, 0.60, 0.85];
+      /* Hop timing follows the PACKET, not fixed scroll constants — the old
+         p-based hops ignored the travel easing, so rings pulsed long before
+         (or after) the packet actually reached their node. Fractions come
+         from the geometry itself. */
+      const hopPts = nodeEls.map(function (n) {
+        return { x: parseFloat(n.getAttribute('cx')), y: parseFloat(n.getAttribute('cy')) };
+      });
+      const hops = pathFractions(route, hopPts) || [0, 0.33, 0.65, 1];
       return function (p) {
-        // packet travels p 0.05 → 0.9 (eased)
+        // packet travels p 0.05 → 0.9 (eased); visible from p=0, parked on
+        // the CLIENT node, so the scene never slides in without an actor
         const travel = easeInOutCubic(seg(p, 0.05, 0.9));
         if (L > 0) {
           let pt;
           try { pt = route.getPointAtLength(travel * L); } catch (e) { pt = null; }
           if (pt) { packet.setAttribute('cx', pt.x.toFixed(1)); packet.setAttribute('cy', pt.y.toFixed(1)); }
         }
-        packet.style.opacity = seg(p, 0.05, 0.1).toFixed(3);
-        // trail draws slightly lagging the packet
-        trail.style.strokeDashoffset = (1 - travel * 0.98).toFixed(4);
-        // hop pulses + notes
+        packet.style.opacity = '1';
+        // trail draws under the packet and completes with it at the last node
+        trail.style.strokeDashoffset = (1 - travel).toFixed(4);
+        // hop pulses + notes, in travel-space (monotonic in p, so reversible)
         hops.forEach(function (h, i) {
           // notes share one overlay slot — each fades FULLY out before the
-          // next starts (crossfading text in the same slot reads as garble)
-          const on = seg(p, h - 0.09, h - 0.01);
-          const offp = seg(p, h + 0.03, h + 0.115);
+          // next starts (crossfading text in the same slot reads as garble);
+          // hop 0 is "on" at travel=0 so the scene enters with its first line
+          const on = seg(travel, h - 0.05, h);
+          const offp = seg(travel, h + 0.06, h + 0.14);
           const ring = rings[i];
           if (ring) {
             const e = easeOutExpo(on);
@@ -969,11 +1025,15 @@
     });
 
     /* ===================== S6 · FINALE ===================== */
-    registerScene('jn-s6', function () {
+    registerScene('jn-s6', function (el) {
+      const fin = el.querySelector('.jn-finale');
       const portrait = document.getElementById('jn-portrait');
       const cta = document.getElementById('jn-finale-cta');
       if (!portrait) return null;
       return function (p) {
+        // whole block settles upward as the scene pins — text stays visible
+        // from p=0 so the handoff from S5 never shows an empty stage
+        if (fin) fin.style.transform = 'translateY(' + lerp(30, 0, easeOutCubic(seg(p, 0, 0.3))).toFixed(1) + 'px)';
         // portrait scales 0.86 → 1 + fades in (p 0 → 0.35)
         const e = easeOutCubic(seg(p, 0, 0.35));
         portrait.style.opacity = e.toFixed(3);
@@ -989,7 +1049,6 @@
 
     /* ---------------------------- measurement ---------------------------- */
     function measure() {
-      vpH = window.innerHeight;
       // re-apply scene lengths first (mobile/desktop breakpoint may have flipped)
       scenes.forEach(applyLen);
       const scrollY = window.pageYOffset || root.scrollTop;
@@ -997,6 +1056,9 @@
         const r = s.el.getBoundingClientRect();
         s.top = r.top + scrollY;
         s.height = s.el.offsetHeight;
+        // stages are 100svh, which ≠ innerHeight while the mobile URL bar
+        // moves — measure the real stage height so p hits 1 exactly at unpin
+        s.stageH = s.stage.offsetHeight;
         s.el.dispatchEvent(new Event('jn-remeasure'));
       });
       dirty = true;
@@ -1016,7 +1078,7 @@
       for (let i = 0; i < scenes.length; i++) {
         const s = scenes[i];
         if (!s.active) continue;
-        const denom = s.height - vpH;
+        const denom = s.height - s.stageH;
         const p = denom > 0 ? clamp((y - s.top) / denom, 0, 1) : (y >= s.top ? 1 : 0);
         s.update(p);
       }
