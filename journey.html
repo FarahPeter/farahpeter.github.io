@@ -79,7 +79,33 @@
       filter: drop-shadow(0 3px 26px var(--accent-glow));
       will-change: transform;
     }
-    .jn-hero-name span { display: block; }
+    .jn-hero-name > span { display: block; }
+    /* Per-letter split (engine only). background-clip:text does not reliably
+       survive transform-animated child spans (the clip breaks per-glyph), so
+       once the name is split each letter clips its OWN slice of a shared
+       oversized gradient — sampled per letter via --jn-frac, drifted by the
+       inherited registered prop --jn-gs. Without @property support the drift
+       simply stays static; the gradient itself still renders. */
+    @property --jn-gs { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+    html.jn-on .jn-hero-name { background: none; animation: jn-gs-drift 9s ease-in-out infinite alternate; }
+    html.jn-on .jn-l {
+      display: inline-block;
+      background: linear-gradient(115deg, var(--ink) 12%, var(--accent) 42%, var(--accent-2) 62%, var(--accent-3) 82%, var(--ink) 100%);
+      background-size: 1100% 260%;
+      background-position: calc(var(--jn-frac, 0) * 100% + var(--jn-gs, 0%)) 50%;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    @keyframes jn-gs-drift { from { --jn-gs: 0%; } to { --jn-gs: 26%; } }
+    /* Load intro: kicker → letters (staggered) → sub → scroll cue.
+       fill:backwards only — every end state equals the natural state, so the
+       engine's per-frame inline writes take over cleanly once each ends. */
+    html.jn-boot .jn-hero-kicker { animation: jn-rise-in .6s var(--ease) .05s backwards; }
+    html.jn-boot .jn-l { animation: jn-letter-in .65s var(--ease) backwards; animation-delay: calc(140ms + var(--jn-i, 0) * 42ms); }
+    html.jn-boot .jn-hero-sub { animation: jn-rise-in .7s var(--ease) .75s backwards; }
+    html.jn-boot .jn-cue { animation: jn-fade-in .8s var(--ease) 1.5s backwards; }
+    @keyframes jn-letter-in { from { opacity: 0; transform: translateY(0.4em); } }
+    @keyframes jn-rise-in { from { opacity: 0; transform: translateY(16px); } }
+    @keyframes jn-fade-in { from { opacity: 0; } }
     .jn-hero-sub {
       font-family: var(--font-mono); color: var(--text); margin-top: 26px;
       font-size: clamp(0.9rem, 2.2vw, 1.15rem); letter-spacing: 0.02em;
@@ -124,7 +150,8 @@
       color: var(--ink); will-change: transform, opacity;
     }
     .jn-w { transition: none; }
-    html.jn-on .jn-w { opacity: 0.14; }
+    /* inline-block so words can drift/pop via transform without relayout */
+    html.jn-on .jn-w { opacity: 0.14; display: inline-block; }
     .jn-key {
       background: linear-gradient(110deg, var(--accent), var(--accent-2) 65%, var(--accent-3));
       -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -146,6 +173,12 @@
     .jn-route-node { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
     .jn-route-node-core { fill: var(--accent-2); }
     html.jn-on .jn-route-node-g { opacity: 0; }
+    /* pulse ring + spark are engine-driven; both invisible in the static page */
+    .jn-route-ring {
+      fill: none; stroke: var(--accent-2); stroke-width: 2; opacity: 0;
+      will-change: transform, opacity; transform-box: fill-box; transform-origin: center;
+    }
+    .jn-route-spark { fill: var(--accent-2); filter: drop-shadow(0 0 7px var(--accent-glow)); opacity: 0; }
 
     .jn-beats {
       position: relative; z-index: 2; width: 100%;
@@ -197,6 +230,9 @@
       padding-right: max(22px, calc((100vw - min(70vw, 780px)) / 2));
     }
     html.jn-on .jn-track .jn-gcard { margin: 0; flex: 0 0 min(70vw, 780px); min-height: 62vh; }
+    /* the engine writes a per-frame focus transform/opacity on each card —
+       the .tile transition would smear those writes, so drop it here */
+    html.jn-on .jn-gcard { transition: none; }
     .jn-gcard {
       padding: 40px 42px; display: flex; flex-direction: column;
       position: relative;
@@ -227,8 +263,8 @@
     /* progress ticks under the track */
     .jn-ticks { display: none; justify-content: center; gap: 12px; }
     html.jn-on .jn-ticks { display: flex; }
-    .jn-tick { width: 34px; height: 4px; border-radius: 3px; background: var(--hairline); transition: background .3s, box-shadow .3s; }
-    .jn-tick.jn-tick-on { background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 12px var(--accent-glow); }
+    .jn-tick { width: 34px; height: 4px; border-radius: 3px; background: var(--hairline); transition: background .3s, box-shadow .3s, width .3s var(--ease); }
+    .jn-tick.jn-tick-on { width: 52px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 12px var(--accent-glow); }
 
     /* ---------------- S5 PACKET FLOW ---------------- */
     .jn-flow-scene .jn-stage { place-items: center; }
@@ -242,6 +278,12 @@
     .jn-flow-node-lbl { font-family: var(--font-mono); font-size: 12px; fill: var(--accent-bright); letter-spacing: 0.08em; }
     .jn-packet { fill: var(--accent-2); filter: drop-shadow(0 0 6px var(--accent-glow)); }
     html.jn-on .jn-packet { opacity: 0; }
+    /* comet-trail ghosts + light-up cores are engine-driven; hidden statically */
+    .jn-ghost { opacity: 0; }
+    .jn-flow-core { fill: var(--accent-2); opacity: 0; }
+    /* nodes/labels rest dimmed and light up as the packet reaches them */
+    html.jn-on .jn-flow-node { opacity: 0.55; }
+    html.jn-on .jn-flow-node-lbl { opacity: 0.5; }
     .jn-flow-caption {
       text-align: center; margin-top: 26px;
       font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em;
@@ -273,6 +315,15 @@
       will-change: transform, opacity;
     }
     .jn-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* gentle float on the img + glow-pulse on the frame — the engine's scale
+       lives on the wrapper, so the three transforms never fight */
+    html.jn-on .jn-portrait img { animation: jn-float 6s ease-in-out infinite; }
+    html.jn-on .jn-portrait { animation: jn-portrait-glow 4.5s ease-in-out infinite; }
+    @keyframes jn-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    @keyframes jn-portrait-glow {
+      0%, 100% { box-shadow: 0 0 0 1px var(--ring-accent), 0 0 0 6px var(--accent-soft), var(--shadow-lg); }
+      50%      { box-shadow: 0 0 0 1px var(--ring-accent), 0 0 0 9px var(--accent-soft), 0 0 44px -6px var(--accent-glow), var(--shadow-lg); }
+    }
     .jn-finale-name { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-bright); margin-bottom: 12px; display: block; }
     .jn-finale-line {
       font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em;
@@ -284,6 +335,13 @@
     }
     .jn-finale-sub { color: var(--muted); margin-top: 14px; font-size: clamp(1rem, 2.4vw, 1.2rem); }
     .jn-finale-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; will-change: transform, opacity; }
+    /* engine-driven entrances: kicker → headline words → sub → CTAs cascade.
+       CTA children fade only (their .btn transitions + magnetic transform
+       must stay untouched); everything rests at natural state at p=1. */
+    html.jn-on .jn-finale-name { opacity: 0; }
+    html.jn-on .jn-finale-line .jn-w { opacity: 0; }
+    html.jn-on .jn-finale-sub { opacity: 0; }
+    html.jn-on .jn-finale-cta > * { opacity: 0; }
 
     /* ---------------- chapter dot-rail ----------------
        The rail is a <nav>, so it inherits the site navbar's element styles
@@ -303,11 +361,16 @@
       cursor: pointer; padding: 0; flex-direction: row-reverse;
     }
     .jn-rail-dot {
+      position: relative;
       width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
       background: transparent; border: 1.5px solid var(--faint);
       box-shadow: inset 0 0 0 0 var(--accent);
       transition: border-color .3s, box-shadow .3s, transform .3s;
     }
+    /* scene-progress ring around each dot (SVG injected by the engine;
+       dash values are set from the measured circumference in JS) */
+    .jn-rail-ring { position: absolute; left: -5px; top: -5px; width: 19px; height: 19px; transform: rotate(-90deg); pointer-events: none; overflow: visible; }
+    .jn-rail-ring circle { fill: none; stroke: var(--accent-2); stroke-width: 2.5; stroke-linecap: round; }
     .jn-rail button:hover .jn-rail-dot { border-color: var(--accent-bright); }
     .jn-rail button.jn-rail-active .jn-rail-dot {
       border-color: var(--accent); box-shadow: inset 0 0 0 4px var(--accent), 0 0 12px var(--accent-glow);
@@ -484,11 +547,13 @@
               d="M 150 120 C 340 120 360 260 500 270 C 640 280 700 150 830 170 C 900 182 900 300 780 340 C 560 410 420 380 400 480 C 385 560 560 590 830 590"/>
             <!-- node markers (positions match the 4 waypoints) -->
             <g id="jn-route-nodes">
-              <g class="jn-route-node-g" data-beat="0"><circle class="jn-route-node" cx="150" cy="120" r="11"/><circle class="jn-route-node-core" cx="150" cy="120" r="4"/></g>
-              <g class="jn-route-node-g" data-beat="1"><circle class="jn-route-node" cx="830" cy="170" r="11"/><circle class="jn-route-node-core" cx="830" cy="170" r="4"/></g>
-              <g class="jn-route-node-g" data-beat="2"><circle class="jn-route-node" cx="400" cy="480" r="11"/><circle class="jn-route-node-core" cx="400" cy="480" r="4"/></g>
-              <g class="jn-route-node-g" data-beat="3"><circle class="jn-route-node" cx="830" cy="590" r="11"/><circle class="jn-route-node-core" cx="830" cy="590" r="4"/></g>
+              <g class="jn-route-node-g" data-beat="0"><circle class="jn-route-ring" cx="150" cy="120" r="19"/><circle class="jn-route-node" cx="150" cy="120" r="11"/><circle class="jn-route-node-core" cx="150" cy="120" r="4"/></g>
+              <g class="jn-route-node-g" data-beat="1"><circle class="jn-route-ring" cx="830" cy="170" r="19"/><circle class="jn-route-node" cx="830" cy="170" r="11"/><circle class="jn-route-node-core" cx="830" cy="170" r="4"/></g>
+              <g class="jn-route-node-g" data-beat="2"><circle class="jn-route-ring" cx="400" cy="480" r="19"/><circle class="jn-route-node" cx="400" cy="480" r="11"/><circle class="jn-route-node-core" cx="400" cy="480" r="4"/></g>
+              <g class="jn-route-node-g" data-beat="3"><circle class="jn-route-ring" cx="830" cy="590" r="19"/><circle class="jn-route-node" cx="830" cy="590" r="11"/><circle class="jn-route-node-core" cx="830" cy="590" r="4"/></g>
             </g>
+            <!-- spark riding the head of the drawn route -->
+            <circle class="jn-route-spark" id="jn-route-spark" cx="150" cy="120" r="6"/>
           </svg>
 
           <div class="jn-beats" id="jn-beats">
@@ -640,25 +705,31 @@
             <g data-hop="0">
               <circle class="jn-flow-ring" cx="110" cy="250" r="18"/>
               <circle class="jn-flow-node" cx="110" cy="250" r="10"/>
+              <circle class="jn-flow-core" cx="110" cy="250" r="4.5"/>
               <text class="jn-flow-node-lbl" x="110" y="292" text-anchor="middle">CLIENT</text>
             </g>
             <g data-hop="1">
               <circle class="jn-flow-ring" cx="340" cy="150" r="18"/>
               <circle class="jn-flow-node" cx="340" cy="150" r="10"/>
+              <circle class="jn-flow-core" cx="340" cy="150" r="4.5"/>
               <text class="jn-flow-node-lbl" x="340" y="126" text-anchor="middle">ROUTER · AQM</text>
             </g>
             <g data-hop="2">
               <circle class="jn-flow-ring" cx="560" cy="250" r="18"/>
               <circle class="jn-flow-node" cx="560" cy="250" r="10"/>
+              <circle class="jn-flow-core" cx="560" cy="250" r="4.5"/>
               <text class="jn-flow-node-lbl" x="560" y="292" text-anchor="middle">TUNNEL · ZERO TRUST</text>
             </g>
             <g data-hop="3">
               <circle class="jn-flow-ring" cx="800" cy="130" r="18"/>
               <circle class="jn-flow-node" cx="800" cy="130" r="10"/>
+              <circle class="jn-flow-core" cx="800" cy="130" r="4.5"/>
               <text class="jn-flow-node-lbl" x="800" y="106" text-anchor="middle">HOME SERVER</text>
             </g>
 
-            <!-- travelling packet -->
+            <!-- travelling packet + comet-trail ghosts (ghosts under the packet) -->
+            <circle class="jn-packet jn-ghost" id="jn-ghost-2" cx="110" cy="250" r="2.6"/>
+            <circle class="jn-packet jn-ghost" id="jn-ghost-1" cx="110" cy="250" r="4"/>
             <circle class="jn-packet" id="jn-packet" cx="110" cy="250" r="6"/>
           </svg>
 
@@ -824,6 +895,19 @@
       const inter = document.getElementById('jn-hero-inter');
       const cue   = document.getElementById('jn-cue');
       if (!name || !block || !inter) return null;
+      /* Split each display-block line into per-letter spans for the load
+         intro. --jn-frac gives each letter its slice of the shared gradient
+         (per line, so the 115° sweep reads left→right on both lines);
+         --jn-i staggers the boot animation across the whole name. */
+      let gi = 0;
+      Array.from(name.children).forEach(function (line) {
+        const letters = [];
+        splitLetters(line, letters);
+        letters.forEach(function (l, i) {
+          l.style.setProperty('--jn-frac', letters.length > 1 ? (i / (letters.length - 1)).toFixed(3) : '0');
+          l.style.setProperty('--jn-i', gi++);
+        });
+      });
       return function (p) {
         // name zoom-through (p 0 → 0.45) — transform-only (letter-spacing would relayout)
         const zp = easeOutCubic(seg(p, 0, 0.45));
@@ -851,6 +935,7 @@
       // Split text nodes into per-word spans, preserving the .jn-key emphasis.
       const words = [];
       splitWords(para, words);
+      const isKey = words.map(function (w) { return w.classList.contains('jn-key'); });
       const n = words.length;
       if (!n) return null;
       return function (p) {
@@ -861,6 +946,10 @@
           const start = i * span * 0.85;      // overlap: each word starts before prev fully done
           const local = clamp((lit - start) / (span * 1.6), 0, 1);
           words[i].style.opacity = (0.14 + local * 0.86).toFixed(3);
+          // words drift up into place as they light; keywords pop ~6% mid-ramp
+          let tr = 'translateY(' + (0.18 * (1 - local)).toFixed(3) + 'em)';
+          if (isKey[i]) tr += ' scale(' + (1 + 0.06 * Math.sin(local * Math.PI)).toFixed(3) + ')';
+          words[i].style.transform = tr;
         }
         // handoff: whole block scales to .96 + fades to .5 (p 0.9 → 1)
         const off = seg(p, 0.9, 1);
@@ -874,7 +963,15 @@
       const path  = document.getElementById('jn-route-path');
       const beats = Array.from(el.querySelectorAll('.jn-beat'));
       const nodes = Array.from(el.querySelectorAll('.jn-route-node-g'));
+      const spark = document.getElementById('jn-route-spark');
+      const rings = nodes.map(function (g) { return g.querySelector('.jn-route-ring'); });
+      const geos  = beats.map(function (b) { return b.querySelector('.jn-beat-geo'); });
+      const cardEls = beats.map(function (b) { return b.querySelector('.jn-card'); });
       if (!path || !beats.length) return null;
+      // real geometric length for the spark's getPointAtLength (the path's
+      // pathLength="1" only normalizes dash space, not measured length)
+      let RL = 0;
+      try { RL = path.getTotalLength(); } catch (e) { RL = 0; }
       /* Beat + node timing is derived from the path geometry itself: sample
          each node's fraction of the total length, then map fractions into
          scroll-space so a card appears exactly as the line reaches its node.
@@ -909,19 +1006,52 @@
         const amp = isMobile() ? 0.6 : 1;
         const draw = drawAt(p);
         path.style.strokeDashoffset = (1 - draw).toFixed(4);
+        // spark rides the head of the line, fading out as the draw completes
+        if (spark && RL > 0) {
+          let sp;
+          try { sp = path.getPointAtLength(draw * RL); } catch (e) { sp = null; }
+          if (sp) { spark.setAttribute('cx', sp.x.toFixed(1)); spark.setAttribute('cy', sp.y.toFixed(1)); }
+          spark.style.opacity = (seg(draw, STUB, STUB + 0.04) * (1 - seg(draw, 0.96, 1))).toFixed(3);
+        }
         beats.forEach(function (beat, i) {
           const w = win[i];
           const e = easeOutCubic(seg(p, w.enterA, w.enterB));
           const isLast = i === beats.length - 1;
           const l = isLast ? 0 : easeInOutCubic(seg(p, w.exitA, w.exitB));
-          beat.style.opacity = (e * (1 - l)).toFixed(3);
-          const ty = lerp(60 * amp, 0, e) - 34 * l;
-          const rx = lerp(8, 0, e);
+          // geo label leads, card follows — both inside the original window,
+          // so the "fully gone before next enters" clamping still holds
+          const ge = easeOutCubic(seg(p, w.enterA, w.enterA + 0.055));
+          const ce = easeOutCubic(seg(p, w.enterA + 0.03, w.enterB));
+          if (geos[i]) {
+            geos[i].style.opacity = ge.toFixed(3);
+            geos[i].style.transform = 'translateY(' + lerp(10, 0, ge).toFixed(1) + 'px)';
+          }
+          if (cardEls[i]) cardEls[i].style.opacity = ce.toFixed(3);
+          beat.style.opacity = (1 - l).toFixed(3);
+          // alternating entrance axis: even beats rise in (rotateX), odd
+          // beats slide in from the side (rotateY); exits stay identical
           const sc = 1 - l * 0.05;
-          beat.style.transform = 'perspective(900px) translateY(' + ty.toFixed(1) + 'px) rotateX(' + rx.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
+          if (i % 2 === 0) {
+            const ty = lerp(60 * amp, 0, e) - 34 * l;
+            const rx = lerp(8, 0, e);
+            beat.style.transform = 'perspective(900px) translateY(' + ty.toFixed(1) + 'px) rotateX(' + rx.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
+          } else {
+            const dir = (i % 4 === 1) ? 1 : -1;
+            const tx = lerp(64 * amp * dir, 0, e);
+            const ry = lerp(-9 * dir, 0, e);
+            beat.style.transform = 'perspective(900px) translate(' + tx.toFixed(1) + 'px, ' + (-34 * l).toFixed(1) + 'px) rotateY(' + ry.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
+          }
           // node dot pops exactly as the drawn line arrives at it
           const g = nodes[i];
           if (g) g.style.opacity = easeOutCubic(seg(draw, fracs[i] - 0.035, fracs[i] - 0.005)).toFixed(3);
+          // pulse ring fires in draw-space as the line lands on the node
+          const ring = rings[i];
+          if (ring) {
+            const on = easeOutExpo(seg(draw, fracs[i] - 0.01, fracs[i] + 0.02));
+            const off = seg(draw, fracs[i] + 0.03, fracs[i] + 0.09);
+            ring.style.opacity = (on * (1 - off)).toFixed(3);
+            ring.style.transform = 'scale(' + lerp(0.6, 1.35, on).toFixed(3) + ')';
+          }
         });
       };
     });
@@ -934,12 +1064,32 @@
       const ticks = Array.from(el.querySelectorAll('.jn-tick'));
       const nums  = Array.from(el.querySelectorAll('.jn-gstat-num'));
       if (!track || !cards.length) return null;
-      let maxShift = 0;
+      /* Self-drawing mini-diagrams: measure each stroked element's true
+         length once and set its dash to that length (pathLength on lines/
+         circles is still patchy, so dash space uses measured units). */
+      const arts = cards.map(function (card) {
+        return Array.from(card.querySelectorAll('.jn-gcard-vis path, .jn-gcard-vis line, .jn-gcard-vis circle')).map(function (s) {
+          let sl = 0;
+          try { sl = s.getTotalLength(); } catch (e) { sl = 0; }
+          if (sl > 0) { s.style.strokeDasharray = sl.toFixed(1); s.style.strokeDashoffset = sl.toFixed(1); }
+          return { el: s, len: sl };
+        });
+      });
+      let maxShift = 0, centers = [], cardW = 1, vpW = window.innerWidth;
       // recompute the horizontal travel distance on demand (cached via measure)
       function calcShift() {
         // scrollWidth includes the symmetric edge padding → last card lands centered
+        vpW = window.innerWidth;
         const trackW = track.scrollWidth;
-        maxShift = Math.max(0, trackW - window.innerWidth);
+        maxShift = Math.max(0, trackW - vpW);
+        // card centers in un-shifted track space (rect deltas cancel the
+        // track's current translateX, so this is safe mid-scrub)
+        const tr = track.getBoundingClientRect();
+        centers = cards.map(function (c) {
+          const r = c.getBoundingClientRect();
+          return r.left - tr.left + r.width / 2;
+        });
+        cardW = cards[0].getBoundingClientRect().width || 1;
       }
       calcShift();
       el.addEventListener('jn-remeasure', calcShift);
@@ -947,12 +1097,30 @@
       return function (p) {
         // horizontal scrub (p 0.05 → 0.95) with easeInOut
         const t = easeInOutCubic(seg(p, 0.05, 0.95));
-        track.style.transform = 'translateX(' + (-maxShift * t).toFixed(1) + 'px)';
+        const shift = maxShift * t;
+        track.style.transform = 'translateX(' + (-shift).toFixed(1) + 'px)';
         // which card is centered → light its tick
         const centerIdx = clamp(Math.round(t * (cardCount - 1)), 0, cardCount - 1);
         ticks.forEach(function (tk, i) { tk.classList.toggle('jn-tick-on', i === centerIdx); });
         // inner visuals parallax slightly slower than the track (subtle depth)
         vis.forEach(function (v) { v.style.transform = 'translateX(' + (maxShift * t * 0.06).toFixed(1) + 'px)'; });
+        // center focus: off-center cards recede and dim slightly
+        cards.forEach(function (card, i) {
+          const d = Math.min(1, Math.abs(centers[i] - shift - vpW / 2) / (cardW * 1.15));
+          card.style.transform = 'scale(' + (1 - 0.05 * d).toFixed(3) + ')';
+          card.style.opacity = (1 - 0.32 * d).toFixed(3);
+        });
+        // each card's mini-diagram traces itself in as it approaches center
+        arts.forEach(function (strokes, idx) {
+          const tc = idx / (cardCount - 1);
+          const dp = easeOutCubic(idx === 0 ? seg(t, 0, 0.10) : seg(t, tc - 0.22, tc - 0.04));
+          const m = strokes.length;
+          strokes.forEach(function (s, j) {
+            if (!(s.len > 0)) return;
+            const elP = clamp(dp * m - j, 0, 1);   // sequential trace
+            s.el.style.strokeDashoffset = (s.len * (1 - elP)).toFixed(1);
+          });
+        });
         // scroll-scrubbed counters, keyed to the eased track position so each
         // one finishes counting just as its card reaches center (card idx is
         // centered at t = idx / (cardCount - 1))
@@ -976,6 +1144,10 @@
       const rings   = Array.from(el.querySelectorAll('.jn-flow-ring'));
       const notes   = Array.from(el.querySelectorAll('.jn-hop-note'));
       const nodeEls = Array.from(el.querySelectorAll('.jn-flow-node'));
+      const labels  = Array.from(el.querySelectorAll('.jn-flow-node-lbl'));
+      const cores   = Array.from(el.querySelectorAll('.jn-flow-core'));
+      const ghosts  = [document.getElementById('jn-ghost-1'), document.getElementById('jn-ghost-2')];
+      const GHOST_LAG = [0.035, 0.07], GHOST_OP = [0.45, 0.22];
       if (!trail || !route || !packet) return null;
       let L = 0;
       try { L = route.getTotalLength(); } catch (e) { L = 0; }
@@ -995,6 +1167,17 @@
           let pt;
           try { pt = route.getPointAtLength(travel * L); } catch (e) { pt = null; }
           if (pt) { packet.setAttribute('cx', pt.x.toFixed(1)); packet.setAttribute('cy', pt.y.toFixed(1)); }
+          // comet trail: ghosts lag the packet, fading in once it moves and
+          // merging back into it as it lands on the last node
+          const gvis = seg(travel, 0.01, 0.05) * (1 - seg(travel, 0.96, 1));
+          GHOST_LAG.forEach(function (lag, gi) {
+            const g = ghosts[gi];
+            if (!g) return;
+            let gp;
+            try { gp = route.getPointAtLength(clamp(travel - lag, 0, 1) * L); } catch (e) { gp = null; }
+            if (gp) { g.setAttribute('cx', gp.x.toFixed(1)); g.setAttribute('cy', gp.y.toFixed(1)); }
+            g.style.opacity = (GHOST_OP[gi] * gvis).toFixed(3);
+          });
         }
         packet.style.opacity = '1';
         // trail draws under the packet and completes with it at the last node
@@ -1014,12 +1197,18 @@
           }
           const note = notes[i];
           if (note) note.style.opacity = (easeOutCubic(on) * (1 - offp)).toFixed(3);
+          // node + label light up as the packet lands, and stay lit (the
+          // CLIENT node is lit from the start — the packet parks on it)
+          const lit = i === 0 ? 1 : easeOutCubic(seg(travel, h - 0.02, h + 0.02));
+          if (nodeEls[i]) nodeEls[i].style.opacity = (0.55 + 0.45 * lit).toFixed(3);
+          if (labels[i])  labels[i].style.opacity = (0.5 + 0.5 * lit).toFixed(3);
+          if (cores[i])   cores[i].style.opacity = lit.toFixed(3);
         });
         // end caption (p 0.88 → 1)
         if (caption) {
           const cp = easeOutCubic(seg(p, 0.88, 1));
           caption.style.opacity = cp.toFixed(3);
-          caption.style.transform = 'translateY(' + lerp(24, 0, cp).toFixed(1) + 'px)';
+          caption.style.transform = 'translateY(' + lerp(24, 0, cp).toFixed(1) + 'px) scale(' + lerp(0.94, 1, cp).toFixed(3) + ')';
         }
       };
     });
@@ -1029,21 +1218,45 @@
       const fin = el.querySelector('.jn-finale');
       const portrait = document.getElementById('jn-portrait');
       const cta = document.getElementById('jn-finale-cta');
+      const nameK = el.querySelector('.jn-finale-name');
+      const subEl = el.querySelector('.jn-finale-sub');
+      const line = el.querySelector('.jn-finale-line');
       if (!portrait) return null;
+      // headline splits into words (keeps .jn-grad on its words) and rises in
+      const fwords = [];
+      if (line) splitWords(line, fwords);
+      const ctaKids = cta ? Array.from(cta.children) : [];
       return function (p) {
-        // whole block settles upward as the scene pins — text stays visible
+        // whole block settles upward as the scene pins — content builds up
         // from p=0 so the handoff from S5 never shows an empty stage
         if (fin) fin.style.transform = 'translateY(' + lerp(30, 0, easeOutCubic(seg(p, 0, 0.3))).toFixed(1) + 'px)';
         // portrait scales 0.86 → 1 + fades in (p 0 → 0.35)
         const e = easeOutCubic(seg(p, 0, 0.35));
         portrait.style.opacity = e.toFixed(3);
         portrait.style.transform = 'scale(' + lerp(0.86, 1, e).toFixed(3) + ')';
-        // CTA row appears (p 0.35 → 0.6), then stays interactive
-        if (cta) {
-          const ce = easeOutCubic(seg(p, 0.35, 0.6));
-          cta.style.opacity = ce.toFixed(3);
-          cta.style.transform = 'translateY(' + lerp(24, 0, ce).toFixed(1) + 'px)';
+        // name kicker → headline words → sub, in sequence
+        if (nameK) {
+          const ke = easeOutCubic(seg(p, 0.06, 0.18));
+          nameK.style.opacity = ke.toFixed(3);
+          nameK.style.transform = 'translateY(' + lerp(10, 0, ke).toFixed(1) + 'px)';
         }
+        const n = fwords.length;
+        for (let i = 0; i < n; i++) {
+          const start = 0.12 + (i / n) * 0.26;
+          const we = easeOutCubic(seg(p, start, start + 0.14));
+          fwords[i].style.opacity = we.toFixed(3);
+          fwords[i].style.transform = 'translateY(' + (0.32 * (1 - we)).toFixed(3) + 'em)';
+        }
+        if (subEl) {
+          const se = easeOutCubic(seg(p, 0.36, 0.52));
+          subEl.style.opacity = se.toFixed(3);
+          subEl.style.transform = 'translateY(' + lerp(12, 0, se).toFixed(1) + 'px)';
+        }
+        // CTAs cascade in (opacity only — their .btn transitions + magnetic
+        // transforms must stay untouched), fully interactive at rest
+        ctaKids.forEach(function (k, i) {
+          k.style.opacity = easeOutCubic(seg(p, 0.42 + i * 0.055, 0.56 + i * 0.055)).toFixed(3);
+        });
       };
     });
 
@@ -1065,6 +1278,9 @@
     }
 
     /* ---------------------------- rAF loop ---------------------------- */
+    // rail progress rings (filled by the rail module below): scene id → circle
+    const railRings = {};
+    const RAIL_C = 2 * Math.PI * 9; // ring circumference in its 24-unit viewBox
     let dirty = true, ticking = false;
     function onScroll() { dirty = true; requestTick(); }
     function requestTick() {
@@ -1077,9 +1293,13 @@
       const y = window.pageYOffset || root.scrollTop;
       for (let i = 0; i < scenes.length; i++) {
         const s = scenes[i];
-        if (!s.active) continue;
+        // rail rings update for EVERY scene (cheap math, no DOM reads) so a
+        // fast rail-click jump can't strand an off-screen ring mid-state
         const denom = s.height - s.stageH;
         const p = denom > 0 ? clamp((y - s.top) / denom, 0, 1) : (y >= s.top ? 1 : 0);
+        const ring = railRings[s.el.id];
+        if (ring) ring.style.strokeDashoffset = (RAIL_C * (1 - p)).toFixed(2);
+        if (!s.active) continue;
         s.update(p);
       }
     }
@@ -1103,6 +1323,7 @@
       const railEl = document.getElementById('jn-rail');
       if (!railEl) return;
       const buttons = Array.from(railEl.querySelectorAll('button'));
+      const NS = 'http://www.w3.org/2000/svg';
       buttons.forEach(function (btn) {
         btn.addEventListener('click', function () {
           const target = document.getElementById(btn.dataset.target);
@@ -1111,6 +1332,21 @@
           const top = target.getBoundingClientRect().top + scrollY;
           window.scrollTo({ top: top, behavior: 'smooth' });
         });
+        // inject the scene-progress ring around the dot (engine mode only,
+        // so the static page keeps its plain dots)
+        const dot = btn.querySelector('.jn-rail-dot');
+        if (!dot) return;
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('class', 'jn-rail-ring');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('aria-hidden', 'true');
+        const c = document.createElementNS(NS, 'circle');
+        c.setAttribute('cx', '12'); c.setAttribute('cy', '12'); c.setAttribute('r', '9');
+        c.style.strokeDasharray = RAIL_C.toFixed(2);
+        c.style.strokeDashoffset = RAIL_C.toFixed(2);
+        svg.appendChild(c);
+        dot.appendChild(svg);
+        railRings[btn.dataset.target] = c;
       });
       // sync active dot with the scene nearest viewport center
       if ('IntersectionObserver' in window) {
@@ -1126,22 +1362,22 @@
     })();
 
     /* ---------------------------- word splitter ---------------------------- */
-    /* Walk the paragraph's child nodes: wrap each word of a text node in a
-       <span class="jn-w">; for the .jn-key <em> emphasis, wrap its words too
-       but keep the jn-key class so the accent gradient survives. */
+    /* Walk the container's child nodes: wrap each word of a text node in a
+       <span class="jn-w">; for element children (the .jn-key emphasis, the
+       finale's .jn-grad) wrap their words too, carrying the element's classes
+       onto each word span so the accent styling survives the split. */
     function splitWords(container, out) {
       const kids = Array.from(container.childNodes);
       container.textContent = '';
       kids.forEach(function (node) {
         if (node.nodeType === 3) {
-          appendWords(container, node.textContent, out, false);
+          appendWords(container, node.textContent, out, '');
         } else if (node.nodeType === 1) {
-          const isKey = node.classList && node.classList.contains('jn-key');
-          appendWords(container, node.textContent, out, isKey);
+          appendWords(container, node.textContent, out, node.className || '');
         }
       });
     }
-    function appendWords(container, text, out, isKey) {
+    function appendWords(container, text, out, extraClass) {
       // split on spaces but keep the spaces as plain text between spans
       const parts = text.split(/(\s+)/);
       parts.forEach(function (part) {
@@ -1150,12 +1386,27 @@
           container.appendChild(document.createTextNode(part));
         } else {
           const span = document.createElement('span');
-          span.className = isKey ? 'jn-w jn-key' : 'jn-w';
+          span.className = extraClass ? 'jn-w ' + extraClass : 'jn-w';
           span.textContent = part;
           container.appendChild(span);
           out.push(span);
         }
       });
+    }
+
+    /* ---------------------------- letter splitter ---------------------------- */
+    /* Wrap each character of a hero name line in a <span class="jn-l"> for
+       the staggered load intro (see the jn-boot rules in the page CSS). */
+    function splitLetters(lineEl, out) {
+      const text = lineEl.textContent;
+      lineEl.textContent = '';
+      for (let i = 0; i < text.length; i++) {
+        const s = document.createElement('span');
+        s.className = 'jn-l';
+        s.textContent = text.charAt(i);
+        lineEl.appendChild(s);
+        out.push(s);
+      }
     }
 
     /* ---------------------------- reduced-motion rail fallback ---------------------------- */
@@ -1184,6 +1435,10 @@
     // initial pass (fonts may still be loading; the load handler re-measures)
     measure();
     requestTick();
+
+    // arm the load intro (kicker → letters → sub → cue) — added last, after
+    // the letter split, so the boot animations start on the first paint
+    root.classList.add('jn-boot');
 
   })();
   </script>
