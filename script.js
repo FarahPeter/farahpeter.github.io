@@ -304,6 +304,7 @@
       { label: 'Skills', sub: 'section', icon: ico.hash, href: onIndex ? '#skills' : 'index.html#skills' },
       { label: 'Projects', sub: 'section', icon: ico.hash, href: onIndex ? '#projects' : 'index.html#projects' },
       { label: 'Certificates & Honors', sub: 'section', icon: ico.hash, href: onIndex ? '#certificates' : 'index.html#certificates' },
+      { label: 'Contact', sub: 'section', icon: ico.mail, href: onIndex ? '#contact' : 'index.html#contact' },
       { label: 'Home / Profile', sub: 'page', icon: ico.doc, href: 'index.html' },
       { label: 'Journey — My Story', sub: 'page', icon: ico.doc, href: 'journey.html' },
       { label: 'Research & Blog', sub: 'page', icon: ico.doc, href: 'blog.html' },
