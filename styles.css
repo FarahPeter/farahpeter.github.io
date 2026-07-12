@@ -867,7 +867,7 @@ footer p { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted)
   .project, .project.feature { grid-column: span 6; }
 }
 @media (max-width: 620px) {
-  nav { padding: 0 8px 0 14px; }
+  nav { padding: 0 12px 0 14px; }
   .hero-bento { gap: 12px; }
   .hero-photo { grid-column: span 6; }
   .hero-now { grid-column: span 6; }
