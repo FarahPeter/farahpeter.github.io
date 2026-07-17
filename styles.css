@@ -661,6 +661,8 @@ nav.scrolled { box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent-line), inset
 
 /* tech tags — calmer: mono, tight, near-transparent, colored dot */
 .tech-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+/* bottom-align the tag row in link-less project cards (matches .project > a's margin-top:auto) */
+.project > .tech-tags.tags-bottom { margin-top: auto; padding-top: 16px; }
 .tech-tag {
   display: inline-flex; align-items: center; gap: 7px;
   font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 10px; border-radius: 999px;
@@ -850,6 +852,11 @@ footer p { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted)
 @keyframes blink-cursor { 50% { opacity: 0; } }
 
 /* ============================ RESPONSIVE ============================ */
+/* mid-width band: keep the full link row on one line before the drawer kicks in */
+@media (min-width: 901px) and (max-width: 1220px) {
+  .nav-links a { padding: 8px 9px; font-size: 0.8rem; }
+  .cmd-trigger-hint { display: none; }
+}
 @media (max-width: 900px) {
   .nav-links, .cmd-trigger-hint { display: none; }
   .menu-toggle { display: flex; }
@@ -860,7 +867,7 @@ footer p { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted)
   .project, .project.feature { grid-column: span 6; }
 }
 @media (max-width: 620px) {
-  nav { padding: 0 8px 0 14px; }
+  nav { padding: 0 12px 0 14px; }
   .hero-bento { gap: 12px; }
   .hero-photo { grid-column: span 6; }
   .hero-now { grid-column: span 6; }
