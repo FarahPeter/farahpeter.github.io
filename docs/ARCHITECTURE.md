@@ -47,7 +47,7 @@ scripts.)
 | File | Lines | Role |
 |------|-------|------|
 | `styles.css` | ~570 | Global stylesheet. `:root` design tokens + `[data-theme="light"]` overrides. The single source of truth for the look. |
-| `script.js` | ~355 | All interactivity, wrapped in one `(function(){ 'use strict'; … })()`. Vanilla ES6+, no dependencies. See module list below. |
+| `script.js` | ~475 | All interactivity, wrapped in one `(function(){ 'use strict'; … })()`. Vanilla ES6+, no dependencies. See module list below. |
 
 ### SEO / config (root)
 | File | Role |
@@ -102,6 +102,10 @@ One IIFE containing independent sub-modules (each its own inner IIFE). Helpers:
 11. **backTop** — back-to-top button visibility + smooth scroll.
 12. **blog** — expand/collapse `.blog-cover` cards; auto-opens the post matching `location.hash`.
 13. **palette** — ⌘K / Ctrl-K command palette (search + jump to sections/pages/external links). Its item list is hard-coded inside this module — **update it when adding pages or sections.**
+14. **spotlight** — delegated, rAF-throttled pointer tracking; sets element-local `--mx`/`--my` on the nearest `.tile-hover`/`.hub-card`/`.blog-cover` so its CSS radial glow follows the cursor (fine-pointer only).
+15. **tilt** — 3D tilt (max 4°) on `.hero-photo` via pointermove + rAF; adds/removes `.tilt-3d` (fine-pointer only).
+16. **magnetic** — pulls `.btn`, `.copy-email-btn`, and `.social-icons a` a few px toward the cursor via `--mag-x`/`--mag-y` (fine-pointer only).
+17. **stagger** — when a `.reveal` section gains `.in`, assigns incremental `--i` to grid items (projects/skills/certs/xp rows) so CSS entrance transitions fan out; watches the class via MutationObserver.
 
 ---
 
