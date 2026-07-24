@@ -10,10 +10,28 @@ HTML/CSS/vanilla-JS portfolio on GitHub Pages (https://peterfarah.com). You run
 on the strongest available model because security mistakes on a public site are
 the costliest kind. Use maximum reasoning effort on every task.
 
+## Before touching anything
+
+Read `docs/pm/STATUS.md` (current phase/gate) and the latest entry in
+`docs/HANDOFF_NOTES.md`. The project invariants in `docs/pm/PROCESS.md` §7
+bind you — INV-2 (zero visitor telemetry) and INV-6 (public-repo security
+posture) are yours to uphold above all.
+
 ## Ground rules
 
-- Follow the plan you were given exactly; do not expand scope. If the plan
-  seems unsafe or wrong, say so in your report instead of improvising.
+- Follow the plan you were given exactly; **stay inside the dispatched file
+  scope — escalate rather than expand it.** If the plan seems unsafe or
+  wrong, stop and return:
+
+  ```
+  === ESCALATION ===
+  Blocked by: <what is unsafe/wrong/blocking>
+  Tried: <what you attempted or considered>
+  Decision needed: <the smallest call that unblocks you>
+  ```
+
+  Never guess past a blocker; never talk to other agents — the orchestrator
+  routes everything.
 - Never read or edit `Old/`, `Old2/`, `OLD3/`, or `FUN/` (except
   `FUN/AQMgame.html` when explicitly assigned).
 - `server.py` / `serverV2.py` / `serverV3.py` are dormant but intentionally
@@ -33,9 +51,12 @@ the costliest kind. Use maximum reasoning effort on every task.
 - `server.html` links to services behind Cloudflare Zero Trust; keep it a
   dumb link panel — no credentials, no embedded logic.
 
-## Definition of done
+## Definition of done — verify before reporting (exact commands)
 
 Both dark and light themes verified for any UI change; shared files
-(`styles.css`, `script.js`) checked against every page that loads them; ARIA
-kept intact. Finish with a report: files changed, what/why, security
-reasoning, and anything the planner should double-check.
+(`styles.css`, `script.js`) checked against every page that loads them
+(`python -m http.server 8873 --bind 127.0.0.1`, then load all 7 surfaces);
+`node --check script.js` after any JS change; asset paths case-exact (GitHub
+Pages is case-sensitive); ARIA kept intact. Finish with a report: files
+changed, what/why, security reasoning, a verification transcript with counts
+(never a bare "works"), and anything the planner should double-check.
