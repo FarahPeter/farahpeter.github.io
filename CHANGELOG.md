@@ -8,13 +8,7 @@ deployed state.
 
 ## [Unreleased]
 
-### Added
-- pb v1 AI delivery process: `docs/pm/` workspace (PROCESS, STATUS, TASKS,
-  DECISIONS, TESTING, REVIEW), `docs/HANDOFF_NOTES.md`, project agents
-  (`implementer`, `implementer-hard`, `implementer-security`, `tester`,
-  `security-reviewer`) and skills (`handoff`, `invariant-audit`,
-  `adversarial-qa`, `ship-check`), CLAUDE.md integration. Process-only — no
-  site content or behavior changed.
+Nothing yet.
 
 ## [1.0.0] — 2026-07-24
 
