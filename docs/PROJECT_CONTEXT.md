@@ -3,7 +3,8 @@
 > Written for a future AI assistant. Read this first to understand **what this
 > project is** before touching anything. For the technical map (files, JS/CSS
 > modules, conventions, what to ignore), read `docs/ARCHITECTURE.md`.
-> For working rules and model routing, read the root `CLAUDE.md`.
+> For repo-level notes and things to know before editing, read the root
+> `CLAUDE.md`.
 
 ---
 
@@ -117,4 +118,4 @@ low-priority — out of scope for this context pass.
 ## 8. Pointers
 
 - **Technical map / file-by-file index / conventions →** `docs/ARCHITECTURE.md`
-- **Working rules + which model to use →** `CLAUDE.md` (repo root)
+- **Repo-level notes / things to know before editing →** `CLAUDE.md` (repo root)
