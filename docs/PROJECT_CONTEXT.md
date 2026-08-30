@@ -83,8 +83,9 @@ variables instead of hard-coding colors.
 
 ## 6. The telemetry servers (`server.py`, `serverV2.py`, `serverV3.py`)
 
-Flask backend apps that live in this repo but run on Peter's **home server**, never
-on GitHub Pages. All three are **kept on purpose** — do not delete them.
+Flask backend apps that sit in Peter's working copy but run on his **home server**, never
+on GitHub Pages. All three are **kept on purpose** — do not delete them — and all three are
+**gitignored**, so they are local-only and never published to the public repo.
 
 - They originally received analytics **heartbeats / click events** from the
   website's JS, enriched them with GeoIP + User-Agent data, stored them in
@@ -112,6 +113,8 @@ on GitHub Pages. All three are **kept on purpose** — do not delete them.
 
 The owner has explicitly marked these as **old / unused — do not read, index, or
 modify** them unless specifically asked:
+
+(All three archive dirs below are gitignored — local-only, absent from a fresh clone.)
 
 - `Old/`
 - `Old2/`

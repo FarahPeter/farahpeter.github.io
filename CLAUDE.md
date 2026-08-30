@@ -15,9 +15,9 @@ There is no mandated workflow, gate, or review process for this repo.
 
 ## Things worth knowing before editing
 
-1. **Archived dirs — `Old/`, `Old2/`, `OLD3/`** are old snapshots. Not part of the live site.
+1. **Archived dirs — `Old/`, `Old2/`, `OLD3/`** are old snapshots. Not part of the live site, and **not in the repo** — they are gitignored and exist only on Peter's machine.
 2. **`FUN/`** holds standalone single-file browser tools. Only `FUN/AQMgame.html` is live and maintained (the "AQM Network Visualizer"); the rest are low-priority.
-3. **`server.py`, `serverV2.py`, `serverV3.py`** are Flask analytics apps that run on Peter's home server (never on GitHub Pages). **`serverV3.py` is live**: the `telemetry` module in `script.js` posts heartbeats and clicks to it via `https://hook.peterfarah.com`. `server.py` / `serverV2.py` are superseded. All three are kept on purpose — don't delete them.
+3. **`server.py`, `serverV2.py`, `serverV3.py`** are Flask analytics apps that run on Peter's home server (never on GitHub Pages). **`serverV3.py` is live**: the `telemetry` module in `script.js` posts heartbeats and clicks to it via `https://hook.peterfarah.com`. `server.py` / `serverV2.py` are superseded. All three are kept on purpose — don't delete them — but they are **gitignored**, so they live on Peter's machine only and are never published to the public repo.
 4. **`server.html` ≠ `server*.py`.** `server.html` is a public "Service Access Panel" page; the `.py` files are the unrelated dormant backend.
 5. **`llms.txt`** is a deliberate public-facing site feature (an AI-crawler easter-egg about the owner), not developer documentation.
 6. **Shared files hit every page.** `styles.css` and `script.js` are loaded site-wide, so a change there affects all pages.
@@ -39,9 +39,9 @@ styles.css  script.js                                     ← shared, site-wide
 Files/                                                     ← CV, images, favicon
 FUN/AQMgame.html                                           ← live tool (rest of FUN/: standalone)
 sitemap.xml  robots.txt  llms.txt  CNAME                   ← SEO / config
-server.py  serverV2.py  serverV3.py                        ← dormant Flask telemetry (keep)
+server.py  serverV2.py  serverV3.py                        ← Flask telemetry (local-only, gitignored)
 docs/                                                      ← project context + architecture
-Old/  Old2/  OLD3/                                         ← archived snapshots
+Old/  Old2/  OLD3/                                         ← archived snapshots (local-only, gitignored)
 ```
 
 ## Running it

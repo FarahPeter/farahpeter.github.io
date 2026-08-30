@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Editor / IDE
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+*.iml
+
+# ---------------------------------------------------------------------------
+# Claude Code — launch.json is shared and tracked; local overrides are not
+# ---------------------------------------------------------------------------
+.claude/settings.local.json
+
+# ---------------------------------------------------------------------------
+# Python (the dormant Flask telemetry apps run on the home server, not here)
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# Telemetry databases / logs — runtime data, never committed
+# ---------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# ---------------------------------------------------------------------------
+# OS cruft
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------------
+# Local-only working files — present on Peter's machine, deliberately NOT
+# tracked. See CLAUDE.md and docs/ARCHITECTURE.md.
+#
+#   server*.py  — Flask telemetry apps that run on the home server, never on
+#                 GitHub Pages. serverV3.py is the live collector behind
+#                 https://hook.peterfarah.com. Kept locally, not published.
+#   Old*/OLD3/  — pre-repo snapshots of earlier versions of the site.
+# ---------------------------------------------------------------------------
+server.py
+serverV2.py
+serverV3.py
+Old/
+Old2/
+OLD3/

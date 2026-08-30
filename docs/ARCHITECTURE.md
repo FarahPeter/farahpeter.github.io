@@ -21,8 +21,8 @@ Browser ──> index.html / blog.html / fun.html / server.html / 404.html
 Assets ──> Files/  (CV PDF, profile + blog images, favicon)
 Tools  ──> FUN/    (self-contained single-file HTML tools; AQMgame.html is the live one)
 SEO    ──> sitemap.xml, robots.txt, llms.txt, CNAME
-Dormant──> server.py, serverV2.py, serverV3.py  (Flask telemetry — kept, unused)
-Archive──> Old/, Old2/, OLD3/  (ignore)
+Local  ──> server.py, serverV2.py, serverV3.py  (Flask telemetry — gitignored)
+Archive──> Old/, Old2/, OLD3/  (gitignored — ignore)
 ```
 
 No external JS libraries are loaded on the main pages — only Google Fonts via
@@ -68,7 +68,7 @@ scripts.)
 - **`FUN/AQMgame.html`** (~1480 lines) — **LIVE & maintained.** "AQM Network Visualizer": animated simulation of RTT signatures for 7 AQM algorithms. Linked from the navbar, projects, blog, and command palette.
 - Everything else in `FUN/` (subnet, cidr, chmod, cron, crypto, dns, whois, json, base64, urlencode, mac, jwt, hashing, nmap, password, password-strength, ports, regex, firewall, ping, entropy, sketch, …) — standalone single-file tools. Some are surfaced on `fun.html`, some are commented out. **Owner marked these out of scope; don't deep-dive unless asked.**
 
-### Telemetry backend — keep, don't delete
+### Telemetry backend — local-only, keep, don't delete
 | File | Lines | Role |
 |------|-------|------|
 | `server.py` | ~672 | v1 Flask telemetry: heartbeat/click ingest → SQLite, basic dashboard. |
@@ -80,8 +80,12 @@ module sends to `serverV3.py` (behind `https://hook.peterfarah.com`); `server.py
 `serverV2.py` are superseded but **retained intentionally.** Capture only works while that
 origin is actually running — the client fails silently when it isn't.
 
+All three are **gitignored** — present in Peter's working copy, absent from the repo. Don't
+expect to find them in a fresh clone, and don't `git add` them.
+
 ### Ignore entirely
-- `Old/`, `Old2/`, `OLD3/` — archived older versions of the whole site.
+- `Old/`, `Old2/`, `OLD3/` — archived older versions of the whole site. Gitignored, so
+  they exist only in Peter's working copy.
 
 ---
 
