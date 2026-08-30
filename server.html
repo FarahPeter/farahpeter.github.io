@@ -47,6 +47,112 @@
     .server-panel .status-line {
       margin-top: 4px;
     }
+
+    /* ── Live reachability probe (svcStatus module in script.js) ── */
+
+    /* Summary strip: one dot + one line, sitting under the Zero Trust note. */
+    .svc-probe { margin: -18px 0 26px; }
+    .svc-probe-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      /* deliberately no flex-wrap: the dot must stay beside the text and let the
+         text box wrap on its own, the way .status-line above it already does. */
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0 0 12px;
+      text-align: center;
+    }
+    .svc-probe-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex: none;
+      background: var(--faint);
+      transition: background .3s, box-shadow .3s;
+    }
+    .svc-probe-dot[data-state="busy"]    { background: var(--accent-bright); animation: pulse-dot 1s ease-in-out infinite; }
+    .svc-probe-dot[data-state="live"]    { background: var(--accent-2);  box-shadow: 0 0 10px var(--accent-glow); }
+    .svc-probe-dot[data-state="partial"] { background: #f5b544;          box-shadow: 0 0 10px rgba(245, 181, 68, 0.45); }
+    .svc-probe-dot[data-state="down"]    { background: #ff6b6b;          box-shadow: 0 0 10px rgba(255, 107, 107, 0.45); }
+
+    .svc-probe-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .svc-recheck {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-bright);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      border-radius: 999px;
+      padding: 5px 14px;
+      cursor: pointer;
+      transition: background .25s, color .25s, opacity .25s;
+    }
+    .svc-recheck:hover:not(:disabled) { background: var(--accent); color: #fff; }
+    .svc-recheck:disabled { opacity: 0.55; cursor: default; }
+
+    /* Per-service badge: appended into each .btn.svc by the module.
+       order:1 puts it in the same band as .svc-host, and because it is last in
+       the DOM it lands after the host but before the ::before arrow (order:2). */
+    .svc-stat {
+      order: 1;
+      align-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: none;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      margin-right: 10px;
+      white-space: nowrap;
+    }
+    .svc-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex: none;
+      background: var(--faint);
+      transition: background .3s, box-shadow .3s;
+    }
+    .svc-stat[data-state="busy"]  .svc-dot { background: var(--accent-bright); animation: pulse-dot 1s ease-in-out infinite; }
+    .svc-stat[data-state="ok"]    .svc-dot { background: var(--accent-2); box-shadow: 0 0 8px var(--accent-glow); }
+    .svc-stat[data-state="reach"] .svc-dot { background: var(--accent);   box-shadow: 0 0 8px var(--accent-glow); }
+    .svc-stat[data-state="fail"]  .svc-dot { background: #ff6b6b; }
+    .svc-stat[data-state="fail"]           { color: #ff9c9c; }
+
+    /* The alert reds and ambers above are tuned for the dark canvas; on the light
+       theme they wash out to nearly invisible against a near-white surface. */
+    [data-theme="light"] .svc-probe-dot[data-state="partial"] { background: #c77700; box-shadow: 0 0 10px rgba(199, 119, 0, 0.35); }
+    [data-theme="light"] .svc-probe-dot[data-state="down"]    { background: #c0392b; box-shadow: 0 0 10px rgba(192, 57, 43, 0.35); }
+    [data-theme="light"] .svc-stat[data-state="fail"] .svc-dot { background: #c0392b; }
+    [data-theme="light"] .svc-stat[data-state="fail"]          { color: #a53023; }
+
+    /* The honest footnote about what a cross-origin probe can and cannot prove. */
+    .svc-probe-foot {
+      max-width: 52ch;
+      margin: 22px auto 0;
+      font-size: 0.76rem;
+      line-height: 1.65;
+      color: var(--faint);
+      text-align: center;
+    }
+
+    /* The service rows are already tight on small screens; the host is the part
+       that can go, since the badge next to it is the new information. */
+    @media (max-width: 560px) {
+      .svc-host { display: none; }
+      .svc-stat { margin-right: 8px; }
+    }
   </style>
 </head>
 <body>
@@ -117,6 +223,18 @@
     </div>
     <p class="status-line"><span class="status-dot"></span> Secured via Cloudflare Zero Trust architecture.</p>
 
+    <!-- Live reachability probe. Ships hidden and is revealed by the svcStatus
+         module in script.js, so a visitor without JS sees the panel unchanged. -->
+    <div class="svc-probe" id="svc-probe" hidden>
+      <p class="svc-probe-line" role="status" aria-live="polite">
+        <span class="svc-probe-dot" id="svc-probe-dot" data-state="idle"></span>
+        <span id="svc-probe-text">Probing services&hellip;</span>
+      </p>
+      <div class="svc-probe-actions">
+        <button type="button" class="svc-recheck" id="svc-recheck">Re-check</button>
+      </div>
+    </div>
+
     <!-- NAS + docker (Open by default) -->
     <details class="setup-group" open>
       <summary class="setup-summary">NAS + docker</summary>
@@ -146,6 +264,14 @@
         <a class="btn" href="https://hook.peterfarah.com/admin-dashboard" target="_blank" rel="noopener">Web Monitor</a>
       </div>
     </details>-->
+
+    <p class="svc-probe-foot" id="svc-probe-foot" hidden>
+      Probed from your browser, not from a monitoring server &mdash; so the times are
+      the latency between <em>you</em> and each service. Cross-origin responses are
+      opaque to JavaScript: a reachable service means the edge answered and how fast,
+      not that the application behind it is healthy. Only same-origin services report
+      a real HTTP status.
+    </p>
 
   </section>
 

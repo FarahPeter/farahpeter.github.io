@@ -573,4 +573,133 @@
     window.addEventListener('pagehide', heartbeat);
   })();
 
+
+  /* ============================== SERVICE STATUS PROBE ============================== */
+  /* server.html only. Measures each listed service from the visitor's own browser:
+     did it answer, and how fast. Deliberately not a health check — see probe(). */
+  (function svcStatus() {
+    const panel = $('.server-panel');
+    if (!panel) return;                                   // every other page: no-op
+
+    const box  = $('#svc-probe');
+    const text = $('#svc-probe-text');
+    const dot  = $('#svc-probe-dot');
+    const foot = $('#svc-probe-foot');
+    const btn  = $('#svc-recheck');
+    const links = $$('a.btn.svc', panel);                 // commented-out services aren't in the DOM
+    if (!box || !text || !dot || !links.length) return;
+    if (!window.fetch || !window.AbortController) return; // old browser: leave the panel exactly as authored
+
+    const TIMEOUT = 8000;
+
+    /* Markup ships hidden so a no-JS visitor sees the original panel. */
+    box.hidden = false;
+    if (foot) foot.hidden = false;
+
+    /* One badge per service row, built once. */
+    const rows = links.map(a => {
+      const stat = document.createElement('span');
+      stat.className = 'svc-stat';
+      stat.dataset.state = 'idle';
+      stat.innerHTML = '<span class="svc-dot"></span><span class="svc-ms"></span>';
+      a.appendChild(stat);
+      let sameOrigin = false;
+      try { sameOrigin = new URL(a.href, location.href).origin === location.origin; } catch (e) { /* opaque href */ }
+      return { a, stat, out: $('.svc-ms', stat), sameOrigin };
+    });
+
+    function paint(r, state, label, title) {
+      r.stat.dataset.state = state;
+      r.out.textContent = label;
+      r.stat.setAttribute('title', title);
+      r.stat.setAttribute('aria-label', title);
+    }
+
+    /* Same-origin gets a real, readable HTTP status. Cross-origin runs in `no-cors`,
+       which yields an opaque response: it proves something answered and how long it
+       took, and nothing else — a 502 from the tunnel looks like a 200 from the app.
+       Credentials are omitted, so a visitor's Cloudflare Access session is never
+       attached to these requests.
+
+       HEAD over GET is deliberate. One of the services answers HEAD with a 405,
+       which the browser logs as a console error, and GET avoids that — but GET
+       also pulls a full response body per service on every visit to this page.
+       Six wasted document downloads costs the visitor more than one console line
+       costs us, and a 405 is still a live host, so HEAD wins. */
+    function probe(r) {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), TIMEOUT);
+      const t0 = performance.now();
+      return fetch(r.a.href, {
+        method: 'HEAD',
+        mode: r.sameOrigin ? 'same-origin' : 'no-cors',
+        cache: 'no-store',
+        credentials: 'omit',
+        signal: ctl.signal
+      })
+        .then(res => {
+          const ms = Math.round(performance.now() - t0);
+          if (!r.sameOrigin) {
+            return { up: true, ms, state: 'reach', label: ms + ' ms',
+                     title: 'Answered in ' + ms + ' ms. Cross-origin, so the HTTP status is opaque to this page.' };
+          }
+          /* Any status below 500 still means the server answered for itself, so it is
+             up: a 404, or a 405 from a host that refuses HEAD, is a live service and
+             not a dead one. Only 5xx says the thing behind the door is broken. */
+          const alive = res.status < 500;
+          return { up: alive, ms, state: alive ? 'ok' : 'fail',
+                   label: res.status + ' \u00b7 ' + ms + ' ms',
+                   title: 'HTTP ' + res.status + ' in ' + ms + ' ms. Same-origin, so this is the real status.' };
+        })
+        .catch(() => ({ up: false, ms: 0, state: 'fail', label: 'no answer',
+                        title: 'No response within ' + (TIMEOUT / 1000) + ' s, or the connection failed.' }))
+        .then(res => { clearTimeout(timer); return res; });
+    }
+
+    function median(xs) {
+      if (!xs.length) return 0;
+      const s = xs.slice().sort((a, b) => a - b), h = s.length >> 1;
+      return s.length % 2 ? s[h] : Math.round((s[h - 1] + s[h]) / 2);
+    }
+
+    let running = false;
+    function run() {
+      if (running) return;
+      running = true;
+      if (btn) { btn.disabled = true; btn.textContent = 'Checking\u2026'; }
+      dot.dataset.state = 'busy';
+      text.textContent = 'Probing ' + rows.length + ' service' + (rows.length === 1 ? '' : 's') + '\u2026';
+      rows.forEach(r => paint(r, 'busy', '\u2026', 'Probing\u2026'));
+
+      Promise.all(rows.map(r => probe(r).then(res => { paint(r, res.state, res.label, res.title); return res; })))
+        .then(results => {
+          const up  = results.filter(x => x.up).length;
+          const mid = median(results.filter(x => x.up && x.ms).map(x => x.ms));
+          let msg = up + '/' + rows.length + ' responding';
+          if (mid) msg += ' \u00b7 median ' + mid + ' ms';
+          if (!up) {
+            dot.dataset.state = 'down';
+            msg += navigator.onLine === false
+              ? ' \u00b7 your browser reports no network connection'
+              : ' \u00b7 nothing answered from here';
+          } else {
+            dot.dataset.state = up === rows.length ? 'live' : 'partial';
+            /* Minutes are precision enough for a status line, and dropping the
+               seconds keeps the summary on one row on a phone. */
+            msg += ' \u00b7 checked ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
+          text.textContent = msg;
+        })
+        .then(() => {
+          running = false;
+          if (btn) { btn.disabled = false; btn.textContent = 'Re-check'; }
+        });
+    }
+
+    /* Run once on load, then only on demand — no polling loop against Peter's own boxes. */
+    if (btn) btn.addEventListener('click', run);
+    run();
+  })();
+
+
 })();

@@ -40,7 +40,7 @@ scripts.)
 | `journey.html` | ~1100 | "Journey" — immersive Apple-style scrollytelling intro. Six pinned, scroll-scrubbed scenes (hero, statement, route timeline, craft gallery, packet flow, finale). Self-contained: page-scoped `<style>` + inline engine, all `jn-` prefixed; static fallback when JS is off or `prefers-reduced-motion` is set. |
 | `blog.html` | ~450 | Research blog. Three expandable write-ups: `#aqm-research`, `#home-server`, `#home-nas`. |
 | `fun.html` | ~543 | "Interactive Hub" — filterable grid of cards linking into `FUN/`. Has a page-specific `<style>` block (hub grid) and a small inline filter script. |
-| `server.html` | ~115 | "Service Access Panel" — buttons linking to self-hosted services behind Cloudflare Zero Trust. Some service groups are commented out. **Not** related to `server*.py`. |
+| `server.html` | ~200 | "Service Access Panel" — buttons linking to self-hosted services behind Cloudflare Zero Trust, each showing a live reachability dot + RTT from the **svcStatus** module. Page-specific probe styling lives in its inline `<style>`. Some service groups are commented out. **Not** related to `server*.py`. |
 | `404.html` | ~120 | Custom themed 404 ("Packet Dropped — Page Not Found"). |
 
 ### Shared assets (root)
@@ -114,6 +114,8 @@ One IIFE containing independent sub-modules (each its own inner IIFE). Helpers:
 17. **stagger** — when a `.reveal` section gains `.in`, assigns incremental `--i` to grid items (projects/skills/certs/xp rows) so CSS entrance transitions fan out; watches the class via MutationObserver.
 18. **telemetry** — analytics capture for the self-hosted collector at `hook.peterfarah.com` (`serverV3.py`). POSTs a `/heartbeat` on load, every 10 s, on `visibilitychange`→hidden and on `pagehide`; POSTs `/track-click` from a delegated capture-phase listener on `a, button`. Guarded to `*.peterfarah.com`, so localhost and preview hosts never report. Every request is fire-and-forget with `keepalive` and swallows its own errors, and the module stops itself after 3 consecutive failures so an unreachable collector can't fill a visitor's console.
 
+19. **svcStatus** — live reachability probe for `server.html` only; returns immediately on every other page (it needs `.server-panel`). On load it `HEAD`s each listed service and appends a dot + round-trip time to that service's row, then summarises them as “N/M responding · median X ms”. Cross-origin hosts are fetched with `mode: 'no-cors'`, so the response is opaque — it proves the edge answered and how fast, never that the app behind it is healthy; only same-origin services expose a real HTTP status, where anything under 500 counts as up. Credentials are omitted so a visitor's Cloudflare Access session is never attached. 8 s timeout, no polling loop — one run on load, then the Re-check button.
+
 ---
 
 ## 4. `styles.css` — structure
@@ -147,6 +149,7 @@ One IIFE containing independent sub-modules (each its own inner IIFE). Helpers:
 | Edit a research write-up | `blog.html` (`#aqm-research` / `#home-server` / `#home-nas`) |
 | Add/lay out an interactive tool card | `fun.html` (links into `FUN/`) |
 | Edit the self-hosted service links | `server.html` |
+| Change how services are probed for status | `script.js` (**svcStatus**) + `server.html` inline `<style>` |
 | Change a global interaction (cursor, palette, reveal…) | `script.js` |
 | Update the command-palette entries | `script.js` → `palette` module |
 | Swap the CV or an image | `Files/…` (and update the `href`/`src`) |
