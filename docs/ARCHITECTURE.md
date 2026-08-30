@@ -68,15 +68,17 @@ scripts.)
 - **`FUN/AQMgame.html`** (~1480 lines) — **LIVE & maintained.** "AQM Network Visualizer": animated simulation of RTT signatures for 7 AQM algorithms. Linked from the navbar, projects, blog, and command palette.
 - Everything else in `FUN/` (subnet, cidr, chmod, cron, crypto, dns, whois, json, base64, urlencode, mac, jwt, hashing, nmap, password, password-strength, ports, regex, firewall, ping, entropy, sketch, …) — standalone single-file tools. Some are surfaced on `fun.html`, some are commented out. **Owner marked these out of scope; don't deep-dive unless asked.**
 
-### Dormant backend — keep, don't delete
+### Telemetry backend — keep, don't delete
 | File | Lines | Role |
 |------|-------|------|
 | `server.py` | ~672 | v1 Flask telemetry: heartbeat/click ingest → SQLite, basic dashboard. |
 | `serverV2.py` | ~532 | v2: adds Flask-Limiter rate limiting + User-Agent parsing. |
 | `serverV3.py` | ~940 | v3 (most evolved): GeoIP + UA enrichment, Chart.js dashboard, Prometheus `/metrics`, Docker `/healthz`, env-var config. |
 
-All three ran on Peter's home server, ingesting analytics from the site JS.
-The client no longer sends that data, so they're dormant — **retained intentionally.**
+All three run on Peter's home server, never on GitHub Pages. `script.js`'s **telemetry**
+module sends to `serverV3.py` (behind `https://hook.peterfarah.com`); `server.py` and
+`serverV2.py` are superseded but **retained intentionally.** Capture only works while that
+origin is actually running — the client fails silently when it isn't.
 
 ### Ignore entirely
 - `Old/`, `Old2/`, `OLD3/` — archived older versions of the whole site.
@@ -106,6 +108,7 @@ One IIFE containing independent sub-modules (each its own inner IIFE). Helpers:
 15. **tilt** — 3D tilt (max 4°) on `.hero-photo` via pointermove + rAF; adds/removes `.tilt-3d` (fine-pointer only).
 16. **magnetic** — pulls `.btn`, `.copy-email-btn`, and `.social-icons a` a few px toward the cursor via `--mag-x`/`--mag-y` (fine-pointer only).
 17. **stagger** — when a `.reveal` section gains `.in`, assigns incremental `--i` to grid items (projects/skills/certs/xp rows) so CSS entrance transitions fan out; watches the class via MutationObserver.
+18. **telemetry** — analytics capture for the self-hosted collector at `hook.peterfarah.com` (`serverV3.py`). POSTs a `/heartbeat` on load, every 10 s, on `visibilitychange`→hidden and on `pagehide`; POSTs `/track-click` from a delegated capture-phase listener on `a, button`. Guarded to `*.peterfarah.com`, so localhost and preview hosts never report. Every request is fire-and-forget with `keepalive` and swallows its own errors, and the module stops itself after 3 consecutive failures so an unreachable collector can't fill a visitor's console.
 
 ---
 

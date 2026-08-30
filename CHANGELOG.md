@@ -8,7 +8,16 @@ deployed state.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Re-enabled site analytics capture.** `script.js` gains a `telemetry` module that
+  posts `/heartbeat` (on load, every 10 s, on tab-hide and on `pagehide`) and
+  `/track-click` to the self-hosted collector at `https://hook.peterfarah.com`
+  (`serverV3.py`). The payload matches that app's existing handlers, so the server
+  needed no changes. Requests are fire-and-forget with `keepalive` and swallow their
+  own errors, and the module is guarded to `*.peterfarah.com` so local development
+  never writes to the database. It gives up after 3 consecutive failures, so an
+  offline collector costs a visitor 3 console errors rather than 6 per minute.
 
 ## [1.0.0] — 2026-07-24
 

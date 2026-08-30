@@ -83,16 +83,26 @@ variables instead of hard-coding colors.
 
 ## 6. The telemetry servers (`server.py`, `serverV2.py`, `serverV3.py`)
 
-These are **Flask backend apps that are no longer in use** but are **kept on
-purpose** — do not delete them.
+Flask backend apps that live in this repo but run on Peter's **home server**, never
+on GitHub Pages. All three are **kept on purpose** — do not delete them.
 
 - They originally received analytics **heartbeats / click events** from the
   website's JS, enriched them with GeoIP + User-Agent data, stored them in
   SQLite, and served a real-time dashboard (`serverV3.py` is the most evolved:
   Chart.js dashboard, Prometheus `/metrics`, Docker `/healthz`).
-- They ran on Peter's **home server**, never on GitHub Pages.
-- The current site **no longer sends** these heartbeats (the client-side calls
-  were removed from `script.js`), so the servers are effectively dormant.
+- **`serverV3.py` is the live collector.** The site sends to it again: the
+  **telemetry** module in `script.js` POSTs `/heartbeat` (on load, every 10 s, on
+  tab-hide and on `pagehide`) and `/track-click`, to
+  `https://hook.peterfarah.com` — the same host `server.html` links to for the
+  admin dashboard. `server.py` and `serverV2.py` are superseded, not wired up.
+- Capture only produces data while that origin is actually running behind
+  Cloudflare. When it isn't, the collector returns 502 and the client fails
+  silently — nothing on the site changes.
+- The client is guarded to `*.peterfarah.com`, so local development and preview
+  hosts never write into the database.
+- What a heartbeat records: IP (via `CF-Connecting-IP`) plus GeoIP country/city/ISP,
+  user-agent, page, referrer, screen, language, timezone, theme, scroll depth, load
+  time, connection info, and `utm_source`; clicks record the link text and target.
 - **Naming caution:** `server.html` (a public "Service Access Panel" page) is
   unrelated to `server*.py` (the dormant backend). Don't conflate them.
 

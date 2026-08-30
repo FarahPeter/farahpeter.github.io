@@ -472,4 +472,105 @@
     });
   })();
 
+  /* ============================== TELEMETRY ============================== */
+  /* Heartbeat + click capture for the self-hosted collector at
+     hook.peterfarah.com (serverV3.py). Payload keys mirror that app's
+     /heartbeat and /track-click handlers exactly. Everything here is
+     fire-and-forget and swallows its own errors, so a dead or slow collector
+     can never surface to a visitor. */
+  (function telemetry() {
+    const ENDPOINT = 'https://hook.peterfarah.com';
+    const INTERVAL = 10000;   // serverV3 credits 10 active seconds per beat
+
+    // Live site only — keeps localhost and preview hosts out of the database.
+    if (!/(^|\.)peterfarah\.com$/i.test(location.hostname)) return;
+
+    let maxScroll = 0;
+    let loadTime  = null;
+    let failures  = 0;    // consecutive; the collector is self-hosted and may be down
+    let beat      = null;
+
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      const height = doc.scrollHeight - doc.clientHeight;
+      if (height <= 0) return;
+      const pct = Math.round(((doc.scrollTop || document.body.scrollTop) / height) * 100);
+      if (pct > maxScroll) maxScroll = Math.min(pct, 100);
+    }, { passive: true });
+
+    /* Deferred a tick: loadEventEnd is still 0 while the load handler itself runs. */
+    window.addEventListener('load', () => setTimeout(() => {
+      const nav = performance.getEntriesByType('navigation')[0];
+      if (nav && nav.loadEventEnd) loadTime = Math.round(nav.loadEventEnd - nav.startTime);
+    }, 0));
+
+    /* Give up after MAX_FAILURES consecutive misses. The browser logs its own
+       CORS/network error for each attempt no matter what we catch, so an
+       unreachable collector would otherwise fill a visitor's console forever. */
+    const MAX_FAILURES = 3;
+
+    function post(path, body) {
+      if (failures >= MAX_FAILURES) return;
+      try {
+        fetch(ENDPOINT + path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          keepalive: true          // still fires if the tab closes or navigates
+        })
+          .then(r => { failures = r.ok ? 0 : failures + 1; })
+          .catch(() => { failures += 1; })
+          .then(() => {
+            if (failures >= MAX_FAILURES && beat) { clearInterval(beat); beat = null; }
+          });
+      } catch (e) {}
+    }
+
+    function heartbeat() {
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const params = new URLSearchParams(location.search);
+      let theme = 'dark', tz = 'Unknown';
+      try { theme = localStorage.getItem('pf-theme') || 'dark'; } catch (e) {}
+      try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown'; } catch (e) {}
+
+      post('/heartbeat', {
+        page: location.pathname,
+        referrer: document.referrer || 'Direct',
+        user_agent: navigator.userAgent,
+        screen: screen.width ? screen.width + 'x' + screen.height : 'Unknown',
+        language: navigator.language || 'Unknown',
+        timezone: tz,
+        theme: theme,
+        max_scroll: maxScroll,
+        load_time: loadTime,
+        network_type: conn ? conn.effectiveType : 'unknown',
+        downlink: conn ? conn.downlink : null,
+        device_memory: navigator.deviceMemory || null,
+        cores: navigator.hardwareConcurrency || null,
+        visibility_state: document.visibilityState,
+        utm_source: params.get('utm_source') || params.get('source') || null,
+        is_bot: navigator.webdriver ? 1 : 0
+      });
+    }
+
+    /* Delegated + capture phase, so links built after load (blog expanders,
+       command palette, mobile drawer) are covered without re-binding. */
+    document.addEventListener('click', e => {
+      const el = e.target && e.target.closest && e.target.closest('a, button');
+      if (!el) return;
+      post('/track-click', {
+        page: location.pathname,
+        text: (el.innerText || '').trim().slice(0, 40) || el.getAttribute('aria-label') || 'icon/image',
+        url: el.getAttribute('href') || 'button-click'
+      });
+    }, true);
+
+    heartbeat();
+    beat = setInterval(heartbeat, INTERVAL);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') heartbeat();
+    });
+    window.addEventListener('pagehide', heartbeat);
+  })();
+
 })();
