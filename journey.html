@@ -343,6 +343,154 @@
     html.jn-on .jn-finale-sub { opacity: 0; }
     html.jn-on .jn-finale-cta > * { opacity: 0; }
 
+    /* ---------------- photo reel (S3b · Paris, S5b · the rest of it) ----------------
+       A cinematic full-bleed dissolve — deliberately a different motion
+       grammar from S4's horizontal track, so the two photo/gallery chapters
+       never read as the same trick twice.
+
+       Frames are stacked by index (z-index = i) and each one only ever fades
+       IN over the one below; the outgoing frame stays fully opaque underneath
+       until it is completely covered. A symmetric fade-out/fade-in pair would
+       show the navy backdrop through both at mid-crossfade (a visible dip) —
+       this never dips.
+
+       Each caption lives INSIDE its own frame (real <figcaption>), which is
+       safe because caption i is fully faded out BEFORE frame i+1 begins to
+       cover it, and caption i+1 only starts once frame i+1 is fully opaque.
+       ---- */
+    .jn-reel { position: relative; width: 100%; }
+    /* on-photo ink: captions sit on a dark scrim in BOTH themes, so these are
+       scene-scoped literals rather than the theme tokens (which invert) */
+    .jn-reel-scene { --jn-photo-ink: #f1f6ff; --jn-photo-accent: #6ee7ff; }
+
+    /* ===== default (no-JS / static): a plain, readable stacked photo essay ===== */
+    .jn-reel-head { margin: 0 0 34px; }
+    .jn-reel-kicker {
+      font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.26em;
+      text-transform: uppercase; color: var(--accent-bright); display: block; margin-bottom: 12px;
+    }
+    .jn-reel-title {
+      font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em;
+      font-size: clamp(1.9rem, 5.6vw, 3.2rem); line-height: 1.04; color: var(--ink); margin: 0;
+    }
+    .jn-reel-title .jn-grad {
+      background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .jn-reel-sub { color: var(--muted); margin-top: 12px; font-size: clamp(0.98rem, 2.2vw, 1.12rem); }
+
+    .jn-frames { display: grid; gap: 40px; max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+    .jn-frame { position: relative; margin: 0; }
+    .jn-frame img {
+      width: 100%; height: auto; display: block;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 0 0 1px var(--stroke), var(--shadow-lg);
+    }
+    .jn-frame-scrim { display: none; }
+    .jn-cap { margin-top: 14px; }
+    .jn-cap-stamp {
+      font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent-bright); display: block; margin-bottom: 8px;
+    }
+    .jn-cap-line {
+      margin: 0; color: var(--text); font-size: clamp(1rem, 2.4vw, 1.22rem);
+      line-height: 1.45; max-width: 46ch;
+    }
+    .jn-reel-hud { display: none; }
+
+    /* ===== html.jn-on : pinned full-bleed cinema ===== */
+    html.jn-on .jn-reel { position: absolute; inset: 0; }
+
+    html.jn-on .jn-frames { display: block; position: absolute; inset: 0; max-width: none; margin: 0; padding: 0; }
+    html.jn-on .jn-frame {
+      position: absolute; inset: 0; opacity: 0; overflow: hidden;
+    }
+    /* Portrait photos lose ~half their height to a landscape stage, so the
+       default centre crop can land badly (a face filling the frame, a tower
+       with its top cut). Per-photo framing is an inline
+       `style="object-position: 50% 30%"` on the <img> — nothing else needed. */
+    html.jn-on .jn-frame img {
+      width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;
+      border-radius: 0; box-shadow: none;
+      will-change: transform;
+    }
+    /* legibility scrim: bottom-heavy for the caption, a lighter top wash for
+       the chapter head, plus a soft vignette to keep the eye centred */
+    html.jn-on .jn-frame-scrim {
+      display: block; position: absolute; inset: 0; pointer-events: none;
+      background:
+        /* left wash: the chapter head and the caption are both left-aligned,
+           and a photo can put anything bright behind them (a lit monitor, a
+           whiteboard, a sky). This keeps that column readable without
+           flattening the rest of the frame. */
+        linear-gradient(to right,
+          rgba(4, 10, 28, 0.50) 0%,
+          rgba(4, 10, 28, 0.24) 30%,
+          rgba(4, 10, 28, 0) 56%),
+        linear-gradient(to top,
+          rgba(4, 10, 28, 0.92) 0%,
+          rgba(4, 10, 28, 0.60) 22%,
+          rgba(4, 10, 28, 0.12) 46%,
+          rgba(4, 10, 28, 0.42) 72%,
+          rgba(4, 10, 28, 0.66) 88%,
+          rgba(4, 10, 28, 0.82) 100%),
+        radial-gradient(125% 82% at 50% 48%, rgba(7, 17, 46, 0) 42%, rgba(7, 17, 46, 0.58) 100%);
+    }
+
+    /* chapter head — top-left, above every frame */
+    html.jn-on .jn-reel-head {
+      position: absolute; left: 0; right: 0; top: clamp(78px, 13vh, 150px);
+      z-index: 60; margin: 0; pointer-events: none; opacity: 0;
+      will-change: transform, opacity;
+    }
+    /* on-photo text always has to clear whatever is behind it, and a photo can
+       put anything there — so the scrim does the bulk and these shadows cover
+       the bright patches it can't fully knock down */
+    html.jn-on .jn-reel-title {
+      color: var(--jn-photo-ink);
+      text-shadow: 0 2px 20px rgba(2, 7, 22, 0.8), 0 1px 3px rgba(2, 7, 22, 0.55);
+    }
+    html.jn-on .jn-reel-kicker { color: var(--jn-photo-accent); text-shadow: 0 1px 10px rgba(2, 7, 22, 0.85); }
+    html.jn-on .jn-reel-sub {
+      color: rgba(232, 240, 255, 0.82); max-width: 40ch;
+      text-shadow: 0 1px 14px rgba(2, 7, 22, 0.9), 0 1px 3px rgba(2, 7, 22, 0.6);
+    }
+
+    /* caption — bottom-left, inside its own frame (see note above) */
+    html.jn-on .jn-cap {
+      position: absolute; left: 0; right: 0; bottom: clamp(74px, 12vh, 118px);
+      margin: 0; opacity: 0; will-change: transform, opacity;
+    }
+    html.jn-on .jn-cap-inner { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+    html.jn-on .jn-cap-stamp { color: var(--jn-photo-accent); text-shadow: 0 1px 12px rgba(2, 7, 22, 0.8); }
+    html.jn-on .jn-cap-line {
+      color: var(--jn-photo-ink); font-family: var(--font-display); font-weight: 600;
+      letter-spacing: -0.015em; font-size: clamp(1.15rem, 3vw, 1.85rem);
+      line-height: 1.28; max-width: 22ch; text-shadow: 0 2px 20px rgba(2, 7, 22, 0.7);
+    }
+
+    /* frame counter + tick strip — bottom band, above every frame */
+    html.jn-on .jn-reel-hud {
+      display: block; position: absolute; left: 0; right: 0;
+      bottom: clamp(30px, 5vh, 46px); z-index: 60; pointer-events: none;
+    }
+    .jn-reel-hud-inner {
+      max-width: var(--maxw); margin: 0 auto; padding: 0 22px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .jn-reel-count {
+      font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
+      color: rgba(226, 236, 255, 0.62); flex-shrink: 0;
+    }
+    .jn-reel-num { color: var(--jn-photo-accent); }
+    .jn-reel-ticks { display: flex; gap: 7px; align-items: center; }
+    .jn-rtick {
+      display: block; width: 26px; height: 2px; border-radius: 2px;
+      background: rgba(226, 236, 255, 0.24);
+      transition: background .35s var(--ease), width .35s var(--ease);
+    }
+    .jn-rtick-on { background: var(--jn-photo-accent); width: 42px; }
+
     /* ---------------- chapter dot-rail ----------------
        The rail is a <nav>, so it inherits the site navbar's element styles
        (glass pill, 1100px width, left:50%, ring pseudo) — reset them all. */
@@ -400,6 +548,10 @@
       .jn-beat { width: min(92vw, 400px); }
       .jn-flow-node-lbl { font-size: 10px; }
       .jn-hero-inter { padding: 0 18px; }
+      html.jn-on .jn-cap-line { max-width: 15ch; }
+      html.jn-on .jn-cap { bottom: clamp(66px, 14vh, 104px); }
+      html.jn-on .jn-reel-head { top: clamp(70px, 11vh, 110px); }
+      html.jn-on .jn-reel-sub { display: none; }
     }
 
     /* light-theme touch-ups where new tinted surfaces need it */
@@ -491,9 +643,12 @@
     <button type="button" data-target="jn-s1"><span class="jn-rail-lbl">01 Intro</span><span class="jn-rail-dot"></span></button>
     <button type="button" data-target="jn-s2"><span class="jn-rail-lbl">02 Who</span><span class="jn-rail-dot"></span></button>
     <button type="button" data-target="jn-s3"><span class="jn-rail-lbl">03 Route</span><span class="jn-rail-dot"></span></button>
-    <button type="button" data-target="jn-s4"><span class="jn-rail-lbl">04 Craft</span><span class="jn-rail-dot"></span></button>
-    <button type="button" data-target="jn-s5"><span class="jn-rail-lbl">05 The Hop</span><span class="jn-rail-dot"></span></button>
-    <button type="button" data-target="jn-s6"><span class="jn-rail-lbl">06 Hello</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s3b"><span class="jn-rail-lbl">04 Away</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s4"><span class="jn-rail-lbl">05 Craft</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s4b"><span class="jn-rail-lbl">06 Rooms</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s5"><span class="jn-rail-lbl">07 The Hop</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s5b"><span class="jn-rail-lbl">08 Off Duty</span><span class="jn-rail-dot"></span></button>
+    <button type="button" data-target="jn-s6"><span class="jn-rail-lbl">09 Hello</span><span class="jn-rail-dot"></span></button>
   </nav>
 
   <!-- ============================================================
@@ -594,6 +749,122 @@
       </div>
     </section>
 
+    <!-- ===== S3B · PHOTO REEL — Two years, away =====
+         Frame count drives everything (counter, ticks, dissolve windows) off
+         the DOM: to add a photo, drop in another <figure class="jn-frame">
+         and bump data-len. Nothing else needs touching. ===== -->
+    <section class="jn-scene jn-reel-scene" id="jn-s3b" data-len="5.4" aria-label="Two years, away">
+      <div class="jn-stage">
+        <div class="jn-reel">
+
+          <div class="jn-reel-head">
+            <div class="jn-wrap">
+              <span class="jn-reel-kicker">// chapter 04 &middot; 2023 &mdash; 2024</span>
+              <h2 class="jn-reel-title">Two years, <span class="jn-grad">away.</span></h2>
+              <p class="jn-reel-sub">The route above is the map. This is what it actually looked like.</p>
+            </div>
+          </div>
+
+          <div class="jn-frames">
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/01-arrival-1600.jpg"
+                   srcset="Files/images/journey/web/01-arrival-900.jpg 900w, Files/images/journey/web/01-arrival-1600.jpg 1600w"
+                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async" fetchpriority="high"
+                   alt="Peter Farah standing beside the Institut Polytechnique de Paris sign, French and EU flags flying overhead">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Nov 2023 &middot; Palaiseau</span>
+                  <p class="jn-cap-line">A sign, two flags, and a master&rsquo;s that hadn&rsquo;t started being hard yet.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/02-amphi-1600.jpg"
+                   srcset="Files/images/journey/web/02-amphi-900.jpg 900w, Files/images/journey/web/02-amphi-1600.jpg 1600w"
+                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   alt="An empty tiered lecture hall with blue seats and long wooden desks">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Dec 2023 &middot; 08:28</span>
+                  <p class="jn-cap-line">The amphi before the amphi fills up. Most of what I learned happened in rooms like this.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/03-beirut-home-1600.jpg"
+                   srcset="Files/images/journey/web/03-beirut-home-900.jpg 900w, Files/images/journey/web/03-beirut-home-1600.jpg 1600w"
+                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   alt="Peter Farah on a palm-lined campus walkway in Beirut">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Dec 2023 &middot; Beirut</span>
+                  <p class="jn-cap-line">Home for two weeks in the middle of it. It&rsquo;s a long way back for a winter break.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/04-plateau-1600.jpg"
+                   srcset="Files/images/journey/web/04-plateau-900.jpg 900w, Files/images/journey/web/04-plateau-1600.jpg 1600w"
+                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   alt="A snow-covered roundabout and lone bus shelter on the Saclay plateau">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Jan 2024 &middot; Saclay plateau</span>
+                  <p class="jn-cap-line">Winter on the plateau. The commute didn&rsquo;t care, and neither did the deadlines.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/05-platform-1600.jpg"
+                   srcset="Files/images/journey/web/05-platform-900.jpg 900w, Files/images/journey/web/05-platform-1600.jpg 1600w"
+                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   alt="A suitcase on an empty, rain-slicked railway platform at night">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">18 Apr 2024 &middot; 04:51</span>
+                  <p class="jn-cap-line">A platform, a suitcase, and nobody. Some mornings start before the trains do.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/06-wing-1600.jpg"
+                   srcset="Files/images/journey/web/06-wing-900.jpg 900w, Files/images/journey/web/06-wing-1600.jpg 1600w"
+                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   alt="An aircraft wing above a city, seen through a cabin window">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">18 Apr 2024 &middot; 09:16</span>
+                  <p class="jn-cap-line">Four hours later, wheels up &mdash; Paris underneath, getting smaller.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+          </div>
+
+          <!-- counter + tick strip (contents generated by the engine from the
+               frame count, so adding a photo needs no edit here) -->
+          <div class="jn-reel-hud" aria-hidden="true">
+            <div class="jn-reel-hud-inner">
+              <span class="jn-reel-count"><span class="jn-reel-num">01</span> / <span class="jn-reel-total">00</span></span>
+              <span class="jn-reel-ticks"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
     <!-- ===== S4 · CRAFT (horizontal gallery) ===== -->
     <section class="jn-scene jn-craft-scene" id="jn-s4" data-len="4" aria-label="Craft">
       <div class="jn-stage">
@@ -684,6 +955,66 @@
       </div>
     </section>
 
+    <!-- ===== S4B · PHOTO REEL — Where it actually runs =====
+         Frame count drives everything (counter, ticks, dissolve windows) off
+         the DOM: to add a photo, drop in another <figure class="jn-frame">
+         and bump data-len. Nothing else needs touching. ===== -->
+    <section class="jn-scene jn-reel-scene" id="jn-s4b" data-len="2.2" aria-label="Where it actually runs">
+      <div class="jn-stage">
+        <div class="jn-reel">
+
+          <div class="jn-reel-head">
+            <div class="jn-wrap">
+              <span class="jn-reel-kicker">// chapter 06 &middot; the hardware</span>
+              <h2 class="jn-reel-title">Where it <span class="jn-grad">actually runs.</span></h2>
+              <p class="jn-reel-sub">Two chapters of this story are about machines. Here they are.</p>
+            </div>
+          </div>
+
+          <div class="jn-frames">
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/07-testbed-1600.jpg"
+                   srcset="Files/images/journey/web/07-testbed-900.jpg 900w, Files/images/journey/web/07-testbed-1600.jpg 1600w"
+                   sizes="100vw" width="1600" height="900" loading="lazy" decoding="async" fetchpriority="high"
+                   alt="A two-machine network testbed: two desktop towers either side of a switch, with terminals showing bitrate, queue-length and RTT measurements">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">2025 &middot; the testbed</span>
+                  <p class="jn-cap-line">Two hosts, one bottleneck between them, and a script asking the queue what it is.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/08-nas-1600.jpg"
+                   srcset="Files/images/journey/web/08-nas-900.jpg 900w, Files/images/journey/web/08-nas-1600.jpg 1600w"
+                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   alt="A four-bay Synology NAS beside a network switch and a wireless access point">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">May 2026 &middot; Beirut</span>
+                  <p class="jn-cap-line">Eighteen terabytes twice over, snapshotting quietly in the corner of a room.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+          </div>
+
+          <!-- counter + tick strip (contents generated by the engine from the
+               frame count, so adding a photo needs no edit here) -->
+          <div class="jn-reel-hud" aria-hidden="true">
+            <div class="jn-reel-hud-inner">
+              <span class="jn-reel-count"><span class="jn-reel-num">01</span> / <span class="jn-reel-total">00</span></span>
+              <span class="jn-reel-ticks"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
     <!-- ===== S5 · PACKET FLOW ===== -->
     <section class="jn-scene jn-flow-scene" id="jn-s5" data-len="4" aria-label="Packet flow">
       <div class="jn-stage">
@@ -741,6 +1072,108 @@
           </div>
 
           <p class="jn-flow-caption" id="jn-flow-caption"><span class="jn-grad">I care about every hop.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S5B · PHOTO REEL — And the rest of it =====
+         Frame count drives everything (counter, ticks, dissolve windows) off
+         the DOM: to add a photo, drop in another <figure class="jn-frame">
+         and bump data-len. Nothing else needs touching. ===== -->
+    <section class="jn-scene jn-reel-scene" id="jn-s5b" data-len="4.6" aria-label="And the rest of it">
+      <div class="jn-stage">
+        <div class="jn-reel">
+
+          <div class="jn-reel-head">
+            <div class="jn-wrap">
+              <span class="jn-reel-kicker">// chapter 08 &middot; 2025 &mdash; 2026</span>
+              <h2 class="jn-reel-title">And the <span class="jn-grad">rest of it.</span></h2>
+              <p class="jn-reel-sub">The parts that weren&rsquo;t lecture halls, terminals, or packet captures.</p>
+            </div>
+          </div>
+
+          <div class="jn-frames">
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/09-paris-night-1600.jpg"
+                   srcset="Files/images/journey/web/09-paris-night-900.jpg 900w, Files/images/journey/web/09-paris-night-1600.jpg 1600w"
+                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async" style="object-position: 50% 36%" fetchpriority="high"
+                   alt="The Eiffel Tower lit at night, its beacon sweeping the sky above a crowded crossing">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">May 2025 &middot; Place de la Concorde</span>
+                  <p class="jn-cap-line">Eleven minutes to midnight. The city does this every hour and it still works on me.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/10-barcelona-1600.jpg"
+                   srcset="Files/images/journey/web/10-barcelona-900.jpg 900w, Files/images/journey/web/10-barcelona-1600.jpg 1600w"
+                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   alt="Peter Farah in sunglasses, a Spanish flag and a palm tree behind him">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Jun 2025 &middot; Barcelona</span>
+                  <p class="jn-cap-line">Different sun, same habit of walking until the map runs out.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/11-rome-1600.jpg"
+                   srcset="Files/images/journey/web/11-rome-900.jpg 900w, Files/images/journey/web/11-rome-1600.jpg 1600w"
+                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   alt="Saint Peter&rsquo;s Basilica rising above Roman rooftops">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Aug 2025 &middot; Rome</span>
+                  <p class="jn-cap-line">Two thousand years of infrastructure, still serving traffic.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/12-zandvoort-1600.jpg"
+                   srcset="Files/images/journey/web/12-zandvoort-900.jpg 900w, Files/images/journey/web/12-zandvoort-1600.jpg 1600w"
+                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   alt="Two Formula 1 cars sweeping through a banked corner at Circuit Zandvoort">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Aug 2025 &middot; Zandvoort</span>
+                  <p class="jn-cap-line">The only queue I&rsquo;ve ever enjoyed watching.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+            <figure class="jn-frame">
+              <img src="Files/images/journey/web/13-murex-1600.jpg"
+                   srcset="Files/images/journey/web/13-murex-900.jpg 900w, Files/images/journey/web/13-murex-1600.jpg 1600w"
+                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   alt="A tiered cake marking Murex&rsquo;s fortieth anniversary, 1986 to 2026, at the Beirut Center Jamboree">
+              <span class="jn-frame-scrim" aria-hidden="true"></span>
+              <figcaption class="jn-cap">
+                <div class="jn-cap-inner">
+                  <span class="jn-cap-stamp">Jul 2026 &middot; Beirut</span>
+                  <p class="jn-cap-line">Forty years of Murex, and I got back in time for the cake.</p>
+                </div>
+              </figcaption>
+            </figure>
+
+          </div>
+
+          <!-- counter + tick strip (contents generated by the engine from the
+               frame count, so adding a photo needs no edit here) -->
+          <div class="jn-reel-hud" aria-hidden="true">
+            <div class="jn-reel-hud-inner">
+              <span class="jn-reel-count"><span class="jn-reel-num">01</span> / <span class="jn-reel-total">00</span></span>
+              <span class="jn-reel-ticks"></span>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -1055,6 +1488,109 @@
         });
       };
     });
+
+    /* ===================== PHOTO REELS · S3b (Paris) + S5b (the rest of it) =====================
+       One builder, two scenes. Full-bleed dissolve + slow Ken Burns.
+
+       Stacking, not crossfading: frame i sits at z-index i and only ever fades
+       IN over the frame below, which stays fully opaque until it is completely
+       covered. Fading one out while fading the next in would show the navy
+       backdrop through both at the midpoint — a visible dip on every
+       transition. This has none.
+
+       Everything is derived from the frame count in the DOM (windows, counter,
+       tick strip), so adding a photo is a markup-only change. */
+    function buildReel(el) {
+      const frames = Array.from(el.querySelectorAll('.jn-frame'));
+      if (!frames.length) return null;
+      const imgs     = frames.map(function (f) { return f.querySelector('img'); });
+      const caps     = frames.map(function (f) { return f.querySelector('.jn-cap'); });
+      const head     = el.querySelector('.jn-reel-head');
+      const numEl    = el.querySelector('.jn-reel-num');
+      const totEl    = el.querySelector('.jn-reel-total');
+      const tickWrap = el.querySelector('.jn-reel-ticks');
+      const N = frames.length;
+      const pad = function (n) { return (n < 10 ? '0' : '') + n; };
+
+      frames.forEach(function (f, i) { f.style.zIndex = String(i); });
+
+      // HUD is built from the frame count rather than hard-coded in the markup
+      if (totEl) totEl.textContent = pad(N);
+      const ticks = [];
+      if (tickWrap) {
+        tickWrap.textContent = '';
+        for (let i = 0; i < N; i++) {
+          const t = document.createElement('i');
+          t.className = 'jn-rtick' + (i === 0 ? ' jn-rtick-on' : '');
+          tickWrap.appendChild(t);
+          ticks.push(t);
+        }
+      }
+
+      /* Each frame owns the p-window [i/N, (i+1)/N]. CF is the dissolve
+         half-width straddling each boundary, so SOLID is the span in which
+         this frame is the only one on screen; the caption's ramps have to fit
+         inside SOLID twice over, or it starts fading out before it has
+         finished fading in (which is exactly what a flat `min(0.05, k/N)`
+         does once N gets past four). Deriving both from the frame's own share
+         of the scene keeps a real hold at any frame count. */
+      const W     = 1 / N;
+      const CF    = Math.min(0.05, 0.22 * W);
+      const SOLID = W - 2 * CF;
+      const CAP   = Math.min(0.045, SOLID * 0.30);
+      let lastIdx = -1;
+
+      return function (p) {
+        // chapter head rises with the scene, lifts away as the reel ends
+        if (head) {
+          const he = easeOutCubic(seg(p, 0.01, 0.11));
+          const ho = easeInOutCubic(seg(p, 0.90, 1));
+          head.style.opacity = (he * (1 - ho)).toFixed(3);
+          head.style.transform = 'translateY(' + (lerp(20, 0, he) - 16 * ho).toFixed(1) + 'px)';
+        }
+
+        for (let i = 0; i < N; i++) {
+          const a = i / N, b = (i + 1) / N;
+          // fade IN only; frame 0 is lit from p=0 so the stage is never blank
+          frames[i].style.opacity =
+            (i === 0 ? 1 : easeInOutCubic(seg(p, a - CF, a + CF))).toFixed(3);
+
+          // Ken Burns runs across the frame's whole visible span (both
+          // dissolves included), alternating pan direction so no two
+          // consecutive frames drift the same way
+          const img = imgs[i];
+          if (img) {
+            const k = clamp((p - (a - CF)) / (b + CF - (a - CF)), 0, 1);
+            const dir = (i % 2 === 0) ? 1 : -1;
+            img.style.transform =
+              'scale(' + lerp(1.12, 1.01, k).toFixed(4) + ') ' +
+              'translate3d(' + (lerp(2, -2, k) * dir).toFixed(2) + '%, ' +
+                               lerp(1.2, -1.2, k).toFixed(2) + '%, 0)';
+          }
+
+          const cap = caps[i];
+          if (cap) {
+            const ci = easeOutCubic(i === 0 ? seg(p, 0.02, 0.02 + CAP)
+                                            : seg(p, a + CF, a + CF + CAP));
+            const co = i === N - 1 ? easeInOutCubic(seg(p, 0.94, 1))
+                                   : easeInOutCubic(seg(p, b - CF - CAP, b - CF));
+            cap.style.opacity = (ci * (1 - co)).toFixed(3);
+            cap.style.transform = 'translateY(' + (lerp(18, 0, ci) + 12 * co).toFixed(1) + 'px)';
+          }
+        }
+
+        // HUD touches the DOM only when the dominant frame actually changes
+        const idx = clamp(Math.floor(p * N - 1e-9), 0, N - 1);
+        if (idx !== lastIdx) {
+          lastIdx = idx;
+          if (numEl) numEl.textContent = pad(idx + 1);
+          ticks.forEach(function (t, i) { t.classList.toggle('jn-rtick-on', i === idx); });
+        }
+      };
+    }
+    registerScene('jn-s3b', function (el) { return buildReel(el); });
+    registerScene('jn-s4b', function (el) { return buildReel(el); });
+    registerScene('jn-s5b', function (el) { return buildReel(el); });
 
     /* ===================== S4 · CRAFT GALLERY ===================== */
     registerScene('jn-s4', function (el) {
