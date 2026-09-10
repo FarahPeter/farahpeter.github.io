@@ -559,7 +559,7 @@
       transform: translateX(6px); transition: opacity .25s, transform .25s;
       pointer-events: none;
     }
-    .jn-rail button:hover .jn-rail-lbl, .jn-rail button:focus-visible .jn-rail-lbl, .jn-rail button.jn-rail-active .jn-rail-lbl { opacity: 1; transform: translateX(0); }
+    .jn-rail button:hover .jn-rail-lbl, .jn-rail button:focus .jn-rail-lbl, .jn-rail button.jn-rail-active .jn-rail-lbl { opacity: 1; transform: translateX(0); }
 
     /* ================= RESPONSIVE ================= */
     @media (max-width: 900px) {
@@ -685,7 +685,7 @@
   <!-- ============================================================
        THE STORY
        ============================================================ -->
-  <main class="jn-story" id="main">
+  <main class="jn-story" id="main" tabindex="-1">
 
     <!-- ===== S1 · HERO ===== -->
     <section class="jn-scene" id="jn-s1" data-len="3" aria-label="Introduction">

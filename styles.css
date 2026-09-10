@@ -419,6 +419,9 @@ nav.scrolled::after { background: linear-gradient(135deg, var(--ring-hi), var(--
   font-weight: 600; font-size: 0.9rem; transition: transform .2s var(--ease);
 }
 .skip-link:focus { transform: translate(-50%, 0); }
+/* <main tabindex="-1"> is only a landing spot for the skip link — it takes focus
+   so the next Tab continues inside the content, but never draws a ring. */
+main:focus { outline: none; }
 [data-theme="light"] .skip-link { color: #fff; }
 
 /* Screen-reader-only text */
@@ -805,8 +808,12 @@ footer p a { color: var(--accent-bright); }
 .blog-content-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s cubic-bezier(.2,.8,.2,1); }
 .blog-content-wrapper.open { grid-template-rows: 1fr; }
 /* A collapsed body is laid out at 0px height, which still counts as "near the
-   viewport" for lazy images — skip its rendering entirely until it opens. */
-.blog-content-wrapper:not(.open) .blog-content { content-visibility: hidden; }
+   viewport" for lazy images — skip its rendering entirely until it opens.
+   Guarded by html.js: with no JavaScript nothing can open it, so the write-ups
+   are simply shown in full instead of being hidden with no way back. */
+html.js .blog-content-wrapper:not(.open) .blog-content { content-visibility: hidden; }
+html:not(.js) .blog-content-wrapper { grid-template-rows: 1fr; }
+html:not(.js) .cover-toggle { display: none; }
 .blog-content { overflow: hidden; }
 .blog-content-inner { padding: 32px; margin-top: 16px; }
 .blog-content-inner { background: var(--glass); -webkit-backdrop-filter: blur(var(--blur)) saturate(180%); backdrop-filter: blur(var(--blur)) saturate(180%); border: 1px solid var(--glass-border-2); border-radius: var(--radius-lg); box-shadow: var(--shadow), inset 0 1px 0 var(--specular); }
@@ -915,9 +922,9 @@ html.bg-static .hero-name, html.bg-static .hero-now::after, html.bg-static .err-
   .hero-stat-label, .xp-date, .xp-place, .text-muted, .tech-tag, .cert-list li, footer p, .terminal-body { color: #111 !important; }
   .hero-name, .section-title .grad, .blog-page-header .grad, .hero-stat-number, .err-code { background: none; color: #111 !important; -webkit-text-fill-color: #111; filter: none; animation: none; }
   a { color: #1d4ed8; text-decoration: underline; }
-  .reveal, .reveal .projects-grid > .project, .reveal .skills-grid > .skills-container, .reveal .cert-list > li, .reveal .xp-list > .xp-row { opacity: 1 !important; transform: none !important; }
+  .reveal, .reveal .projects-grid > .project, .reveal .skills-grid > .skills-container, .reveal .cert-list > li, .reveal .xp-list > .xp-row { opacity: 1 !important; transform: none !important; transition: none !important; }
   .blog-content-wrapper { grid-template-rows: 1fr; }
-  .blog-content-wrapper:not(.open) .blog-content { content-visibility: visible; }
+  html.js .blog-content-wrapper:not(.open) .blog-content { content-visibility: visible; }
   .hero { padding-top: 24px; }
   section, .hero { break-inside: avoid; }
   .project-side { position: static; }

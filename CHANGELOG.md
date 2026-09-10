@@ -30,7 +30,10 @@ owner, is in `docs/IMPROVEMENT_PLAN.md`. `FUN/` was left untouched.
   its post anchors), `aria-current` on the current page, the ⌘K palette on every
   content page, a skip link and a `<main>` landmark, and a footer with the same
   links plus the new privacy page. The Interactive Hub was previously reachable
-  only through the palette.
+  only through the palette. The skip link lands on a focusable `<main>`, so it
+  moves focus and not just the hash, and without JavaScript the blog write-ups
+  render in full (the collapse and its `content-visibility` are both guarded by
+  `html.js`) rather than being hidden with no way to open them.
 - **Faster first paint.** The hero portrait and the three blog covers now ship as
   responsive WebP/JPEG derivatives with `width`/`height` (614 KB → ~40 KB for the
   portrait at 720 px; 1.9 MB → ~50–130 KB per cover), the first cover is
