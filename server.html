@@ -4,12 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#07112e">
+  <!-- Runs before first paint: restores the saved theme (no dark flash for light-theme
+       visitors) and marks the document as script-capable so reveal animations only
+       hide content when JavaScript is actually running. -->
+  <script>(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('pf-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);}}catch(e){}})();</script>
   <title>Peter Farah | Service Access Panel</title>
   <meta name="description" content="Service Access Panel for Peter Farah's self-hosted applications, secured behind Cloudflare Zero Trust.">
-  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+  <link rel="canonical" href="https://peterfarah.com/server.html">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta property="og:site_name" content="Peter Farah">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://peterfarah.com/server.html">
+  <meta property="og:title" content="Peter Farah | Service Access Panel">
+  <meta property="og:description" content="Live reachability for Peter Farah's self-hosted services, secured behind Cloudflare Zero Trust.">
+  <meta property="og:image" content="https://peterfarah.com/Files/images/og/og-server.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Service Access Panel — self-hosted, zero trust">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Peter Farah | Service Access Panel">
+  <meta name="twitter:description" content="Live reachability for Peter Farah's self-hosted services, secured behind Cloudflare Zero Trust.">
+  <meta name="twitter:image" content="https://peterfarah.com/Files/images/og/og-server.jpg">
+  <link rel="icon" href="Files/images/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="apple-touch-icon" href="Files/images/icons/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preload" href="Files/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="Files/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <style>
     /* ── server.html page-specific polish ── */
@@ -141,9 +163,9 @@
     .svc-probe-foot {
       max-width: 52ch;
       margin: 22px auto 0;
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       line-height: 1.65;
-      color: var(--faint);
+      color: var(--muted);
       text-align: center;
     }
 
@@ -156,29 +178,36 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- Background + Cursor -->
   <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
   <canvas id="net-canvas"></canvas>
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
-  <div id="cursor-ring"></div>
 
   <!-- Scroll Progress -->
   <div id="vertical-scroll-track"><div id="vertical-scroll-progress"></div></div>
 
   <!-- ===== NAVIGATION ===== -->
   <nav aria-label="Main navigation">
-    <a href="https://peterfarah.com" class="nav-logo">Peter Farah</a>
+    <a href="index.html" class="nav-logo">Peter Farah</a>
 
     <div class="nav-right">
       <ul class="nav-links">
+        <li><a href="index.html" class="nav-highlight">Home</a></li>
         <li><a href="journey.html" class="nav-highlight">Journey</a></li>
-        <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
-        <li><a href="blog.html" class="nav-highlight">Research &amp; Blog</a></li>
+        <li><a href="blog.html" class="nav-highlight">Research</a></li>
+        <li><a href="fun.html" class="nav-highlight">Hub</a></li>
+        <li><a href="server.html" class="nav-highlight" aria-current="page">Server</a></li>
+        <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">CV</a></li>
       </ul>
 
-      <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
+      <button type="button" class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
+        <kbd>⌘K</kbd> Search
+      </button>
+
+      <button type="button" id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
         <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -190,7 +219,7 @@
         </svg>
       </button>
 
-      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+      <button type="button" class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -203,23 +232,28 @@
   <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
     <div class="nav-drawer-header">
       <span class="nav-logo">Server</span>
-      <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
+      <button type="button" class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
     </div>
-    <a href="journey.html" class="nav-highlight">Journey</a>
     <a href="index.html" class="nav-highlight">Home / Profile</a>
+    <a href="journey.html" class="nav-highlight">Journey</a>
     <a href="blog.html" class="nav-highlight">Research &amp; Blog</a>
+    <a href="fun.html" class="nav-highlight">Interactive Hub</a>
+    <a href="server.html" class="nav-highlight" aria-current="page">Server Access</a>
+    <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">Download CV</a>
     <div class="nav-drawer-divider"></div>
-    <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
+    <button type="button" class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
       <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/></svg>
       Toggle Theme
     </button>
   </aside>
 
+  <main id="main" tabindex="-1">
+
   <!-- ===== SERVER PANEL ===== -->
   <section class="server-panel reveal">
     <div class="section-head" style="text-align:center;">
       <span class="kicker" style="justify-content:center;">Service Registry</span>
-      <h2 class="section-title">Service <span class="grad">Access Panel</span></h2>
+      <h1 class="section-title">Service <span class="grad">Access Panel</span></h1>
     </div>
     <p class="status-line"><span class="status-dot"></span> Secured via Cloudflare Zero Trust architecture.</p>
 
@@ -240,13 +274,13 @@
       <summary class="setup-summary">NAS + docker</summary>
       <div class="setup-content">
         <!-- <a class="btn svc" href="https://nas-vault.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Treasury Vault</span><span class="svc-host">nas-vault.peterfarah.com</span></a>-->
-        <a class="btn svc" href="https://nas-vaultprod.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Treasury Vault prod</span><span class="svc-host">nas-vaultprod.peterfarah.com</span></a>
+        <a class="btn svc" href="https://nas-vaultprod.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Treasury Vault (prod)</span><span class="svc-host">nas-vaultprod.peterfarah.com</span></a>
         <!-- <a class="btn svc" href="https://nas-grafana.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Grafana</span><span class="svc-host">nas-grafana.peterfarah.com</span></a>-->
         <!-- <a class="btn svc" href="https://nas-poker.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Poker Sim</span><span class="svc-host">nas-poker.peterfarah.com</span></a>-->
         <!-- <a class="btn" href="https://nas-rust-electricity.peterfarah.com" target="_blank" rel="noopener">Rust Electricity Sim</a> -->
-        <a class="btn svc" href="https://clashroyal.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Clash Royal Stats</span><span class="svc-host">https://clashroyal.peterfarah.com</span></a>
-        <a class="btn svc" href="https://clipboard.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Universal Clipboard</span><span class="svc-host">https://clipboard.peterfarah.com</span></a>
-        <a class="btn svc" href="https://farmavetservices.com/" target="_blank" rel="noopener"><span class="svc-name">Farmavet services</span><span class="svc-host">https://farmavetservices.com/</span></a>
+        <a class="btn svc" href="https://clashroyal.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Clash Royale Stats</span><span class="svc-host">clashroyal.peterfarah.com</span></a>
+        <a class="btn svc" href="https://clipboard.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Universal Clipboard</span><span class="svc-host">clipboard.peterfarah.com</span></a>
+        <a class="btn svc" href="https://farmavetservices.com/" target="_blank" rel="noopener"><span class="svc-name">Farmavet Services</span><span class="svc-host">farmavetservices.com</span></a>
         <a class="btn svc" href="https://peterfarah.com/portfoliobuilder" target="_blank" rel="noopener"><span class="svc-name">FolioForge</span><span class="svc-host">peterfarah.com/portfoliobuilder</span></a>
         <a class="btn svc" href="https://builder.peterfarah.com" target="_blank" rel="noopener"><span class="svc-name">Manage FolioForge</span><span class="svc-host">builder.peterfarah.com</span></a>
 
@@ -275,14 +309,42 @@
 
   </section>
 
+  </main>
+
   <footer>
-    <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    <div class="footer-links" role="navigation" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="journey.html">Journey</a>
+      <a href="blog.html">Research</a>
+      <a href="fun.html">Hub</a>
+      <a href="server.html" aria-current="page">Server</a>
+      <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" target="_blank" rel="noopener">CV</a>
+      <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/FarahPeter" target="_blank" rel="noopener">GitHub</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+    <p>&copy; 2026 Peter Farah &middot; <a href="mailto:peter@peterfarah.com">peter@peterfarah.com</a> &middot; Hand-built with HTML, CSS and JavaScript.</p>
   </footer>
 
   <!-- Back to Top -->
-  <button id="back-to-top" aria-label="Back to top">
+  <button type="button" id="back-to-top" aria-label="Back to top">
     <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
   </button>
+
+  <!-- Command Palette -->
+  <div id="cmd-backdrop" aria-hidden="true"></div>
+  <div id="cmd-palette" role="dialog" aria-label="Command palette" aria-modal="true">
+    <div id="cmd-input-wrap">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false" role="combobox" aria-label="Search pages and sections" aria-autocomplete="list" aria-controls="cmd-results" aria-expanded="false">
+    </div>
+    <div id="cmd-results" role="listbox" aria-label="Results"></div>
+    <div id="cmd-footer">
+      <span class="cmd-hint"><kbd>↑↓</kbd> navigate</span>
+      <span class="cmd-hint"><kbd>↵</kbd> open</span>
+      <span class="cmd-hint"><kbd>Esc</kbd> close</span>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

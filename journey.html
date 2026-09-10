@@ -4,17 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#07112e">
+  <!-- Runs before first paint: restores the saved theme, marks the document as
+       script-capable, and switches straight to the pinned scrollytelling layout
+       (unless the OS asks for reduced motion) so the first paint already has
+       the final geometry — the engine at the end of the body used to flip it. -->
+  <script>(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('pf-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);}}catch(e){}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('jn-on');}})();</script>
   <title>Peter Farah | Journey</title>
   <meta name="description" content="An immersive scroll through Peter Farah's journey — from Beirut to Paris and back: networks, research, automation, and a homelab that never sleeps.">
+  <link rel="canonical" href="https://peterfarah.com/journey.html">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta property="og:site_name" content="Peter Farah">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://peterfarah.com/journey.html">
   <meta property="og:title" content="Peter Farah | Journey">
   <meta property="og:description" content="An immersive scroll through Peter Farah's journey — from Beirut to Paris and back: networks, research, automation, and a homelab that never sleeps.">
-  <meta property="og:image" content="https://peterfarah.com/Files/images/profile/profile_old.jpg">
-  <meta property="og:url" content="https://peterfarah.com/journey.html">
-  <meta property="og:type" content="website">
-  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+  <meta property="og:image" content="https://peterfarah.com/Files/images/og/og-journey.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Journey — from Beirut to Paris, and back">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Peter Farah | Journey">
+  <meta name="twitter:description" content="An immersive scroll through Peter Farah's journey — from Beirut to Paris and back: networks, research, automation, and a homelab that never sleeps.">
+  <meta name="twitter:image" content="https://peterfarah.com/Files/images/og/og-journey.jpg">
+  <link rel="icon" href="Files/images/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="apple-touch-icon" href="Files/images/icons/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preload" href="Files/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="Files/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
 
   <!-- ============================================================
@@ -55,6 +73,15 @@
       height: calc(var(--jn-len, 3) * 100vh);
       padding: 0;
     }
+    /* Scene lengths for the first paint (the engine re-applies them, shorter on mobile). */
+    #jn-s1 { --jn-len: 3; } #jn-s2 { --jn-len: 3; } #jn-s3 { --jn-len: 5; } #jn-s3b { --jn-len: 5.4; }
+    #jn-s4 { --jn-len: 4; } #jn-s4b { --jn-len: 2.2; } #jn-s5 { --jn-len: 4; } #jn-s5b { --jn-len: 4.6; } #jn-s6 { --jn-len: 2.5; }
+    /* Decorative loops only run for the scene that is actually on screen
+       (.jn-live is toggled by the engine's IntersectionObserver). */
+    html.jn-on #jn-s1:not(.jn-live) .jn-hero-name,
+    html.jn-on #jn-s1:not(.jn-live) .jn-cue svg,
+    html.jn-on #jn-s6:not(.jn-live) .jn-portrait,
+    html.jn-on #jn-s6:not(.jn-live) .jn-portrait img { animation-play-state: paused; }
     html.jn-on .jn-stage {
       position: sticky; top: 0;
       height: 100vh; height: 100svh;
@@ -79,7 +106,7 @@
       filter: drop-shadow(0 3px 26px var(--accent-glow));
       will-change: transform;
     }
-    .jn-hero-name > span { display: block; }
+    .jn-hero-name > .jn-hero-line { display: block; }
     /* Per-letter split (engine only). background-clip:text does not reliably
        survive transform-animated child spans (the clip breaks per-glyph), so
        once the name is split each letter clips its OWN slice of a shared
@@ -384,7 +411,7 @@
     .jn-frame img {
       width: 100%; height: auto; display: block;
       border-radius: var(--radius-lg);
-      box-shadow: 0 0 0 1px var(--stroke), var(--shadow-lg);
+      box-shadow: 0 0 0 1px var(--ring-accent), var(--shadow-lg);
     }
     .jn-frame-scrim { display: none; }
     .jn-cap { margin-top: 14px; }
@@ -412,8 +439,10 @@
     html.jn-on .jn-frame img {
       width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;
       border-radius: 0; box-shadow: none;
-      will-change: transform;
     }
+    /* Only the playing reel's frames are promoted to their own layers; thirteen
+       full-viewport textures at once is a lot of memory on a 3x phone. */
+    html.jn-on .jn-scene.jn-live .jn-frame img { will-change: transform; }
     /* legibility scrim: bottom-heavy for the caption, a lighter top wash for
        the chapter head, plus a soft vignette to keep the eye centred */
     html.jn-on .jn-frame-scrim {
@@ -506,12 +535,12 @@
     nav.jn-rail::after { content: none; }
     .jn-rail button {
       display: flex; align-items: center; gap: 10px; background: none; border: none;
-      cursor: pointer; padding: 0; flex-direction: row-reverse;
+      cursor: pointer; padding: 6px 0; min-height: 24px; flex-direction: row-reverse;
     }
     .jn-rail-dot {
       position: relative;
       width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
-      background: transparent; border: 1.5px solid var(--faint);
+      background: transparent; border: 1.5px solid var(--muted);
       box-shadow: inset 0 0 0 0 var(--accent);
       transition: border-color .3s, box-shadow .3s, transform .3s;
     }
@@ -530,7 +559,7 @@
       transform: translateX(6px); transition: opacity .25s, transform .25s;
       pointer-events: none;
     }
-    .jn-rail button:hover .jn-rail-lbl, .jn-rail button.jn-rail-active .jn-rail-lbl { opacity: 1; transform: translateX(0); }
+    .jn-rail button:hover .jn-rail-lbl, .jn-rail button:focus .jn-rail-lbl, .jn-rail button.jn-rail-active .jn-rail-lbl { opacity: 1; transform: translateX(0); }
 
     /* ================= RESPONSIVE ================= */
     @media (max-width: 900px) {
@@ -560,13 +589,13 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- Background + Cursor -->
   <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
   <canvas id="net-canvas"></canvas>
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
-  <div id="cursor-ring"></div>
 
   <!-- Scroll Progress -->
   <div id="vertical-scroll-track"><div id="vertical-scroll-progress"></div></div>
@@ -584,15 +613,16 @@
         <li><a href="index.html#certificates">Certificates</a></li>
         <li><a href="journey.html" class="nav-highlight" aria-current="page">Journey</a></li>
         <li><a href="blog.html" class="nav-highlight">Research</a></li>
+        <li><a href="fun.html" class="nav-highlight">Hub</a></li>
         <li><a href="server.html" class="nav-highlight">Server</a></li>
         <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">CV</a></li>
       </ul>
 
-      <button class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
+      <button type="button" class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
         <kbd>⌘K</kbd> Search
       </button>
 
-      <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
+      <button type="button" id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
         <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -604,7 +634,7 @@
         </svg>
       </button>
 
-      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+      <button type="button" class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -617,7 +647,7 @@
   <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
     <div class="nav-drawer-header">
       <span class="nav-logo">Menu</span>
-      <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
+      <button type="button" class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
     </div>
     <a href="index.html#about">About</a>
     <a href="index.html#experience">Career Timeline</a>
@@ -627,10 +657,11 @@
     <div class="nav-drawer-divider"></div>
     <a href="journey.html" class="nav-highlight" aria-current="page">Journey</a>
     <a href="blog.html" class="nav-highlight">Research &amp; Blog</a>
+    <a href="fun.html" class="nav-highlight">Interactive Hub</a>
     <a href="server.html" class="nav-highlight">Server Access</a>
     <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">Download CV</a>
     <div class="nav-drawer-divider"></div>
-    <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
+    <button type="button" class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
       <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
       </svg>
@@ -654,7 +685,7 @@
   <!-- ============================================================
        THE STORY
        ============================================================ -->
-  <main class="jn-story">
+  <main class="jn-story" id="main" tabindex="-1">
 
     <!-- ===== S1 · HERO ===== -->
     <section class="jn-scene" id="jn-s1" data-len="3" aria-label="Introduction">
@@ -665,7 +696,7 @@
         <div class="jn-hero">
           <div id="jn-hero-block">
             <span class="jn-hero-kicker">// journey</span>
-            <h1 class="jn-hero-name" id="jn-hero-name"><span>PETER</span><span>FARAH</span></h1>
+            <h1 class="jn-hero-name" id="jn-hero-name"><span class="visually-hidden">Peter Farah</span><span class="jn-hero-line" aria-hidden="true">PETER</span> <span class="jn-hero-line" aria-hidden="true">FARAH</span></h1>
             <p class="jn-hero-sub" id="jn-hero-sub">Infrastructure Automation Engineer — Beirut, Lebanon</p>
           </div>
           <p class="jn-hero-inter" id="jn-hero-inter">From Beirut to Paris <span class="jn-grad">and back.</span></p>
@@ -716,7 +747,7 @@
               <span class="jn-beat-geo">BEIRUT · 33.89°N 35.50°E</span>
               <div class="tile jn-card">
                 <span class="jn-when">2018 – 2022 · Beirut</span>
-                <h3>American University of Beirut<span class="jn-org">B.E. Computer &amp; Communication Engineering</span></h3>
+                <h3>American University of Beirut <span class="jn-org">B.E. Computer &amp; Communication Engineering</span></h3>
                 <p>Dean's Honor List.</p>
               </div>
             </div>
@@ -724,7 +755,7 @@
               <span class="jn-beat-geo">PARIS · 48.86°N 2.35°E</span>
               <div class="tile jn-card">
                 <span class="jn-when">2023 – 2025 · Paris</span>
-                <h3>Institut Polytechnique de Paris<span class="jn-org">M.Sc. Computer Science, Cybersecurity</span></h3>
+                <h3>Institut Polytechnique de Paris <span class="jn-org">M.Sc. Computer Science, Cybersecurity</span></h3>
                 <p>Graduated with highest distinction in M2.</p>
               </div>
             </div>
@@ -732,7 +763,7 @@
               <span class="jn-beat-geo">ÉVRY · PALAISEAU</span>
               <div class="tile jn-card">
                 <span class="jn-when">2024 – 2025 · Évry &amp; Palaiseau</span>
-                <h3>Network Security Researcher<span class="jn-org">Polytechnique &amp; Télécom SudParis</span></h3>
+                <h3>Network Security Researcher <span class="jn-org">Polytechnique &amp; Télécom SudParis</span></h3>
                 <p>Fingerprinting AQM algorithms from RTT traces. Plus SOC R&amp;D at Exeo, Paris.</p>
               </div>
             </div>
@@ -740,7 +771,7 @@
               <span class="jn-beat-geo">BEIRUT · 33.89°N 35.50°E</span>
               <div class="tile jn-card">
                 <span class="jn-when">2026 – now · Beirut</span>
-                <h3>Infrastructure Automation Engineer<span class="jn-org">Murex</span></h3>
+                <h3>Infrastructure Automation Engineer <span class="jn-org">Murex</span></h3>
                 <p>Ansible · Jenkins · Git · Kubernetes · Terraform · Azure.</p>
               </div>
             </div>
@@ -769,7 +800,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/01-arrival-1600.jpg"
                    srcset="Files/images/journey/web/01-arrival-900.jpg 900w, Files/images/journey/web/01-arrival-1600.jpg 1600w"
-                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async" fetchpriority="high"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1200" height="1600" loading="lazy" decoding="async" fetchpriority="high"
                    alt="Peter Farah standing beside the Institut Polytechnique de Paris sign, French and EU flags flying overhead">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -783,7 +814,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/02-amphi-1600.jpg"
                    srcset="Files/images/journey/web/02-amphi-900.jpg 900w, Files/images/journey/web/02-amphi-1600.jpg 1600w"
-                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1200" height="1600" loading="lazy" decoding="async"
                    alt="An empty tiered lecture hall with blue seats and long wooden desks">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -797,7 +828,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/03-beirut-home-1600.jpg"
                    srcset="Files/images/journey/web/03-beirut-home-900.jpg 900w, Files/images/journey/web/03-beirut-home-1600.jpg 1600w"
-                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1200" height="1600" loading="lazy" decoding="async"
                    alt="Peter Farah on a palm-lined campus walkway in Beirut">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -811,7 +842,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/04-plateau-1600.jpg"
                    srcset="Files/images/journey/web/04-plateau-900.jpg 900w, Files/images/journey/web/04-plateau-1600.jpg 1600w"
-                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1600" height="1200" loading="lazy" decoding="async"
                    alt="A snow-covered roundabout and lone bus shelter on the Saclay plateau">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -825,7 +856,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/05-platform-1600.jpg"
                    srcset="Files/images/journey/web/05-platform-900.jpg 900w, Files/images/journey/web/05-platform-1600.jpg 1600w"
-                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1600" height="1200" loading="lazy" decoding="async"
                    alt="A suitcase on an empty, rain-slicked railway platform at night">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -839,7 +870,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/06-wing-1600.jpg"
                    srcset="Files/images/journey/web/06-wing-900.jpg 900w, Files/images/journey/web/06-wing-1600.jpg 1600w"
-                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1200" height="1600" loading="lazy" decoding="async"
                    alt="An aircraft wing above a city, seen through a cabin window">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -885,7 +916,7 @@
                 <span class="jn-gstat-num" data-count="7" data-cardidx="0">7</span>
                 <span class="jn-gstat-lbl">algorithms fingerprinted</span>
               </div>
-              <a class="jn-gcard-link" href="blog.html#aqm-research">Read the write-up →</a>
+              <a class="jn-gcard-link" href="blog.html#aqm-research">Read the AQM write-up →</a>
             </article>
 
             <article class="tile jn-gcard">
@@ -906,7 +937,7 @@
                 <span class="jn-gstat-num" data-count="36" data-suffix=" TB" data-cardidx="1">36 TB</span>
                 <span class="jn-gstat-lbl">storage</span>
               </div>
-              <a class="jn-gcard-link" href="blog.html#home-nas">Read the write-up →</a>
+              <a class="jn-gcard-link" href="blog.html#home-nas">Read the NAS write-up →</a>
             </article>
 
             <article class="tile jn-gcard">
@@ -975,7 +1006,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/07-testbed-1600.jpg"
                    srcset="Files/images/journey/web/07-testbed-900.jpg 900w, Files/images/journey/web/07-testbed-1600.jpg 1600w"
-                   sizes="100vw" width="1600" height="900" loading="lazy" decoding="async" fetchpriority="high"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1600" height="900" loading="lazy" decoding="async" fetchpriority="high"
                    alt="A two-machine network testbed: two desktop towers either side of a switch, with terminals showing bitrate, queue-length and RTT measurements">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -989,7 +1020,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/08-nas-1600.jpg"
                    srcset="Files/images/journey/web/08-nas-900.jpg 900w, Files/images/journey/web/08-nas-1600.jpg 1600w"
-                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1600" height="1200" loading="lazy" decoding="async"
                    alt="A four-bay Synology NAS beside a network switch and a wireless access point">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -1096,7 +1127,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/09-paris-night-1600.jpg"
                    srcset="Files/images/journey/web/09-paris-night-900.jpg 900w, Files/images/journey/web/09-paris-night-1600.jpg 1600w"
-                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async" style="object-position: 50% 36%" fetchpriority="high"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1200" height="1600" loading="lazy" decoding="async" style="object-position: 50% 36%" fetchpriority="high"
                    alt="The Eiffel Tower lit at night, its beacon sweeping the sky above a crowded crossing">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -1110,7 +1141,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/10-barcelona-1600.jpg"
                    srcset="Files/images/journey/web/10-barcelona-900.jpg 900w, Files/images/journey/web/10-barcelona-1600.jpg 1600w"
-                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1200" height="1600" loading="lazy" decoding="async"
                    alt="Peter Farah in sunglasses, a Spanish flag and a palm tree behind him">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -1124,7 +1155,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/11-rome-1600.jpg"
                    srcset="Files/images/journey/web/11-rome-900.jpg 900w, Files/images/journey/web/11-rome-1600.jpg 1600w"
-                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1600" height="1200" loading="lazy" decoding="async"
                    alt="Saint Peter&rsquo;s Basilica rising above Roman rooftops">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -1138,7 +1169,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/12-zandvoort-1600.jpg"
                    srcset="Files/images/journey/web/12-zandvoort-900.jpg 900w, Files/images/journey/web/12-zandvoort-1600.jpg 1600w"
-                   sizes="100vw" width="1200" height="1600" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1200" height="1600" loading="lazy" decoding="async"
                    alt="Two Formula 1 cars sweeping through a banked corner at Circuit Zandvoort">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -1152,7 +1183,7 @@
             <figure class="jn-frame">
               <img src="Files/images/journey/web/13-murex-1600.jpg"
                    srcset="Files/images/journey/web/13-murex-900.jpg 900w, Files/images/journey/web/13-murex-1600.jpg 1600w"
-                   sizes="100vw" width="1600" height="1200" loading="lazy" decoding="async"
+                   sizes="(max-width: 480px) 300px, 100vw" width="1600" height="1200" loading="lazy" decoding="async"
                    alt="A tiered cake marking Murex&rsquo;s fortieth anniversary, 1986 to 2026, at the Beirut Center Jamboree">
               <span class="jn-frame-scrim" aria-hidden="true"></span>
               <figcaption class="jn-cap">
@@ -1183,7 +1214,7 @@
       <div class="jn-stage">
         <div class="jn-finale">
           <div class="jn-portrait" id="jn-portrait">
-            <img src="Files/images/profile/profile_old.jpg" alt="Portrait of Peter Farah" loading="lazy">
+            <img src="Files/images/profile/profile-480.jpg" srcset="Files/images/profile/profile-480.webp 480w, Files/images/profile/profile-720.webp 720w" sizes="(max-width: 640px) 34vw, 216px" width="480" height="640" alt="Portrait of Peter Farah" loading="lazy" decoding="async">
           </div>
           <span class="jn-finale-name">Peter Farah</span>
           <h2 class="jn-finale-line">That's the <span class="jn-grad">short version.</span></h2>
@@ -1192,7 +1223,7 @@
             <a href="index.html" class="btn btn-primary">Full Profile</a>
             <a href="blog.html" class="btn">Research</a>
             <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="btn" target="_blank" rel="noopener">Download CV</a>
-            <button class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address">
+            <button type="button" class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
               </svg>
@@ -1205,13 +1236,23 @@
 
   </main>
 
-  <!-- ===== FOOTER ===== -->
   <footer>
-    <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    <div class="footer-links" role="navigation" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="journey.html" aria-current="page">Journey</a>
+      <a href="blog.html">Research</a>
+      <a href="fun.html">Hub</a>
+      <a href="server.html">Server</a>
+      <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" target="_blank" rel="noopener">CV</a>
+      <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/FarahPeter" target="_blank" rel="noopener">GitHub</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+    <p>&copy; 2026 Peter Farah &middot; <a href="mailto:peter@peterfarah.com">peter@peterfarah.com</a> &middot; Hand-built with HTML, CSS and JavaScript.</p>
   </footer>
 
   <!-- Back to Top -->
-  <button id="back-to-top" aria-label="Back to top">
+  <button type="button" id="back-to-top" aria-label="Back to top">
     <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
   </button>
 
@@ -1222,10 +1263,10 @@
   <div id="cmd-backdrop" aria-hidden="true"></div>
   <div id="cmd-palette" role="dialog" aria-label="Command palette" aria-modal="true">
     <div id="cmd-input-wrap">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false" role="combobox" aria-label="Search pages and sections" aria-autocomplete="list" aria-controls="cmd-results" aria-expanded="false">
     </div>
-    <div id="cmd-results"></div>
+    <div id="cmd-results" role="listbox" aria-label="Results"></div>
     <div id="cmd-footer">
       <span class="cmd-hint"><kbd>↑↓</kbd> navigate</span>
       <span class="cmd-hint"><kbd>↵</kbd> open</span>
@@ -1250,20 +1291,37 @@
     'use strict';
 
     const root = document.documentElement;
-    /* Animations always on — matches the site-wide convention in script.js
-       (`reduceMotion = false`). The static stacked layout remains as the
-       no-JS fallback. To honor the OS "reduce motion" setting instead,
-       restore the matchMedia check below. */
-    const prefersReduced = false; // was: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    /* The OS "reduce motion" preference gets the static stacked article (which
+       is also the no-JS fallback); the <head> boot script already made the
+       same decision for the first paint. */
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Static-page rail: plain jump links (used under reduced motion and if the
+       engine below fails). Declared here, outside the try block, so both callers
+       can reach it under strict mode's block-scoped function declarations. */
+    function wireRailStaticFallback() {
+      const railEl = document.getElementById('jn-rail');
+      if (!railEl) return;
+      Array.from(railEl.querySelectorAll('button')).forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const target = document.getElementById(btn.dataset.target);
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
 
     /* No motion → leave the page as a plain static article. Still wire the
        dot-rail as simple jump links (native smooth scroll handles the rest). */
     if (prefersReduced) {
+      root.classList.remove('jn-on');
       wireRailStaticFallback();
       return;
     }
 
     root.classList.add('jn-on');
+    /* If anything below throws, fall back to the readable static layout
+       rather than leaving the pinned stages with their hidden initial states. */
+    try {
 
     /* ---------------------------- helpers ---------------------------- */
     const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
@@ -1333,7 +1391,7 @@
          (per line, so the 115° sweep reads left→right on both lines);
          --jn-i staggers the boot animation across the whole name. */
       let gi = 0;
-      Array.from(name.children).forEach(function (line) {
+      Array.from(name.querySelectorAll('.jn-hero-line')).forEach(function (line) {
         const letters = [];
         splitLetters(line, letters);
         letters.forEach(function (l, i) {
@@ -1599,7 +1657,10 @@
       const vis   = Array.from(el.querySelectorAll('.jn-gcard-vis'));
       const ticks = Array.from(el.querySelectorAll('.jn-tick'));
       const nums  = Array.from(el.querySelectorAll('.jn-gstat-num'));
+      const links = cards.map(function (c) { return c.querySelector('.jn-gcard-link'); });
       if (!track || !cards.length) return null;
+      // until the scrub runs, only the first (centred) card's link is a tab stop
+      links.forEach(function (l, i) { if (l) l.tabIndex = i === 0 ? 0 : -1; });
       /* Self-drawing mini-diagrams: measure each stroked element's true
          length once and set its dash to that length (pathLength on lines/
          circles is still patchy, so dash space uses measured units). */
@@ -1645,6 +1706,9 @@
           const d = Math.min(1, Math.abs(centers[i] - shift - vpW / 2) / (cardW * 1.15));
           card.style.transform = 'scale(' + (1 - 0.05 * d).toFixed(3) + ')';
           card.style.opacity = (1 - 0.32 * d).toFixed(3);
+          // off-centre cards are dimmed and pushed aside — keep their link out of the tab order
+          const link = links[i], ti = d < 0.5 ? 0 : -1;
+          if (link && link.tabIndex !== ti) link.tabIndex = ti;
         });
         // each card's mini-diagram traces itself in as it approaches center
         arts.forEach(function (strokes, idx) {
@@ -1762,6 +1826,7 @@
       const fwords = [];
       if (line) splitWords(line, fwords);
       const ctaKids = cta ? Array.from(cta.children) : [];
+      ctaKids.forEach(function (k) { k.tabIndex = -1; });   // invisible until the finale plays
       return function (p) {
         // whole block settles upward as the scene pins — content builds up
         // from p=0 so the handoff from S5 never shows an empty stage
@@ -1791,7 +1856,10 @@
         // CTAs cascade in (opacity only — their .btn transitions + magnetic
         // transforms must stay untouched), fully interactive at rest
         ctaKids.forEach(function (k, i) {
-          k.style.opacity = easeOutCubic(seg(p, 0.42 + i * 0.055, 0.56 + i * 0.055)).toFixed(3);
+          const o = easeOutCubic(seg(p, 0.42 + i * 0.055, 0.56 + i * 0.055));
+          k.style.opacity = o.toFixed(3);
+          const ti = o > 0.9 ? 0 : -1;             // invisible buttons are not tab stops
+          if (k.tabIndex !== ti) k.tabIndex = ti;
         });
       };
     });
@@ -1845,14 +1913,24 @@
       const io = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {
           const s = scenes.find(function (x) { return x.el === en.target; });
-          if (s) s.active = en.isIntersecting;
+          if (s) { s.active = en.isIntersecting; s.el.classList.toggle('jn-live', s.active); }
         });
         dirty = true; requestTick();
       }, { rootMargin: '50% 0px 50% 0px', threshold: 0 });
       scenes.forEach(function (s) { io.observe(s.el); });
     } else {
-      scenes.forEach(function (s) { s.active = true; });
+      scenes.forEach(function (s) { s.active = true; s.el.classList.add('jn-live'); });
     }
+
+    /* Keyboard focus inside a pinned scene: bring that scene to the top of the
+       viewport so the focused control is the one being animated on screen
+       (the browser cannot scroll a link inside a sticky, overflow:hidden stage). */
+    document.addEventListener('focusin', function (e) {
+      const s = scenes.find(function (x) { return x.el.contains(e.target); });
+      if (!s) return;
+      const y = window.pageYOffset || root.scrollTop;
+      if (y < s.top - 2 || y > s.top + s.height - s.stageH + 2) window.scrollTo({ top: s.top, behavior: 'auto' });
+    });
 
     /* ---------------------------- chapter dot-rail ---------------------------- */
     (function rail() {
@@ -1890,7 +1968,11 @@
           entries.forEach(function (en) {
             if (!en.isIntersecting) return;
             const id = en.target.id;
-            buttons.forEach(function (b) { b.classList.toggle('jn-rail-active', b.dataset.target === id); });
+            buttons.forEach(function (b) {
+              const on = b.dataset.target === id;
+              b.classList.toggle('jn-rail-active', on);
+              if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+            });
           });
         }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
         scenes.forEach(function (s) { io.observe(s.el); });
@@ -1945,18 +2027,6 @@
       }
     }
 
-    /* ---------------------------- reduced-motion rail fallback ---------------------------- */
-    function wireRailStaticFallback() {
-      const railEl = document.getElementById('jn-rail');
-      if (!railEl) return;
-      Array.from(railEl.querySelectorAll('button')).forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          const target = document.getElementById(btn.dataset.target);
-          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-      });
-    }
-
     /* ---------------------------- wiring ---------------------------- */
     let resizeTimer = null;
     function onResize() {
@@ -1975,6 +2045,13 @@
     // arm the load intro (kicker → letters → sub → cue) — added last, after
     // the letter split, so the boot animations start on the first paint
     root.classList.add('jn-boot');
+
+    } catch (err) {
+      root.classList.remove('jn-on', 'jn-boot');
+      Array.from(document.querySelectorAll('.jn-scene.jn-live')).forEach(function (el) { el.classList.remove('jn-live'); });
+      wireRailStaticFallback();
+      if (window.console) console.error('journey engine failed, static layout kept:', err);
+    }
 
   })();
   </script>

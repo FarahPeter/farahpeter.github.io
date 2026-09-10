@@ -7,24 +7,88 @@
 
   const $  = (s, c) => (c || document).querySelector(s);
   const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
-  const reduceMotion = false; // animations always on (was: matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const root = document.documentElement;
+  root.classList.add('js');   // the <head> boot script does this too; belt and braces
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer  = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  /* Devices that should get the still version of the background: the OS asks
+     for reduced motion, the browser asks for data saving, or the hardware is
+     genuinely small. (Mid-range phones keep the full look.) */
+  const lowEnd = !!(navigator.connection && navigator.connection.saveData)
+    || (navigator.deviceMemory !== undefined && navigator.deviceMemory <= 2)
+    || (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 2);
+
+  /* Shared motion state, driven by the motionBudget module below. Decorative
+     loops check motion.running before requesting another frame and listen for
+     'pf:motion' to wake up again. */
+  const motion = {
+    idle: false,
+    hidden: !!document.hidden,
+    static: reduceMotion || lowEnd,
+    get running() { return !this.static && !this.idle && !this.hidden; }
+  };
 
   /* ============================== THEME ============================== */
   (function theme() {
-    const root = document.documentElement;
     let saved = null;
     try { saved = localStorage.getItem('pf-theme'); } catch (e) {}
-    root.setAttribute('data-theme', saved || 'dark');
+    root.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    /* Toggle buttons announce their state; the browser chrome follows the canvas colour. */
+    function sync() {
+      const light = root.getAttribute('data-theme') === 'light';
+      ['theme-toggle', 'drawer-theme'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.setAttribute('aria-pressed', String(light));
+        el.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+      });
+      if (meta) {
+        const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+        if (bg) meta.setAttribute('content', bg);
+      }
+      document.dispatchEvent(new CustomEvent('pf:theme'));
+    }
     function toggle() {
       const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
       root.setAttribute('data-theme', next);
       try { localStorage.setItem('pf-theme', next); } catch (e) {}
+      sync();
     }
     ['theme-toggle', 'drawer-theme'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('click', toggle);
     });
+    sync();
+  })();
+
+  /* ============================== MOTION BUDGET ============================== */
+  /* Marks the page idle after a few seconds without input so the aurora and the
+     canvases stop producing frames while a visitor is reading; the next
+     pointer/scroll/key event resumes them. Hidden tabs and static devices are
+     handled the same way. */
+  (function motionBudget() {
+    const IDLE_MS = 6000;
+    let timer = null;
+    function emit() {
+      root.classList.toggle('bg-idle', motion.idle);
+      root.classList.toggle('bg-static', motion.static);
+      document.dispatchEvent(new CustomEvent('pf:motion'));
+    }
+    function wake() {
+      if (motion.idle) { motion.idle = false; emit(); }
+      clearTimeout(timer);
+      timer = setTimeout(() => { motion.idle = true; emit(); }, IDLE_MS);
+    }
+    ['pointermove', 'pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel']
+      .forEach(t => window.addEventListener(t, wake, { passive: true }));
+    document.addEventListener('visibilitychange', () => {
+      motion.hidden = document.hidden;
+      emit();
+      if (!document.hidden) wake();
+    });
+    emit();
+    wake();
   })();
 
   /* ============================== CUSTOM CURSOR ============================== */
@@ -43,24 +107,34 @@
     document.addEventListener('mouseout',  e => { if (e.target.closest(hov)) glow.classList.remove('hover'); });
 
     const cv = $('#mouse-trail');
-    if (cv && !reduceMotion) {
+    if (cv && !motion.static) {
       const ctx = cv.getContext('2d');
       function size() { cv.width = innerWidth; cv.height = innerHeight; }
       size(); window.addEventListener('resize', size);
       const pts = [];
-      window.addEventListener('mousemove', e => { pts.push({ x: e.clientX, y: e.clientY, life: 1 }); if (pts.length > 10) pts.shift(); });
-      (function draw() {
+      let running = false;
+      /* The loop only runs while a point is still fading — it stops itself
+         (and leaves a cleared canvas) instead of clearing 60 times a second forever. */
+      function draw() {
         ctx.clearRect(0, 0, cv.width, cv.height);
+        let alive = false;
         for (let k = 0; k < pts.length; k++) {
           const p = pts[k]; p.life -= 0.08;
           if (p.life <= 0) continue;
+          alive = true;
           ctx.beginPath();
           ctx.arc(p.x, p.y, (k / pts.length) * 3, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(77, 141, 255, ${p.life * 0.12})`;
           ctx.fill();
         }
-        requestAnimationFrame(draw);
-      })();
+        if (alive) requestAnimationFrame(draw);
+        else { pts.length = 0; running = false; }
+      }
+      window.addEventListener('mousemove', e => {
+        pts.push({ x: e.clientX, y: e.clientY, life: 1 });
+        if (pts.length > 10) pts.shift();
+        if (!running) { running = true; requestAnimationFrame(draw); }
+      });
     }
   })();
 
@@ -84,6 +158,7 @@
       return '77,141,255';
     }
     let COL = rgb();
+    document.addEventListener('pf:theme', () => { COL = rgb(); });
 
     function init() {
       w = cv.width = innerWidth; h = cv.height = innerHeight;
@@ -99,7 +174,8 @@
       }
       COL = rgb();
     }
-    init(); window.addEventListener('resize', init);
+    init();
+    window.addEventListener('resize', () => { init(); if (motion.static) frame(); });   // a resize clears the canvas
 
     function spawnPacket() {
       if (nodes.length < 2) return;
@@ -108,9 +184,10 @@
       packets.push({ a, b, t: 0, speed: 0.005 + Math.random() * 0.009 });
     }
 
+    let raf = null;
     function frame() {
+      raf = null;
       ctx.clearRect(0, 0, w, h);
-      COL = rgb();
       for (const nd of nodes) {
         nd.x += nd.vx; nd.y += nd.vy;
         if (nd.x < 0 || nd.x > w) nd.vx *= -1;
@@ -136,9 +213,13 @@
         ctx.fillStyle = `rgba(${COL}, 0.95)`; ctx.shadowBlur = 10; ctx.shadowColor = `rgba(${COL},0.9)`; ctx.fill(); ctx.shadowBlur = 0;
       }
       if (packets.length < 6 && Math.random() < 0.045) spawnPacket();
-      if (!reduceMotion) requestAnimationFrame(frame);
+      if (motion.running) raf = requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    function kick() { if (!raf && motion.running) raf = requestAnimationFrame(frame); }
+    document.addEventListener('pf:motion', kick);
+    /* Reduced motion / static devices still get the network — as one still frame. */
+    if (motion.static) { frame(); document.addEventListener('pf:theme', frame); }
+    else kick();
   })();
 
   /* ============================== SCROLL PROGRESS + NAV ============================== */
@@ -151,12 +232,14 @@
       if (bar) bar.style.width = (dh > 0 ? (st / dh) * 100 : 0) + '%';
       if (nav) {
         nav.classList.toggle('scrolled', st > 12);
-        if (st > 340 && st > lastY + 4) nav.classList.add('nav-hidden');
+        const focusInside = nav.contains(document.activeElement);
+        if (st > 340 && st > lastY + 4 && !focusInside) nav.classList.add('nav-hidden');
         else if (st < lastY - 4 || st < 340) nav.classList.remove('nav-hidden');
       }
       lastY = st;
     }
     window.addEventListener('scroll', onScroll, { passive: true });
+    if (nav) nav.addEventListener('focusin', () => nav.classList.remove('nav-hidden'));
     onScroll();
   })();
 
@@ -164,8 +247,23 @@
   (function drawer() {
     const btn = $('#mobile-menu-btn'), dr = $('#nav-drawer'), ov = $('#nav-overlay'), close = $('#drawer-close');
     if (!btn || !dr) return;
-    function open() { dr.classList.add('open'); ov && ov.classList.add('open'); btn.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; }
-    function shut() { dr.classList.remove('open'); ov && ov.classList.remove('open'); btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; }
+    btn.setAttribute('aria-controls', 'nav-drawer');
+    /* Everything except the drawer and its overlay is made inert while it is
+       open, so Tab and screen readers stay inside the menu. */
+    const behind = () => $$('body > *').filter(el => el !== dr && el !== ov && el.tagName !== 'SCRIPT');
+    function open() {
+      dr.classList.add('open'); ov && ov.classList.add('open'); btn.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden';
+      behind().forEach(el => { if ('inert' in el) el.inert = true; });
+      (close || $('a, button', dr)).focus();
+    }
+    function shut() {
+      if (!dr.classList.contains('open')) return;
+      dr.classList.remove('open'); ov && ov.classList.remove('open'); btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false'); document.body.style.overflow = '';
+      behind().forEach(el => { if ('inert' in el) el.inert = false; });
+      btn.focus();
+    }
     btn.addEventListener('click', () => dr.classList.contains('open') ? shut() : open());
     close && close.addEventListener('click', shut);
     ov && ov.addEventListener('click', shut);
@@ -182,7 +280,6 @@
       entries.forEach(en => {
         if (en.isIntersecting) {
           en.target.classList.add('in');
-          if (en.target.id === 'skills' || en.target.querySelector('.skill-track')) en.target.classList.add('skills-revealed');
           io.unobserve(en.target);
         }
       });
@@ -201,6 +298,7 @@
       nums.forEach(el => {
         const target = parseFloat(el.dataset.target || '0');
         const pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
+        if (reduceMotion) { el.textContent = pre + target + suf; return; }
         const dur = 1500, t0 = performance.now();
         function step(now) {
           const p = Math.min((now - t0) / dur, 1);
@@ -220,11 +318,12 @@
   (function typing() {
     const el = $('.typing-effect');
     if (!el) return;
+    const out = $('.typing-out', el) || el;      // .typing-out sits over an invisible full-width sizer
     const text = el.dataset.text || el.textContent.trim();
-    if (reduceMotion) { el.textContent = text; return; }
-    el.textContent = '';
+    if (reduceMotion) { out.textContent = text; return; }
+    out.textContent = '';
     let i = 0;
-    (function type() { if (i <= text.length) { el.textContent = text.slice(0, i++); setTimeout(type, 55); } })();
+    (function type() { if (i <= text.length) { out.textContent = text.slice(0, i++); setTimeout(type, 55); } })();
   })();
 
   /* ============================== ACTIVE NAV ============================== */
@@ -236,7 +335,10 @@
     const io = new IntersectionObserver(es => {
       es.forEach(e => {
         const a = map[e.target.id]; if (!a) return;
-        if (e.isIntersecting) { links.forEach(l => l.classList.remove('active')); a.classList.add('active'); }
+        if (e.isIntersecting) {
+          links.forEach(l => { l.classList.remove('active'); l.removeAttribute('aria-current'); });
+          a.classList.add('active'); a.setAttribute('aria-current', 'location');
+        }
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
     Object.keys(map).forEach(id => { const s = document.getElementById(id); if (s) io.observe(s); });
@@ -246,11 +348,18 @@
   (function copyEmail() {
     const btn = $('#copy-email-btn'), toast = $('#copy-toast');
     if (!btn) return;
+    const msg = toast ? toast.textContent : '';
+    if (toast) toast.textContent = '';               // empty at rest: a live region only announces changes
+    let hide = null;
     btn.addEventListener('click', async () => {
       const email = 'peter@peterfarah.com';
       try { await navigator.clipboard.writeText(email); }
       catch (e) { const t = document.createElement('textarea'); t.value = email; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
-      if (toast) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000); }
+      if (toast) {
+        toast.textContent = msg; toast.classList.add('show');
+        clearTimeout(hide);
+        hide = setTimeout(() => { toast.classList.remove('show'); toast.textContent = ''; }, 2000);
+      }
     });
   })();
 
@@ -259,30 +368,45 @@
     const btn = $('#back-to-top');
     if (!btn) return;
     window.addEventListener('scroll', () => btn.classList.toggle('visible', window.scrollY > 520), { passive: true });
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }));
   })();
 
   /* ============================== BLOG EXPAND ============================== */
   (function blog() {
-    const covers = $$('.blog-cover');
-    if (!covers.length) return;
-    function toggle(cover, force) {
-      const wrap = cover.nextElementSibling;
-      if (!wrap || !wrap.classList.contains('blog-content-wrapper')) return;
-      const open = force != null ? force : !wrap.classList.contains('open');
+    const posts = $$('.blog-post');
+    if (!posts.length) return;
+    function setOpen(post, open) {
+      const wrap = $('.blog-content-wrapper', post), cover = $('.blog-cover', post), btn = $('.cover-toggle', post);
+      if (!wrap) return;
       wrap.classList.toggle('open', open);
-      cover.classList.toggle('expanded', open);
-      const btn = $('.cover-toggle', cover);
-      if (btn) btn.textContent = open ? 'Collapse write-up' : 'Click to Expand & Read';
-    }
-    covers.forEach(c => c.addEventListener('click', () => toggle(c)));
-    if (location.hash) {
-      const target = document.querySelector(location.hash);
-      if (target && target.classList.contains('blog-post')) {
-        const cover = $('.blog-cover', target);
-        if (cover) { toggle(cover, true); setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400); }
+      if ('inert' in wrap) wrap.inert = !open;     // collapsed links leave the tab order
+      if (cover) cover.classList.toggle('expanded', open);
+      if (btn) {
+        btn.setAttribute('aria-expanded', String(open));
+        btn.textContent = open ? 'Collapse write-up' : 'Expand & read';
       }
     }
+    posts.forEach(post => {
+      const wrap = $('.blog-content-wrapper', post), cover = $('.blog-cover', post), btn = $('.cover-toggle', post);
+      if (!wrap) return;
+      setOpen(post, wrap.classList.contains('open'));
+      const flip = () => setOpen(post, !wrap.classList.contains('open'));
+      /* The button is the keyboard/AT control; the whole cover stays clickable for mouse users. */
+      if (btn) btn.addEventListener('click', e => { e.stopPropagation(); flip(); });
+      if (cover) cover.addEventListener('click', flip);
+    });
+    /* Deep links (blog.html#home-nas) open the post — on load and when the
+       hash changes from the page's own nav. */
+    function openFromHash() {
+      if (!location.hash || location.hash.length < 2) return;
+      let target = null;
+      try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) { return; }
+      if (!target || !target.classList.contains('blog-post')) return;
+      setOpen(target, true);
+      setTimeout(() => target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }), 400);
+    }
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
   })();
 
   /* ============================== COMMAND PALETTE ============================== */
@@ -311,29 +435,55 @@
       { label: 'AQM Research Write-up', sub: 'blog', icon: ico.hash, href: 'blog.html#aqm-research' },
       { label: 'Home Server Architecture', sub: 'blog', icon: ico.hash, href: 'blog.html#home-server' },
       { label: 'Home NAS Architecture', sub: 'blog', icon: ico.hash, href: 'blog.html#home-nas' },
-      { label: 'AQM Simulation Game', sub: 'lab', icon: ico.ext, href: 'FUN/AQMgame.html' },
+      { label: 'AQM Network Visualizer', sub: 'lab', icon: ico.ext, href: 'FUN/AQMgame.html' },
       { label: 'Interactive Hub', sub: 'page', icon: ico.doc, href: 'fun.html' },
       { label: 'Service Access Panel', sub: 'page', icon: ico.doc, href: 'server.html' },
       { label: 'Download CV', sub: 'pdf', icon: ico.ext, href: 'Files/CV/CV_V16/CV-Peter_Farah.pdf', blank: true },
       { label: 'Email Peter', sub: 'contact', icon: ico.mail, href: 'mailto:peter@peterfarah.com' },
       { label: 'LinkedIn', sub: 'external', icon: ico.ext, href: 'https://www.linkedin.com/in/peter-farah-i', blank: true },
-      { label: 'GitHub', sub: 'external', icon: ico.ext, href: 'https://github.com/FarahPeter', blank: true }
+      { label: 'GitHub', sub: 'external', icon: ico.ext, href: 'https://github.com/FarahPeter', blank: true },
+      { label: 'Privacy', sub: 'page', icon: ico.doc, href: 'privacy.html' }
     ];
-    let filtered = items.slice(), active = 0;
+    let filtered = items.slice(), active = 0, lastFocus = null;
+
+    /* ARIA combobox → listbox wiring (the markup carries the same attributes;
+       setting them here keeps every page consistent). */
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-controls', 'cmd-results');
+    input.setAttribute('aria-expanded', 'false');
+    if (!input.hasAttribute('aria-label')) input.setAttribute('aria-label', 'Search pages and sections');
+    results.setAttribute('role', 'listbox');
+    if (trigger) { trigger.setAttribute('aria-haspopup', 'dialog'); trigger.setAttribute('aria-expanded', 'false'); }
 
     function render() {
       results.innerHTML = '';
-      if (!filtered.length) { results.innerHTML = '<div class="cmd-empty">No matches found</div>'; return; }
+      if (!filtered.length) {
+        results.innerHTML = '<div class="cmd-empty" role="option" aria-selected="false" id="cmd-opt-none">No matches found</div>';
+        input.setAttribute('aria-activedescendant', 'cmd-opt-none');
+        return;
+      }
       filtered.forEach((it, idx) => {
         const row = document.createElement('div');
         row.className = 'cmd-item' + (idx === active ? ' active' : '');
+        row.id = 'cmd-opt-' + idx;
+        row.setAttribute('role', 'option');
+        row.setAttribute('aria-selected', idx === active ? 'true' : 'false');
         row.innerHTML = `<span class="cmd-ico">${it.icon}</span><span class="cmd-label">${it.label}</span><span class="cmd-sub">${it.sub}</span>`;
         row.addEventListener('click', () => go(it));
-        row.addEventListener('mousemove', () => { active = idx; paint(); });
+        row.addEventListener('mousemove', () => { if (active !== idx) { active = idx; paint(); } });
         results.appendChild(row);
       });
+      input.setAttribute('aria-activedescendant', 'cmd-opt-' + active);
     }
-    function paint() { $$('.cmd-item', results).forEach((r, i) => r.classList.toggle('active', i === active)); }
+    function paint() {
+      $$('.cmd-item', results).forEach((r, i) => {
+        const on = i === active;
+        r.classList.toggle('active', on);
+        r.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      input.setAttribute('aria-activedescendant', 'cmd-opt-' + active);
+    }
     function filter(q) {
       q = q.trim().toLowerCase();
       filtered = !q ? items.slice() : items.filter(it => (it.label + ' ' + it.sub).toLowerCase().includes(q));
@@ -341,12 +491,27 @@
     }
     function go(it) {
       close(); if (!it) return;
-      if (it.href.charAt(0) === '#') { const t = document.querySelector(it.href); if (t) t.scrollIntoView({ behavior: 'smooth' }); }
+      if (it.href.charAt(0) === '#') { const t = document.querySelector(it.href); if (t) t.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' }); }
       else if (it.blank) { window.open(it.href, '_blank', 'noopener'); }
       else { window.location.href = it.href; }
     }
-    function open() { back.classList.add('open'); pal.classList.add('open'); input.value = ''; filter(''); setTimeout(() => input.focus(), 30); }
-    function close() { back.classList.remove('open'); pal.classList.remove('open'); }
+    function isOpen() { return pal.classList.contains('open'); }
+    function open() {
+      lastFocus = document.activeElement;
+      back.classList.add('open'); pal.classList.add('open');
+      input.setAttribute('aria-expanded', 'true');
+      if (trigger) trigger.setAttribute('aria-expanded', 'true');
+      input.value = ''; filter('');
+      input.focus();      // synchronous: the panel's visibility now flips instantly on open
+    }
+    function close() {
+      if (!isOpen()) return;
+      back.classList.remove('open'); pal.classList.remove('open');
+      input.setAttribute('aria-expanded', 'false');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      if (lastFocus && typeof lastFocus.focus === 'function' && document.contains(lastFocus)) lastFocus.focus();
+      lastFocus = null;
+    }
 
     trigger && trigger.addEventListener('click', open);
     back.addEventListener('click', close);
@@ -354,12 +519,15 @@
     input.addEventListener('keydown', e => {
       if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, filtered.length - 1); paint(); scrollActive(); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); paint(); scrollActive(); }
+      else if (e.key === 'Home') { e.preventDefault(); active = 0; paint(); scrollActive(); }
+      else if (e.key === 'End') { e.preventDefault(); active = Math.max(filtered.length - 1, 0); paint(); scrollActive(); }
       else if (e.key === 'Enter') { e.preventDefault(); go(filtered[active]); }
-      else if (e.key === 'Escape') { close(); }
+      else if (e.key === 'Tab') { e.preventDefault(); }   // the input is the dialog's only control: keep focus inside
     });
     function scrollActive() { const el = $$('.cmd-item', results)[active]; if (el) el.scrollIntoView({ block: 'nearest' }); }
     window.addEventListener('keydown', e => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); pal.classList.contains('open') ? close() : open(); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); isOpen() ? close() : open(); }
+      else if (e.key === 'Escape' && isOpen()) { close(); }
     });
   })();
 
@@ -484,6 +652,8 @@
 
     // Live site only — keeps localhost and preview hosts out of the database.
     if (!/(^|\.)peterfarah\.com$/i.test(location.hostname)) return;
+    // Visitors who ask not to be tracked (Global Privacy Control / Do Not Track) are not.
+    if (navigator.globalPrivacyControl || navigator.doNotTrack === '1' || window.doNotTrack === '1') return;
 
     let maxScroll = 0;
     let loadTime  = null;
@@ -565,10 +735,15 @@
       });
     }, true);
 
+    function start() { if (!beat && failures < MAX_FAILURES) beat = setInterval(heartbeat, INTERVAL); }
+    function stop()  { if (beat) { clearInterval(beat); beat = null; } }
     heartbeat();
-    beat = setInterval(heartbeat, INTERVAL);
+    start();
+    /* A hidden tab sends one closing beat and then stays quiet until it is
+       visible again — no traffic for a tab nobody is looking at. */
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') heartbeat();
+      if (document.visibilityState === 'hidden') { heartbeat(); stop(); }
+      else { heartbeat(); start(); }
     });
     window.addEventListener('pagehide', heartbeat);
   })();
@@ -608,11 +783,12 @@
       return { a, stat, out: $('.svc-ms', stat), sameOrigin };
     });
 
+    /* title only: an aria-label on the badge would replace the link's own name
+       ("Treasury Vault … 123 ms") with the explanation. */
     function paint(r, state, label, title) {
       r.stat.dataset.state = state;
       r.out.textContent = label;
       r.stat.setAttribute('title', title);
-      r.stat.setAttribute('aria-label', title);
     }
 
     /* Same-origin gets a real, readable HTTP status. Cross-origin runs in `no-cors`,
@@ -696,9 +872,13 @@
         });
     }
 
-    /* Run once on load, then only on demand — no polling loop against Peter's own boxes. */
+    /* Run once after the page has loaded (at idle, so six new TLS handshakes never
+       compete with the fonts and images), then only on demand — no polling loop
+       against Peter's own boxes. */
     if (btn) btn.addEventListener('click', run);
-    run();
+    function first() { ('requestIdleCallback' in window) ? requestIdleCallback(run, { timeout: 2000 }) : setTimeout(run, 0); }
+    if (document.readyState === 'complete') first();
+    else window.addEventListener('load', first, { once: true });
   })();
 
 

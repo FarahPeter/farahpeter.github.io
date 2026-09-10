@@ -4,58 +4,95 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#07112e">
-  <title>Peter Farah | Infrastructure Automation &amp; Network Security Engineer</title>
+  <!-- Runs before first paint: restores the saved theme (no dark flash for light-theme
+       visitors) and marks the document as script-capable so reveal animations only
+       hide content when JavaScript is actually running. -->
+  <script>(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('pf-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);}}catch(e){}})();</script>
+  <title>Peter Farah — Infrastructure Automation Engineer</title>
   <meta name="description" content="Portfolio of Peter Farah, Infrastructure Automation Engineer at Murex specialising in network security, AQM research, and infrastructure automation.">
-  <meta property="og:title" content="Peter Farah | Infrastructure Automation &amp; Network Security Engineer">
-  <meta property="og:description" content="Infrastructure Automation Engineer specialising in network security, AQM research, and self-hosted infrastructure — Murex, Beirut.">
-  <meta property="og:image" content="https://peterfarah.com/Files/images/profile/profile_old.jpg">
-  <meta property="og:url" content="https://peterfarah.com/">
+  <link rel="canonical" href="https://peterfarah.com/">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta property="og:site_name" content="Peter Farah">
+  <meta property="og:locale" content="en_US">
   <meta property="og:type" content="website">
-  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+  <meta property="og:url" content="https://peterfarah.com/">
+  <meta property="og:title" content="Peter Farah — Infrastructure Automation Engineer">
+  <meta property="og:description" content="Infrastructure Automation Engineer specialising in network security, AQM research, and self-hosted infrastructure — Murex, Beirut.">
+  <meta property="og:image" content="https://peterfarah.com/Files/images/og/og-home.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Peter Farah — Infrastructure Automation Engineer, with a portrait">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Peter Farah — Infrastructure Automation Engineer">
+  <meta name="twitter:description" content="Infrastructure Automation Engineer specialising in network security, AQM research, and self-hosted infrastructure — Murex, Beirut.">
+  <meta name="twitter:image" content="https://peterfarah.com/Files/images/og/og-home.jpg">
+  <link rel="icon" href="Files/images/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="apple-touch-icon" href="Files/images/icons/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preload" href="Files/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="Files/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Peter Farah",
-    "url": "https://peterfarah.com",
-    "image": "https://peterfarah.com/Files/images/profile/profile_old.jpg",
-    "jobTitle": "Infrastructure Automation Engineer",
-    "worksFor": { "@type": "Organization", "name": "Murex" },
-    "alumniOf": [
-      { "@type": "CollegeOrUniversity", "name": "Institut Polytechnique de Paris" },
-      { "@type": "CollegeOrUniversity", "name": "American University of Beirut" }
-    ],
-    "knowsAbout": ["Cybersecurity", "Network Engineering", "Active Queue Management", "Ansible", "Kubernetes", "Python", "Cloudflare Zero Trust"],
-    "sameAs": [
-      "https://www.linkedin.com/in/peter-farah-i",
-      "https://github.com/FarahPeter"
-    ],
-    "email": "peter@peterfarah.com",
-    "address": { "@type": "PostalAddress", "addressLocality": "Beirut", "addressCountry": "LB" }
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://peterfarah.com/#website",
+        "url": "https://peterfarah.com/",
+        "name": "Peter Farah",
+        "publisher": { "@id": "https://peterfarah.com/#person" }
+      },
+      {
+        "@type": "ProfilePage",
+        "@id": "https://peterfarah.com/#profile",
+        "url": "https://peterfarah.com/",
+        "isPartOf": { "@id": "https://peterfarah.com/#website" },
+        "mainEntity": { "@id": "https://peterfarah.com/#person" }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://peterfarah.com/#person",
+        "name": "Peter Farah",
+        "url": "https://peterfarah.com/",
+        "image": "https://peterfarah.com/Files/images/profile/profile_old.jpg",
+        "description": "Infrastructure Automation Engineer at Murex specialising in network security, AQM research, and infrastructure automation.",
+        "jobTitle": "Infrastructure Automation Engineer",
+        "worksFor": { "@type": "Organization", "name": "Murex", "url": "https://www.murex.com/" },
+        "alumniOf": [
+          { "@type": "CollegeOrUniversity", "name": "Institut Polytechnique de Paris" },
+          { "@type": "CollegeOrUniversity", "name": "American University of Beirut" }
+        ],
+        "knowsAbout": ["Cybersecurity", "Network Engineering", "Active Queue Management", "Ansible", "Kubernetes", "Python", "Cloudflare Zero Trust"],
+        "sameAs": [
+          "https://www.linkedin.com/in/peter-farah-i",
+          "https://github.com/FarahPeter"
+        ],
+        "email": "peter@peterfarah.com",
+        "address": { "@type": "PostalAddress", "addressLocality": "Beirut", "addressCountry": "LB" }
+      }
+    ]
   }
   </script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- Background + Cursor -->
   <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
   <canvas id="net-canvas"></canvas>
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
-  <div id="cursor-ring"></div>
 
   <!-- Scroll Progress -->
   <div id="vertical-scroll-track"><div id="vertical-scroll-progress"></div></div>
 
   <!-- ===== NAVIGATION ===== -->
   <nav aria-label="Main navigation">
-    <a href="index.html" class="nav-logo">Peter Farah</a>
+    <a href="index.html" class="nav-logo" aria-current="page">Peter Farah</a>
 
     <div class="nav-right">
       <ul class="nav-links" id="nav-links">
@@ -67,15 +104,16 @@
         <li><a href="#contact">Contact</a></li>
         <li><a href="journey.html" class="nav-highlight">Journey</a></li>
         <li><a href="blog.html" class="nav-highlight">Research</a></li>
+        <li><a href="fun.html" class="nav-highlight">Hub</a></li>
         <li><a href="server.html" class="nav-highlight">Server</a></li>
         <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">CV</a></li>
       </ul>
 
-      <button class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
+      <button type="button" class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
         <kbd>⌘K</kbd> Search
       </button>
 
-      <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
+      <button type="button" id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
         <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -87,7 +125,7 @@
         </svg>
       </button>
 
-      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+      <button type="button" class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -100,7 +138,7 @@
   <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
     <div class="nav-drawer-header">
       <span class="nav-logo">Menu</span>
-      <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
+      <button type="button" class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
     </div>
     <a href="#about">About</a>
     <a href="#experience">Career Timeline</a>
@@ -111,16 +149,19 @@
     <div class="nav-drawer-divider"></div>
     <a href="journey.html" class="nav-highlight">Journey</a>
     <a href="blog.html" class="nav-highlight">Research &amp; Blog</a>
+    <a href="fun.html" class="nav-highlight">Interactive Hub</a>
     <a href="server.html" class="nav-highlight">Server Access</a>
     <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">Download CV</a>
     <div class="nav-drawer-divider"></div>
-    <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
+    <button type="button" class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
       <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
       </svg>
       Toggle Theme
     </button>
   </aside>
+
+  <main id="main" tabindex="-1">
 
   <!-- ===== HERO (BENTO) ===== -->
   <header class="hero">
@@ -129,7 +170,7 @@
       <div class="tile tile-hover hero-intro">
         <span class="hero-hello">Hi, I'm</span>
         <h1 class="hero-name">Peter Farah</h1>
-        <p class="hero-role"><span class="typing-effect" data-text="Infrastructure Automation Engineer">Infrastructure Automation Engineer</span></p>
+        <p class="hero-role"><span class="visually-hidden">Infrastructure Automation Engineer</span><span class="typing-effect" aria-hidden="true" data-text="Infrastructure Automation Engineer"><span class="typing-sizer">Infrastructure Automation Engineer</span><span class="typing-out"></span></span></p>
         <p class="hero-tagline">I work from the packet up — fingerprinting router queue algorithms, hardening enterprise networks, and automating infrastructure at Murex.</p>
         <div class="social-icons">
           <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener" aria-label="LinkedIn">
@@ -145,7 +186,7 @@
         <div class="btn-group">
           <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="btn btn-primary" target="_blank" rel="noopener">Download CV</a>
           <a href="mailto:peter@peterfarah.com" class="btn">Contact Me</a>
-          <button class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address">
+          <button type="button" class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
@@ -155,7 +196,10 @@
       </div>
 
       <div class="tile tile-hover hero-photo">
-        <img id="profile-image" src="Files/images/profile/profile_old.jpg" alt="Portrait of Peter Farah" loading="eager">
+        <img id="profile-image" src="Files/images/profile/profile-720.jpg"
+             srcset="Files/images/profile/profile-480.webp 480w, Files/images/profile/profile-720.webp 720w, Files/images/profile/profile-960.webp 960w, Files/images/profile/profile-1280.webp 1280w"
+             sizes="(max-width: 620px) calc(100vw - 60px), (max-width: 900px) 50vw, 360px"
+             width="720" height="960" fetchpriority="high" decoding="async" alt="Portrait of Peter Farah in front of the Institut Polytechnique de Paris">
         <span class="photo-geo" aria-hidden="true">Palaiseau &middot; 48.71&deg;N 2.25&deg;E</span>
       </div>
 
@@ -182,7 +226,7 @@
         <span class="hero-stat-label">Switches Hardened</span>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat-number" data-target="36" data-suffix="TB">0</span>
+        <span class="hero-stat-number" data-target="36" data-suffix=" TB">0</span>
         <span class="hero-stat-label">Homelab Storage</span>
       </div>
     </div>
@@ -209,7 +253,7 @@
   <section class="reveal" id="experience">
     <div class="section-head">
       <span class="head-num" aria-hidden="true">02</span>
-      <span class="kicker">Journey</span>
+      <span class="kicker">Career</span>
       <h2 class="section-title">Experience &amp; <span class="grad">Education</span></h2>
     </div>
 
@@ -219,8 +263,8 @@
         <div class="xp-rail"><span class="xp-date">Mar 2026 – Present</span><span class="xp-place">Beirut, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3><span class="xp-role">Infrastructure Automation Engineer</span><span class="xp-org">Murex</span></h3>
-          <ul>
+          <h3><span class="xp-role">Infrastructure Automation Engineer</span> <span class="xp-org">Murex</span></h3>
+          <ul role="list">
             <li>Automating infrastructure delivery with Ansible, Jenkins, and Git.</li>
             <li>Building CI/CD pipelines and Kubernetes-based deployment workflows.</li>
             <li>Provisioning Azure infrastructure with Terraform, backed by remote TF state.</li>
@@ -242,8 +286,8 @@
         <div class="xp-rail"><span class="xp-date">Sep 2024 – Oct 2025</span><span class="xp-place">Évry &amp; Palaiseau, France</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3><span class="xp-role">Network Security Researcher</span><span class="xp-org">Polytechnique &amp; Telecom Sud-Paris</span></h3>
-          <ul>
+          <h3><span class="xp-role">Network Security Researcher</span> <span class="xp-org">Polytechnique &amp; Télécom SudParis</span></h3>
+          <ul role="list">
             <li><strong>Research Focus:</strong> Investigating protection mechanisms in routers against fairness attacks in TCP, focusing on Active Queue Management (AQM) algorithms — CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, and FQ.</li>
             <li><strong>Architecture:</strong> Developed a testbed utilising custom C code to measure bottleneck bitrates, verify bottleneck types, and generate UDP traffic to capture RTT traces.</li>
             <li><strong>Classification:</strong> Built a Python-based two-stage classifier using Dynamic Time Warping (DTW) to successfully identify active AQM algorithms in real-world networks with high accuracy.</li>
@@ -256,8 +300,8 @@
         <div class="xp-rail"><span class="xp-date">Apr 2024 – Jul 2024</span><span class="xp-place">Paris, France</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3><span class="xp-role">SOC R&amp;D Intern</span><span class="xp-org">Exeo</span></h3>
-          <ul>
+          <h3><span class="xp-role">SOC R&amp;D Intern</span> <span class="xp-org">Exeo</span></h3>
+          <ul role="list">
             <li>Integrated Bitdefender and Grafana via Python and SQL for security posture visualisation.</li>
             <li>Developed full vertical integration of Grafana, Prometheus, SNMP devices (Cisco/Fortigate), and various APIs to provide clients with full visibility over their network.</li>
             <li>Automated alert management and ticket creation via Python webhooks into Autotask.</li>
@@ -269,8 +313,8 @@
         <div class="xp-rail"><span class="xp-date">Mar 2023 – Aug 2023</span><span class="xp-place">Verdun, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3><span class="xp-role">Cybersecurity and Network Engineer</span><span class="xp-org">Dar</span></h3>
-          <ul>
+          <h3><span class="xp-role">Cybersecurity and Network Engineer</span> <span class="xp-org">Dar</span></h3>
+          <ul role="list">
             <li>Managed and deployed hardened configurations across 100+ access layer Cisco switches.</li>
             <li>Maintained and automated Fortigate firewall and proxy operations to enhance security.</li>
             <li>Managed and patched vulnerabilities generated by Nexpose to protect the network infrastructure.</li>
@@ -293,8 +337,8 @@
         <div class="xp-rail"><span class="xp-date">Jun 2022 – Dec 2022</span><span class="xp-place">Beirut, Lebanon</span></div>
         <div class="tile tile-hover xp-card">
           <span class="card-badge badge-exp">Experience</span>
-          <h3><span class="xp-role">Cyber Threat Intelligence Officer Intern</span><span class="xp-org">POTECH</span></h3>
-          <ul>
+          <h3><span class="xp-role">Cyber Threat Intelligence Officer Intern</span> <span class="xp-org">POTECH</span></h3>
+          <ul role="list">
             <li>Developed Python scripts (under NDA) to automate reconnaissance through web scraping.</li>
             <li>Orchestrated takedown operations via interactions with APIs and web bots.</li>
           </ul>
@@ -386,7 +430,7 @@
       <div class="tile tile-hover project feature">
         <div class="project-main">
           <h3>AQM Classification Research &amp; Live Network Visualizer</h3>
-          <ul>
+          <ul role="list">
             <li>Identifies which AQM algorithm a router is running &mdash; CoDel, FQ-CoDel, Cake, PIE, RED, FIFO, or FQ &mdash; from the outside, using RTT traces captured by a custom C testbed.</li>
             <li>A two-stage Python classifier built on Dynamic Time Warping (DTW) does the fingerprinting; an interactive in-browser simulator visualises how each queue discipline handles congestion and latency.</li>
             <li><a href="FUN/AQMgame.html">Launch the live simulator →</a> &middot; <a href="blog.html#aqm-research">Read the research write-up →</a></li>
@@ -418,7 +462,7 @@
       <div class="tile tile-hover project feature">
         <div class="project-main">
           <h3>Synology DS925+ NAS &amp; Self-Hosted App Platform</h3>
-          <ul>
+          <ul role="list">
             <li>Built around a Synology DS925+ with 2&times;18&nbsp;TB Seagate Exos drives in SHR-1, giving single-drive fault tolerance.</li>
             <li>Scheduled daily and monthly snapshots for point-in-time data recovery and ransomware protection.</li>
             <li>Dedicated 2&nbsp;TB SSD volume hosting containerized apps via Synology's built-in Container Manager (Docker).</li>
@@ -457,7 +501,7 @@
       <div class="tile tile-hover project feature">
         <div class="project-main">
           <h3>Home Lab Server &amp; Monitoring Infrastructure</h3>
-          <ul>
+          <ul role="list">
             <li>Designed and deployed a self-hosted Ubuntu server (VM-based) to run production-grade Python services.</li>
             <li>Developed a fully automated Python pipeline for YouTube video generation and upload, plus a custom Python FTP service for secure media ingestion.</li>
             <li>Implemented infrastructure monitoring using Prometheus and Grafana.</li>
@@ -493,7 +537,7 @@
       <div class="tile tile-hover project">
         <h3>Client-Server Secure Connection</h3>
         <p>Exchange of symmetric key with asymmetric keys for file transfer. Supports custom certificate exchange signed by a custom certificate authority.</p>
-        <a href="https://github.com/FarahPeter/Certificate" target="_blank" rel="noopener">View on GitHub →</a>
+        <a href="https://github.com/FarahPeter/Certificate" target="_blank" rel="noopener" aria-label="View Client-Server Secure Connection on GitHub">View on GitHub →</a>
         <div class="tech-tags">
           <span class="tech-tag tag-python">Python</span>
           <span class="tech-tag tag-network">TLS/PKI</span>
@@ -504,7 +548,7 @@
       <div class="tile tile-hover project">
         <h3>Galois Field Arithmetic Calculator</h3>
         <p>Instant results for non-trivial arithmetic computations in Galois Fields reaching GF(2^571).</p>
-        <a href="https://github.com/FarahPeter/EECE455Project-3" target="_blank" rel="noopener">View on GitHub →</a>
+        <a href="https://github.com/FarahPeter/EECE455Project-3" target="_blank" rel="noopener" aria-label="View Galois Field Arithmetic Calculator on GitHub">View on GitHub →</a>
         <div class="tech-tags">
           <span class="tech-tag tag-python">Python</span>
           <span class="tech-tag tag-network">Cryptography</span>
@@ -525,7 +569,7 @@
       <div class="tile tile-hover project">
         <h3>Network Cell Analyzer for Android</h3>
         <p>Displays carrier name, network types, dBm, SNR, and frequency band. Built with Java and SQL.</p>
-        <a href="https://github.com/FarahPeter/NetworkAnalyzer" target="_blank" rel="noopener">View on GitHub →</a>
+        <a href="https://github.com/FarahPeter/NetworkAnalyzer" target="_blank" rel="noopener" aria-label="View Network Cell Analyzer for Android on GitHub">View on GitHub →</a>
         <div class="tech-tags">
           <span class="tech-tag tag-java">Java</span>
           <span class="tech-tag tag-sql">SQL</span>
@@ -543,7 +587,7 @@
       <span class="kicker">Credentials</span>
       <h2 class="section-title">Certificates &amp; <span class="grad">Honors</span></h2>
     </div>
-    <ul class="cert-list">
+    <ul class="cert-list" role="list">
       <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>Institut Polytechnique de Paris:</strong> Graduated with highest distinction</li>
       <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>American University of Beirut:</strong> Dean's Honor List</li>
       <li class="tile"><span class="cert-ico" aria-hidden="true"></span><strong>Bitdefender Certified:</strong> MSP Technical Specialist, Technical Solutions Professional (July 2024)</li>
@@ -572,13 +616,25 @@
     </div>
   </section>
 
-  <!-- ===== FOOTER ===== -->
+  </main>
+
   <footer>
-    <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    <div class="footer-links" role="navigation" aria-label="Footer">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="journey.html">Journey</a>
+      <a href="blog.html">Research</a>
+      <a href="fun.html">Hub</a>
+      <a href="server.html">Server</a>
+      <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" target="_blank" rel="noopener">CV</a>
+      <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/FarahPeter" target="_blank" rel="noopener">GitHub</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+    <p>&copy; 2026 Peter Farah &middot; <a href="mailto:peter@peterfarah.com">peter@peterfarah.com</a> &middot; Hand-built with HTML, CSS and JavaScript.</p>
   </footer>
 
   <!-- Back to Top -->
-  <button id="back-to-top" aria-label="Back to top">
+  <button type="button" id="back-to-top" aria-label="Back to top">
     <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
   </button>
 
@@ -589,10 +645,10 @@
   <div id="cmd-backdrop" aria-hidden="true"></div>
   <div id="cmd-palette" role="dialog" aria-label="Command palette" aria-modal="true">
     <div id="cmd-input-wrap">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false" role="combobox" aria-label="Search pages and sections" aria-autocomplete="list" aria-controls="cmd-results" aria-expanded="false">
     </div>
-    <div id="cmd-results"></div>
+    <div id="cmd-results" role="listbox" aria-label="Results"></div>
     <div id="cmd-footer">
       <span class="cmd-hint"><kbd>↑↓</kbd> navigate</span>
       <span class="cmd-hint"><kbd>↵</kbd> open</span>
