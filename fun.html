@@ -4,12 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#07112e">
+    <!-- Runs before first paint: restores the saved theme (no dark flash for light-theme
+         visitors) and marks the document as script-capable so reveal animations only
+         hide content when JavaScript is actually running. -->
+    <script>(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('pf-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);}}catch(e){}})();</script>
     <title>Peter Farah | Interactive Hub</title>
-    <meta name="description" content="A collection of interactive networking simulators, tools, and cryptography playgrounds.">
-    <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+    <meta name="description" content="Peter Farah's Interactive Hub: networking simulators, security tools and cryptography playgrounds that run entirely in your browser.">
+    <link rel="canonical" href="https://peterfarah.com/fun.html">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta property="og:site_name" content="Peter Farah">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://peterfarah.com/fun.html">
+    <meta property="og:title" content="Peter Farah | Interactive Hub">
+    <meta property="og:description" content="Networking simulators, security tools and cryptography playgrounds that run entirely in your browser.">
+    <meta property="og:image" content="https://peterfarah.com/Files/images/og/og-hub.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Interactive Hub — tools that run in your browser">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Peter Farah | Interactive Hub">
+    <meta name="twitter:description" content="Networking simulators, security tools and cryptography playgrounds that run entirely in your browser.">
+    <meta name="twitter:image" content="https://peterfarah.com/Files/images/og/og-hub.jpg">
+    <link rel="icon" href="Files/images/favicon.ico" sizes="32x32">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="apple-touch-icon" href="Files/images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="preload" href="Files/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="Files/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* ── Page header ── */
@@ -49,7 +71,7 @@
         /* ── Interactive Hub Grid ── */
         .hub-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
             gap: 30px;
             margin-top: 20px;
         }
@@ -193,6 +215,7 @@
         }
         [data-theme="light"] .filter-btn.active {
             color: #fff;
+            background: linear-gradient(110deg, var(--accent-deep), var(--accent-2));
         }
 
         /* Hide filtered-out cards */
@@ -202,13 +225,13 @@
     </style>
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
 
     <!-- Background + Cursor -->
     <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
     <canvas id="net-canvas"></canvas>
     <canvas id="mouse-trail"></canvas>
     <div id="cursor-dot"></div>
-    <div id="cursor-ring"></div>
 
     <div id="vertical-scroll-track">
       <div id="vertical-scroll-progress"></div>
@@ -220,13 +243,19 @@
 
       <div class="nav-right">
         <ul class="nav-links">
+          <li><a href="index.html" class="nav-highlight">Home</a></li>
           <li><a href="journey.html" class="nav-highlight">Journey</a></li>
-          <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
-          <li><a href="blog.html" class="nav-highlight">Research &amp; Blog</a></li>
-          <li><a href="server.html" class="nav-highlight">Server Access</a></li>
+          <li><a href="blog.html" class="nav-highlight">Research</a></li>
+          <li><a href="fun.html" class="nav-highlight" aria-current="page">Hub</a></li>
+          <li><a href="server.html" class="nav-highlight">Server</a></li>
+          <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">CV</a></li>
         </ul>
 
-        <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
+        <button type="button" class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
+          <kbd>⌘K</kbd> Search
+        </button>
+
+        <button type="button" id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
           <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
             <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -238,7 +267,7 @@
           </svg>
         </button>
 
-        <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+        <button type="button" class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -251,18 +280,22 @@
     <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
       <div class="nav-drawer-header">
         <span class="nav-logo">Menu</span>
-        <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
+        <button type="button" class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
       </div>
-      <a href="journey.html" class="nav-highlight">Journey</a>
       <a href="index.html" class="nav-highlight">Home / Profile</a>
+      <a href="journey.html" class="nav-highlight">Journey</a>
       <a href="blog.html" class="nav-highlight">Research &amp; Blog</a>
+      <a href="fun.html" class="nav-highlight" aria-current="page">Interactive Hub</a>
       <a href="server.html" class="nav-highlight">Server Access</a>
+      <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">Download CV</a>
       <div class="nav-drawer-divider"></div>
-      <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
+      <button type="button" class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
         <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/></svg>
         Toggle Theme
       </button>
     </aside>
+
+    <main id="main">
 
     <header>
         <h1>Interactive Hub</h1>
@@ -272,13 +305,14 @@
     <section class="reveal" style="max-width: 1100px; background: transparent; border: none; box-shadow: none; padding: 0 20px;">
 
         <div class="filter-container">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="Networking">Networking</button>
-            <button class="filter-btn" data-filter="Security">Security</button>
-            <button class="filter-btn" data-filter="Utility">Utility</button>
-            <button class="filter-btn" data-filter="Cryptography">Cryptography</button>
-            <button class="filter-btn" data-filter="Tool">Tools</button>
+            <button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="filter-btn" data-filter="Networking" aria-pressed="false">Networking</button>
+            <button type="button" class="filter-btn" data-filter="Security" aria-pressed="false">Security</button>
+            <button type="button" class="filter-btn" data-filter="Utility" aria-pressed="false">Utility</button>
+            <button type="button" class="filter-btn" data-filter="Cryptography" aria-pressed="false">Cryptography</button>
+            <button type="button" class="filter-btn" data-filter="Tool" aria-pressed="false">Tools</button>
         </div>
+        <p class="visually-hidden" id="hub-count" role="status" aria-live="polite"></p>
 
         <div class="hub-grid">
 
@@ -288,7 +322,7 @@
                         <polyline points="2 12 6 6 10 16 14 8 18 14 22 10"/>
                     </svg>
                 </div>
-                <h3 class="card-title">AQM Network Visualizer</h3>
+                <h2 class="card-title">AQM Network Visualizer</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Networking</span>
                     <span class="skill-badge">Simulation</span>
@@ -296,13 +330,13 @@
                 <p class="card-desc">
                     A live UDP traffic simulation displaying the real-time RTT signatures of 7 different Active Queue Management algorithms including CoDel, PIE, and Cake.
                 </p>
-                <a href="FUN/AQMgame.html" class="btn hub-launch-btn">Launch Sim</a>
+                <a href="FUN/AQMgame.html" class="btn hub-launch-btn" aria-label="Open AQM Network Visualizer">Launch Sim</a>
             </div>
 
             <!--
             <div class="hub-card card-firewall">
                 <div class="card-icon">🛡️</div>
-                <h3 class="card-title">Firewall Defender</h3>
+                <h2 class="card-title">Firewall Defender</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Networking</span>
@@ -310,12 +344,12 @@
                 <p class="card-desc">
                     An arcade-style network security game. Filter incoming packets in real-time, drop malicious traffic, and keep the server healthy.
                 </p>
-                <a href="FUN/firewall.html" class="btn hub-launch-btn" style="border-color: #ef4444; color: #ef4444;">Play Defender</a>
+                <a href="FUN/firewall.html" class="btn hub-launch-btn" style="border-color: #ef4444; color: #ef4444;" aria-label="Open Firewall Defender">Play Defender</a>
             </div>
 
             <div class="hub-card card-regex">
                 <div class="card-icon">🧩</div>
-                <h3 class="card-title">Regex Hacker</h3>
+                <h2 class="card-title">Regex Hacker</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Utility</span>
@@ -323,7 +357,7 @@
                 <p class="card-desc">
                     A puzzle game testing your Regular Expression and log parsing skills. Extract key intelligence from raw logs across multiple levels.
                 </p>
-                <a href="FUN/regex.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Start Hacking</a>
+                <a href="FUN/regex.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;" aria-label="Open Regex Hacker">Start Hacking</a>
             </div>
             -->
 
@@ -333,7 +367,7 @@
                         <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Diagram Sketcher</h3>
+                <h2 class="card-title">Diagram Sketcher</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Tool</span>
                     <span class="skill-badge">Prototyping</span>
@@ -341,7 +375,7 @@
                 <p class="card-desc">
                     An interactive whiteboard tailored for network topology design. Includes intelligent shapes, a text tool, and a robust undo/redo history stack.
                 </p>
-                <a href="FUN/sketch.html" class="btn hub-launch-btn">Open Sketcher</a>
+                <a href="FUN/sketch.html" class="btn hub-launch-btn" aria-label="Open Diagram Sketcher">Open Sketcher</a>
             </div>
 
             <div class="hub-card card-crypto tile tile-hover acc-3">
@@ -351,7 +385,7 @@
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Crypto Playground</h3>
+                <h2 class="card-title">Crypto Playground</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Cryptography</span>
@@ -359,7 +393,7 @@
                 <p class="card-desc">
                     A secure, client-side cryptographic sandbox. Perform real-time AES symmetric encryption, Base64/Hex encoding, and SHA/MD5 hashing instantly as you type.
                 </p>
-                <a href="FUN/crypto.html" class="btn hub-launch-btn">Enter Lab</a>
+                <a href="FUN/crypto.html" class="btn hub-launch-btn" aria-label="Open Crypto Playground">Enter Lab</a>
             </div>
 
             <div class="hub-card card-jwt tile tile-hover acc-1">
@@ -369,7 +403,7 @@
                         <path d="M13 5v2M13 17v2M13 11v2"/>
                     </svg>
                 </div>
-                <h3 class="card-title">JWT Decoder</h3>
+                <h2 class="card-title">JWT Decoder</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Utility</span>
@@ -377,7 +411,7 @@
                 <p class="card-desc">
                     Instantly decode and inspect JSON Web Tokens (JWT). View headers and payloads with syntax highlighting and format validation.
                 </p>
-                <a href="FUN/jwt.html" class="btn hub-launch-btn">Open Decoder</a>
+                <a href="FUN/jwt.html" class="btn hub-launch-btn" aria-label="Open JWT Decoder">Open Decoder</a>
             </div>
 
             <div class="hub-card card-password tile tile-hover acc-2">
@@ -387,7 +421,7 @@
                         <path d="M21 2l-9.6 9.6M15.5 7.5l3 3"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Password Generator</h3>
+                <h2 class="card-title">Password Generator</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Utility</span>
@@ -396,7 +430,7 @@
                 <p class="card-desc">
                     Generate strong, secure, and highly randomized passwords locally in your browser. Customize length and character sets.
                 </p>
-                <a href="FUN/password.html" class="btn hub-launch-btn">Generate Password</a>
+                <a href="FUN/password.html" class="btn hub-launch-btn" aria-label="Open Password Generator">Generate Password</a>
             </div>
 
             <div class="hub-card card-pwd-strength tile tile-hover acc-3">
@@ -405,7 +439,7 @@
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Password Strength</h3>
+                <h2 class="card-title">Password Strength</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Utility</span>
@@ -413,7 +447,7 @@
                 <p class="card-desc">
                     Analyze the strength, entropy, and estimated crack time of your passwords locally without sending data to a server.
                 </p>
-                <a href="FUN/password-strength.html" class="btn hub-launch-btn">Check Strength</a>
+                <a href="FUN/password-strength.html" class="btn hub-launch-btn" aria-label="Open Password Strength">Check Strength</a>
             </div>
 
             <div class="hub-card card-hashing tile tile-hover acc-1">
@@ -424,7 +458,7 @@
                         <path d="M3 12a9 3 0 0 0 18 0"/>
                     </svg>
                 </div>
-                <h3 class="card-title">File Hasher</h3>
+                <h2 class="card-title">File Hasher</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Utility</span>
@@ -433,7 +467,7 @@
                 <p class="card-desc">
                     Calculate MD5, SHA-1, and SHA-256 hashes of files directly in your browser. Works completely offline with large file support.
                 </p>
-                <a href="FUN/hashing.html" class="btn hub-launch-btn">Open Hasher</a>
+                <a href="FUN/hashing.html" class="btn hub-launch-btn" aria-label="Open File Hasher">Open Hasher</a>
             </div>
 
             <div class="hub-card card-nmap tile tile-hover acc-2">
@@ -447,7 +481,7 @@
                         <line x1="19" y1="12" x2="22" y2="12"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Nmap Builder</h3>
+                <h2 class="card-title">Nmap Builder</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Security</span>
                     <span class="skill-badge">Networking</span>
@@ -456,7 +490,7 @@
                 <p class="card-desc">
                     A visual interface to build complex Nmap commands. Select scan types, timing templates, and flags without memorizing the man page.
                 </p>
-                <a href="FUN/nmap.html" class="btn hub-launch-btn">Launch Builder</a>
+                <a href="FUN/nmap.html" class="btn hub-launch-btn" aria-label="Open Nmap Builder">Launch Builder</a>
             </div>
 
             <div class="hub-card card-dns tile tile-hover acc-3">
@@ -466,7 +500,7 @@
                         <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     </svg>
                 </div>
-                <h3 class="card-title">DNS Lookup Tool</h3>
+                <h2 class="card-title">DNS Lookup Tool</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Networking</span>
@@ -474,7 +508,7 @@
                 <p class="card-desc">
                     Perform instant DNS lookups using Google's DNS-over-HTTPS. Query A, AAAA, MX, TXT, CNAME, and NS records directly from your browser.
                 </p>
-                <a href="FUN/dns.html" class="btn hub-launch-btn">Open DNS Lookup</a>
+                <a href="FUN/dns.html" class="btn hub-launch-btn" aria-label="Open DNS Lookup Tool">Open DNS Lookup</a>
             </div>
 
             <div class="hub-card card-whois tile tile-hover acc-1">
@@ -484,7 +518,7 @@
                         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                     </svg>
                 </div>
-                <h3 class="card-title">WHOIS Lookup</h3>
+                <h2 class="card-title">WHOIS Lookup</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Networking</span>
@@ -492,13 +526,13 @@
                 <p class="card-desc">
                     Query registration and ownership information for domains or IP addresses instantly using a free public API.
                 </p>
-                <a href="FUN/whois.html" class="btn hub-launch-btn">Open WHOIS Lookup</a>
+                <a href="FUN/whois.html" class="btn hub-launch-btn" aria-label="Open WHOIS Lookup">Open WHOIS Lookup</a>
             </div>
 
             <!--
             <div class="hub-card card-ping">
                 <div class="card-icon">📡</div>
-                <h3 class="card-title">Ping Simulator</h3>
+                <h2 class="card-title">Ping Simulator</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Networking</span>
@@ -506,7 +540,7 @@
                 <p class="card-desc">
                     Simulate network reachability testing (Ping) directly from your browser with realistic latency approximations.
                 </p>
-                <a href="FUN/ping.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;">Launch Ping</a>
+                <a href="FUN/ping.html" class="btn hub-launch-btn" style="border-color: #4ade80; color: #4ade80;" aria-label="Open Ping Simulator">Launch Ping</a>
             </div>
             -->
 
@@ -517,7 +551,7 @@
                         <polyline points="8 6 2 12 8 18"/>
                     </svg>
                 </div>
-                <h3 class="card-title">JSON Beautifier</h3>
+                <h2 class="card-title">JSON Beautifier</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Tool</span>
@@ -525,7 +559,7 @@
                 <p class="card-desc">
                     A fast, client-side JSON formatter and validator. Paste raw JSON payloads to instantly beautify and syntax-highlight them for readability.
                 </p>
-                <a href="FUN/json.html" class="btn hub-launch-btn">Open Beautifier</a>
+                <a href="FUN/json.html" class="btn hub-launch-btn" aria-label="Open JSON Beautifier">Open Beautifier</a>
             </div>
 
             <div class="hub-card card-base64 tile tile-hover acc-3">
@@ -537,7 +571,7 @@
                         <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Base64 Encode/Decode</h3>
+                <h2 class="card-title">Base64 Encode/Decode</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Tool</span>
@@ -545,7 +579,7 @@
                 <p class="card-desc">
                     A simple and fast client-side tool to encode and decode text to and from Base64 format. Great for quick string manipulation.
                 </p>
-                <a href="FUN/base64.html" class="btn hub-launch-btn">Open Tool</a>
+                <a href="FUN/base64.html" class="btn hub-launch-btn" aria-label="Open Base64 Encode/Decode">Open Tool</a>
             </div>
 
             <div class="hub-card card-url tile tile-hover acc-1">
@@ -555,7 +589,7 @@
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                     </svg>
                 </div>
-                <h3 class="card-title">URL Encode/Decode</h3>
+                <h2 class="card-title">URL Encode/Decode</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Tool</span>
@@ -563,7 +597,7 @@
                 <p class="card-desc">
                     Easily encode and decode URL strings and parameters. Fix messy links or prepare payloads for web requests instantly.
                 </p>
-                <a href="FUN/urlencode.html" class="btn hub-launch-btn">Open Tool</a>
+                <a href="FUN/urlencode.html" class="btn hub-launch-btn" aria-label="Open URL Encode/Decode">Open Tool</a>
             </div>
 
             <div class="hub-card card-mac tile tile-hover acc-2">
@@ -574,7 +608,7 @@
                         <line x1="12" y1="17" x2="12" y2="21"/>
                     </svg>
                 </div>
-                <h3 class="card-title">MAC Formatter</h3>
+                <h2 class="card-title">MAC Formatter</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Networking</span>
@@ -582,7 +616,7 @@
                 <p class="card-desc">
                     Convert lists of MAC addresses between different formats (Cisco, Linux, Windows) with a single click. Ideal for bulk config updates.
                 </p>
-                <a href="FUN/mac.html" class="btn hub-launch-btn">Open Formatter</a>
+                <a href="FUN/mac.html" class="btn hub-launch-btn" aria-label="Open MAC Formatter">Open Formatter</a>
             </div>
 
             <div class="hub-card card-subnet tile tile-hover acc-3">
@@ -593,7 +627,7 @@
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Subnet Calculator</h3>
+                <h2 class="card-title">Subnet Calculator</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Networking</span>
@@ -601,7 +635,7 @@
                 <p class="card-desc">
                     A fast, client-side IPv4 Subnet and CIDR calculator. Instantly calculates Network Addresses, Broadcast IPs, Wildcard Masks, and Usable Host boundaries.
                 </p>
-                <a href="FUN/subnet.html" class="btn hub-launch-btn">Open Tool</a>
+                <a href="FUN/subnet.html" class="btn hub-launch-btn" aria-label="Open Subnet Calculator">Open Tool</a>
             </div>
 
             <div class="hub-card card-cidr tile tile-hover acc-1">
@@ -613,7 +647,7 @@
                         <rect x="14" y="14" width="7" height="7"/>
                     </svg>
                 </div>
-                <h3 class="card-title">CIDR Tool</h3>
+                <h2 class="card-title">CIDR Tool</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Networking</span>
@@ -621,7 +655,7 @@
                 <p class="card-desc">
                     Convert between CIDR notation and IP address ranges quickly. Calculate exact start/end addresses or find optimal CIDR blocks.
                 </p>
-                <a href="FUN/cidr.html" class="btn hub-launch-btn">Open CIDR Tool</a>
+                <a href="FUN/cidr.html" class="btn hub-launch-btn" aria-label="Open CIDR Tool">Open CIDR Tool</a>
             </div>
 
             <div class="hub-card card-chmod tile tile-hover acc-2">
@@ -631,7 +665,7 @@
                         <line x1="12" y1="19" x2="20" y2="19"/>
                     </svg>
                 </div>
-                <h3 class="card-title">CHMOD Calculator</h3>
+                <h2 class="card-title">CHMOD Calculator</h2>
                 <div class="card-tags">
                     <span class="skill-badge">Utility</span>
                     <span class="skill-badge">Linux/SysAdmin</span>
@@ -639,7 +673,7 @@
                 <p class="card-desc">
                     A visual file permission generator. Toggle Read, Write, and Execute switches to instantly output the precise Octal command and Symbolic strings for Linux files.
                 </p>
-                <a href="FUN/chmod.html" class="btn hub-launch-btn">Open Tool</a>
+                <a href="FUN/chmod.html" class="btn hub-launch-btn" aria-label="Open CHMOD Calculator">Open Tool</a>
             </div>
 
             <div class="hub-card card-cron tile tile-hover acc-3">
@@ -649,19 +683,19 @@
                         <polyline points="12 6 12 12 16 14"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Cron Translator</h3>
+                <h2 class="card-title">Cron Translator</h2>
                 <div class="card-tags"><span class="skill-badge">Utility</span><span class="skill-badge">DevOps</span></div>
                 <p class="card-desc">Type raw Linux cron scheduling syntax and instantly decode it into plain, human-readable English.</p>
-                <a href="FUN/cron.html" class="btn hub-launch-btn">Open Tool</a>
+                <a href="FUN/cron.html" class="btn hub-launch-btn" aria-label="Open Cron Translator">Open Tool</a>
             </div>
 
             <!--
             <div class="hub-card card-entropy">
                 <div class="card-icon">🔑</div>
-                <h3 class="card-title">Entropy Calculator</h3>
+                <h2 class="card-title">Entropy Calculator</h2>
                 <div class="card-tags"><span class="skill-badge">Security</span><span class="skill-badge">Cryptography</span></div>
                 <p class="card-desc">Calculate true cryptographic entropy based on character pools, and estimate GPU hash-cracking times.</p>
-                <a href="FUN/entropy.html" class="btn hub-launch-btn" style="border-color: #ef4444; color: #ef4444;">Open Tool</a>
+                <a href="FUN/entropy.html" class="btn hub-launch-btn" style="border-color: #ef4444; color: #ef4444;" aria-label="Open Entropy Calculator">Open Tool</a>
             </div>
             -->
 
@@ -673,18 +707,46 @@
                         <circle cx="12" cy="12" r="3"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Port Database</h3>
+                <h2 class="card-title">Port Database</h2>
                 <div class="card-tags"><span class="skill-badge">Utility</span><span class="skill-badge">Networking</span></div>
                 <p class="card-desc">A lightning-fast reference list of the most critical IANA-registered TCP/UDP service ports.</p>
-                <a href="FUN/ports.html" class="btn hub-launch-btn">Open Database</a>
+                <a href="FUN/ports.html" class="btn hub-launch-btn" aria-label="Open Port Database">Open Database</a>
             </div>
 
         </div>
     </section>
 
+    </main>
+
     <footer>
-        <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+      <div class="footer-links" role="navigation" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="journey.html">Journey</a>
+        <a href="blog.html">Research</a>
+        <a href="fun.html" aria-current="page">Hub</a>
+        <a href="server.html">Server</a>
+        <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" target="_blank" rel="noopener">CV</a>
+        <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://github.com/FarahPeter" target="_blank" rel="noopener">GitHub</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+      <p>&copy; 2026 Peter Farah &middot; <a href="mailto:peter@peterfarah.com">peter@peterfarah.com</a> &middot; Hand-built with HTML, CSS and JavaScript.</p>
     </footer>
+
+    <!-- Command Palette -->
+    <div id="cmd-backdrop" aria-hidden="true"></div>
+    <div id="cmd-palette" role="dialog" aria-label="Command palette" aria-modal="true">
+      <div id="cmd-input-wrap">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false" role="combobox" aria-label="Search pages and sections" aria-autocomplete="list" aria-controls="cmd-results" aria-expanded="false">
+      </div>
+      <div id="cmd-results" role="listbox" aria-label="Results"></div>
+      <div id="cmd-footer">
+        <span class="cmd-hint"><kbd>↑↓</kbd> navigate</span>
+        <span class="cmd-hint"><kbd>↵</kbd> open</span>
+        <span class="cmd-hint"><kbd>Esc</kbd> close</span>
+      </div>
+    </div>
 
     <script src="script.js"></script>
 
@@ -696,9 +758,10 @@
             filterBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     // 1. Remove active state from all buttons
-                    filterBtns.forEach(b => b.classList.remove('active'));
+                    filterBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
                     // 2. Add active state to the clicked button
                     btn.classList.add('active');
+                    btn.setAttribute('aria-pressed', 'true');
 
                     // 3. Get the selected category
                     const filterValue = btn.getAttribute('data-filter');
@@ -713,13 +776,14 @@
                             const tags = Array.from(badges).map(badge => badge.textContent.trim());
 
                             // If the card has the tag, show it; otherwise, hide it
-                            if (tags.includes(filterValue) || (filterValue === 'Tool' && tags.includes('Tool'))) {
-                                card.classList.remove('hidden');
-                            } else {
-                                card.classList.add('hidden');
-                            }
+                            card.classList.toggle('hidden', !tags.includes(filterValue));
                         }
                     });
+
+                    // 5. Tell assistive tech what the filter did
+                    const shown = Array.from(cards).filter(c => !c.classList.contains('hidden')).length;
+                    const status = document.getElementById('hub-count');
+                    if (status) status.textContent = shown + (shown === 1 ? ' tool shown' : ' tools shown') + (filterValue === 'all' ? '' : ' for ' + btn.textContent.trim());
                 });
             });
         });
