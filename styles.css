@@ -275,6 +275,7 @@ section { max-width: var(--maxw); margin: 0 auto; padding: 56px 22px; }
   background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
+.section-intro { max-width: 65ch; margin-top: 14px; color: var(--muted); }
 /* oversized ghost index number (index.html section heads only; graceful when absent) */
 .head-num {
   position: absolute; top: 50%; right: 4px; transform: translateY(-58%);
@@ -396,6 +397,7 @@ nav.scrolled::after { background: linear-gradient(135deg, var(--ring-hi), var(--
   transform: translateX(-130%); transition: transform .65s;
 }
 .btn:hover, .copy-email-btn:hover { transform: translate(var(--mag-x, 0px), var(--mag-y, 0px)) translateY(-3px); border-color: var(--accent-line); box-shadow: var(--shadow-glow); color: var(--ink); }
+.copy-email-btn svg { width: 18px; height: 18px; flex: 0 0 18px; }
 .btn:hover::after { transform: translateX(130%); }
 .btn-primary {
   background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #021024;
@@ -484,8 +486,11 @@ nav.scrolled { box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent-line), inset
   background: var(--glass-strong); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
   border-left: 1px solid var(--glass-border); padding: 22px; display: flex; flex-direction: column; gap: 4px;
   visibility: hidden; transform: translateX(105%);
+  overflow-y: auto; overscroll-behavior-y: contain;
+  padding-bottom: max(22px, env(safe-area-inset-bottom));
   transition: transform .4s cubic-bezier(.2,.8,.2,1), visibility 0s .4s;
 }
+.nav-drawer > * { flex-shrink: 0; }
 .nav-drawer.open { visibility: visible; transform: translateX(0); transition: transform .4s cubic-bezier(.2,.8,.2,1), visibility 0s; }
 .nav-drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .nav-drawer-close { background: none; border: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; }
@@ -643,7 +648,7 @@ html:not(.js) .hero-role .typing-sizer { visibility: visible; }
 /* ============================ PROJECTS (BENTO) ============================ */
 .projects-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; grid-auto-flow: dense; }
 .project { padding: 26px; display: flex; flex-direction: column; grid-column: span 3; }
-.project.feature { grid-column: span 6; }
+.project.feature { grid-column: span 2; min-width: 0; }
 .project h3 { font-size: 1.16rem; margin-bottom: 12px; transition: color .3s; }
 /* regular project: gradient title on card hover */
 .project:not(.feature).tile-hover:hover h3 {
@@ -666,21 +671,18 @@ html:not(.js) .hero-role .typing-sizer { visibility: visible; }
 .project > a::after { content: "→"; transition: transform .25s var(--ease); }
 .project > a:hover::after { transform: translateX(3px); }
 
-/* feature card: two-column split at ≥900px (main text | side panel) */
-.project-main { display: flex; flex-direction: column; min-width: 0; }
-.project-side {
-  display: flex; flex-direction: column; gap: 14px; align-self: start;
-  padding: 18px; border-radius: var(--radius);
-  background: var(--glass); border: 1px solid var(--glass-border-2);
-  box-shadow: inset 0 1px 0 var(--specular);
-}
-.project-side .tech-tags { margin-top: 0; }
-.project-side a { font-family: var(--font-mono); font-size: 0.82rem; }
-.project-topology { width: 100%; max-width: 130px; height: auto; margin-top: 2px; opacity: 0.9; align-self: center; }
-@media (min-width: 900px) {
-  .project.feature { display: grid; grid-template-columns: 1fr minmax(240px, 300px); gap: 26px; align-items: start; }
-  .project-side { position: sticky; top: calc(var(--nav-h) + 24px); }
-}
+/* Featured case studies: one readable column per card; the write-ups hold detail. */
+.project-image { width: 100%; height: auto; max-height: 240px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 12px; margin-bottom: 20px; background: var(--bg-2); }
+.project-image-diagram { object-fit: contain; }
+.project-kind { font-family: var(--font-mono); color: var(--accent-bright); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 10px; }
+.project-facts { font-size: 0.86rem; color: var(--text); }
+.project-facts dt { color: var(--ink); font-weight: 600; margin-top: 12px; }
+.project-facts dd { margin-top: 4px; }
+.project.feature .tech-tags { margin-bottom: 20px; }
+.project-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--hairline); }
+.project-actions a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 0.86rem; color: var(--accent-bright); text-decoration: underline; text-underline-offset: 0.2em; }
+.project-actions a:hover { color: var(--ink); }
+.project:focus-within { border-color: var(--accent-line); }
 
 /* tech tags — calmer: mono, tight, near-transparent, colored dot */
 .tech-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
@@ -698,7 +700,6 @@ html:not(.js) .hero-role .typing-sizer { visibility: visible; }
 .tech-tag.tag-cloud::before, .tech-tag.tag-api::before, .tech-tag.tag-network::before, .tech-tag.tag-linux::before {
   background: var(--accent-2); box-shadow: 0 0 7px rgba(34,211,238,0.6);
 }
-.project-side { min-width: 0; }
 
 /* In-text links (not chips, nav or buttons) carry an underline so colour is not the only cue */
 #about a, #contact p a, .xp-card ul a, .project ul a, .blog-content p a, .blog-content li a, .privacy-page p a, .privacy-page li a {
@@ -749,7 +750,7 @@ footer p a { color: var(--accent-bright); }
 #cmd-palette.open { opacity: 1; visibility: visible; transform: translateX(-50%) scale(1); transition: opacity .2s, transform .2s, visibility 0s; }
 #cmd-input-wrap { display: flex; align-items: center; gap: 12px; padding: 17px 20px; border-bottom: 1px solid var(--hairline); }
 #cmd-input-wrap svg { width: 18px; height: 18px; color: var(--accent-bright); flex-shrink: 0; }
-#cmd-input { flex: 1; background: none; border: none; outline: none; color: var(--ink); font-family: var(--font-body); font-size: 1rem; }
+#cmd-input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--ink); font-family: var(--font-body); font-size: 1rem; }
 #cmd-input::placeholder { color: var(--faint); }
 #cmd-results { max-height: 46vh; overflow-y: auto; padding: 8px; }
 .cmd-item { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 13px; cursor: pointer; color: var(--text); transition: background .15s; }
@@ -760,7 +761,7 @@ footer p a { color: var(--accent-bright); }
 .cmd-item.active, .cmd-item:hover { background: var(--accent-soft); }
 .cmd-item.active { box-shadow: inset 3px 0 0 var(--accent); }
 .cmd-empty { padding: 26px; text-align: center; color: var(--muted); font-size: 0.9rem; }
-#cmd-footer { display: flex; gap: 16px; padding: 12px 16px; border-top: 1px solid var(--hairline); }
+#cmd-footer { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 12px 16px; border-top: 1px solid var(--hairline); }
 .cmd-hint { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .cmd-hint kbd { font-family: var(--font-mono); font-size: 0.7rem; background: var(--accent-soft); color: var(--accent-bright); padding: 1px 6px; border-radius: 6px; border: 1px solid var(--accent-line); }
 
@@ -811,9 +812,9 @@ footer p a { color: var(--accent-bright); }
    viewport" for lazy images — skip its rendering entirely until it opens.
    Guarded by html.js: with no JavaScript nothing can open it, so the write-ups
    are simply shown in full instead of being hidden with no way back. */
-html.js .blog-content-wrapper:not(.open) .blog-content { content-visibility: hidden; }
-html:not(.js) .blog-content-wrapper { grid-template-rows: 1fr; }
-html:not(.js) .cover-toggle { display: none; }
+html.blog-ready .blog-content-wrapper:not(.open) .blog-content { content-visibility: hidden; }
+html:not(.blog-ready) .blog-content-wrapper { grid-template-rows: 1fr; }
+html:not(.blog-ready) .cover-toggle { display: none; }
 .blog-content { overflow: hidden; }
 .blog-content-inner { padding: 32px; margin-top: 16px; }
 .blog-content-inner { background: var(--glass); -webkit-backdrop-filter: blur(var(--blur)) saturate(180%); backdrop-filter: blur(var(--blur)) saturate(180%); border: 1px solid var(--glass-border-2); border-radius: var(--radius-lg); box-shadow: var(--shadow), inset 0 1px 0 var(--specular); }
@@ -868,28 +869,27 @@ html:not(.js) .cover-toggle { display: none; }
 .err-tag { color: var(--danger); }
 
 /* ============================ REVEAL ============================ */
-/* Guarded by html.js (set in each page's <head>): without JavaScript nothing is
-   ever hidden. The visible state carries the same guard so it always outranks
-   the hidden one. */
-html.js .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
-html.js .reveal.in { opacity: 1; transform: none; }
+/* Enable hiding only after the reveal observer is installed. Content stays
+   visible if the shared script is blocked or an earlier module fails. */
+html.reveal-ready .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+html.reveal-ready .reveal.in { opacity: 1; transform: none; }
 
 /* staggered entrance for the grid items inside a reveal section.
    JS assigns an incremental --i to each; CSS delays their entrance.
    Scoped to top-level grid children only (not nested .tile) to avoid
    double-staggering the card inside an .xp-row. */
-html.js .reveal .projects-grid > .project,
-html.js .reveal .skills-grid > .skills-container,
-html.js .reveal .cert-list > li,
-html.js .reveal .xp-list > .xp-row {
+html.reveal-ready .reveal .projects-grid > .project,
+html.reveal-ready .reveal .skills-grid > .skills-container,
+html.reveal-ready .reveal .cert-list > li,
+html.reveal-ready .reveal .xp-list > .xp-row {
   opacity: 0; transform: translateY(18px);
   transition: opacity .6s var(--ease), transform .6s var(--ease);
   transition-delay: calc(var(--i, 0) * 70ms);
 }
-html.js .reveal.in .projects-grid > .project,
-html.js .reveal.in .skills-grid > .skills-container,
-html.js .reveal.in .cert-list > li,
-html.js .reveal.in .xp-list > .xp-row {
+html.reveal-ready .reveal.in .projects-grid > .project,
+html.reveal-ready .reveal.in .skills-grid > .skills-container,
+html.reveal-ready .reveal.in .cert-list > li,
+html.reveal-ready .reveal.in .xp-list > .xp-row {
   opacity: 1; transform: none;
 }
 
@@ -919,15 +919,14 @@ html.bg-static .hero-name, html.bg-static .hero-now::after, html.bg-static .err-
   .tile, .glass, .blog-content-inner, .setup-group, .terminal-block { background: #fff; box-shadow: none; border: 1px solid #ccc; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .tile::before, .tile::after, .blog-content-inner::after, .setup-group::after, .terminal-block::after { display: none; }
   h1, h2, h3, h4, p, li, strong, .kicker, .hero-hello, .hero-role, .hero-role .typing-effect, .hero-tagline, .now-role, .now-meta,
-  .hero-stat-label, .xp-date, .xp-place, .text-muted, .tech-tag, .cert-list li, footer p, .terminal-body { color: #111 !important; }
+  .hero-stat-label, .xp-date, .xp-place, .text-muted, .tech-tag, .project-kind, .project-facts dt, .project-facts dd, .section-intro, .cert-list li, footer p, .terminal-body { color: #111 !important; }
   .hero-name, .section-title .grad, .blog-page-header .grad, .hero-stat-number, .err-code { background: none; color: #111 !important; -webkit-text-fill-color: #111; filter: none; animation: none; }
   a { color: #1d4ed8; text-decoration: underline; }
   .reveal, .reveal .projects-grid > .project, .reveal .skills-grid > .skills-container, .reveal .cert-list > li, .reveal .xp-list > .xp-row { opacity: 1 !important; transform: none !important; transition: none !important; }
   .blog-content-wrapper { grid-template-rows: 1fr; }
-  html.js .blog-content-wrapper:not(.open) .blog-content { content-visibility: visible; }
+  html.blog-ready .blog-content-wrapper:not(.open) .blog-content { content-visibility: visible; }
   .hero { padding-top: 24px; }
   section, .hero { break-inside: avoid; }
-  .project-side { position: static; }
 }
 
 /* ============================ RESPONSIVE ============================ */
@@ -981,4 +980,3 @@ html.bg-static .hero-name, html.bg-static .hero-now::after, html.bg-static .err-
 @media (hover: none), (pointer: coarse) {
   #cursor-dot, #mouse-trail { display: none; }
 }
-
