@@ -8,6 +8,20 @@ deployed state.
 
 ## [Unreleased]
 
+### Changed — portfolio review (13 September 2026)
+
+- Removed HUB from desktop and mobile navigation on every root page.
+- Brought selected work ahead of the career timeline, added a View projects
+  action, and condensed three featured projects into illustrated case studies.
+- Added readable HTML fallbacks for the role and metrics, clarified raw NAS
+  capacity, and updated the structured-data portrait.
+- Fixed empty-search keyboard behavior, section focus/hash navigation,
+  drawer scrolling and focus wrapping, and dialog background restoration.
+- Made reveal/blog hiding depend on initialized handlers and handled unavailable
+  decorative canvases without stopping other interactions.
+- Added 16 DOM regression checks. Findings, verification commands, and the
+  visual-validation limitation are in `docs/PORTFOLIO_REVIEW_2026-09-13.md`.
+
 ### Changed — site-wide improvement pass (September 2026)
 
 The plan behind this pass, with every finding and the decisions left to the

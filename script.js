@@ -28,6 +28,35 @@
     get running() { return !this.static && !this.idle && !this.hidden; }
   };
 
+  /* Restore exactly the background state a dialog inherited. */
+  function lockBackground(panel, backdrop) {
+    const previousOverflow = document.body.style.overflow;
+    const changed = $$('body > *').filter(el => el !== panel && el !== backdrop
+      && el.tagName !== 'SCRIPT' && !el.inert);
+    changed.forEach(el => { el.inert = true; });
+    document.body.style.overflow = 'hidden';
+    return () => {
+      changed.forEach(el => { el.inert = false; });
+      document.body.style.overflow = previousOverflow;
+    };
+  }
+
+  function navigateSection(hash) {
+    let target;
+    try { target = document.getElementById(decodeURIComponent(hash.slice(1))); }
+    catch (e) { return; }
+    if (!target) return;
+    const reveal = target.closest('.reveal');
+    if (reveal) reveal.classList.add('in');
+    if (!target.hasAttribute('tabindex')) {
+      target.setAttribute('tabindex', '-1');
+      target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+    }
+    if (location.hash !== hash) location.hash = hash;
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }
+
   /* ============================== THEME ============================== */
   (function theme() {
     let saved = null;
@@ -109,6 +138,7 @@
     const cv = $('#mouse-trail');
     if (cv && !motion.static) {
       const ctx = cv.getContext('2d');
+      if (!ctx) return;
       function size() { cv.width = innerWidth; cv.height = innerHeight; }
       size(); window.addEventListener('resize', size);
       const pts = [];
@@ -143,6 +173,7 @@
     const cv = $('#net-canvas');
     if (!cv) return;
     const ctx = cv.getContext('2d');
+    if (!ctx) return;
     let w, h, nodes = [], packets = [];
     const COUNT = () => Math.min(64, Math.round((innerWidth * innerHeight) / 27000));
 
@@ -248,34 +279,60 @@
     const btn = $('#mobile-menu-btn'), dr = $('#nav-drawer'), ov = $('#nav-overlay'), close = $('#drawer-close');
     if (!btn || !dr) return;
     btn.setAttribute('aria-controls', 'nav-drawer');
-    /* Everything except the drawer and its overlay is made inert while it is
-       open, so Tab and screen readers stay inside the menu. */
-    const behind = () => $$('body > *').filter(el => el !== dr && el !== ov && el.tagName !== 'SCRIPT');
+    let unlock = null;
+    dr.inert = true;
     function open() {
+      document.dispatchEvent(new CustomEvent('pf:close-overlays'));
+      dr.inert = false;
       dr.classList.add('open'); ov && ov.classList.add('open'); btn.classList.add('open');
-      btn.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden';
-      behind().forEach(el => { if ('inert' in el) el.inert = true; });
+      btn.setAttribute('aria-expanded', 'true');
+      unlock = lockBackground(dr, ov);
       (close || $('a, button', dr)).focus();
     }
-    function shut() {
+    function shut(restoreFocus = true) {
       if (!dr.classList.contains('open')) return;
       dr.classList.remove('open'); ov && ov.classList.remove('open'); btn.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false'); document.body.style.overflow = '';
-      behind().forEach(el => { if ('inert' in el) el.inert = false; });
-      btn.focus();
+      btn.setAttribute('aria-expanded', 'false');
+      dr.inert = true;
+      if (unlock) { unlock(); unlock = null; }
+      if (restoreFocus) btn.focus({ preventScroll: true });
     }
     btn.addEventListener('click', () => dr.classList.contains('open') ? shut() : open());
     close && close.addEventListener('click', shut);
     ov && ov.addEventListener('click', shut);
-    $$('#nav-drawer a').forEach(a => a.addEventListener('click', shut));
-    window.addEventListener('keydown', e => { if (e.key === 'Escape') shut(); });
+    $$('#nav-drawer a').forEach(a => a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      shut(false);
+      if (href && href.startsWith('#')) { e.preventDefault(); navigateSection(href); }
+    }));
+    window.addEventListener('keydown', e => {
+      if (!dr.classList.contains('open')) return;
+      if (e.key === 'Escape') { e.preventDefault(); shut(); }
+      else if (e.key === 'Tab') {
+        const controls = $$('a[href], button:not([disabled])', dr);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (e.shiftKey && (document.activeElement === first || !dr.contains(document.activeElement))) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && (document.activeElement === last || !dr.contains(document.activeElement))) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    });
+    document.addEventListener('pf:close-overlays', () => shut());
+    window.matchMedia('(min-width: 901px)').addEventListener('change', e => {
+      if (e.matches && dr.classList.contains('open')) {
+        shut(false);
+        const logo = $('.nav-logo');
+        if (logo) logo.focus({ preventScroll: true });
+      }
+    });
   })();
 
   /* ============================== REVEAL ============================== */
   (function reveal() {
     const items = $$('.reveal');
     if (!items.length) return;
-    if (!('IntersectionObserver' in window)) { items.forEach(i => i.classList.add('in')); return; }
+    if (reduceMotion || !('IntersectionObserver' in window)) { items.forEach(i => i.classList.add('in')); return; }
     const io = new IntersectionObserver((entries) => {
       entries.forEach(en => {
         if (en.isIntersecting) {
@@ -283,8 +340,13 @@
           io.unobserve(en.target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
     items.forEach(i => io.observe(i));
+    root.classList.add('reveal-ready');
+    document.addEventListener('focusin', e => {
+      const section = e.target.closest('.reveal');
+      if (section) { section.classList.add('in'); io.unobserve(section); }
+    });
   })();
 
   /* ============================== STAT COUNT-UP ============================== */
@@ -301,7 +363,7 @@
         if (reduceMotion) { el.textContent = pre + target + suf; return; }
         const dur = 1500, t0 = performance.now();
         function step(now) {
-          const p = Math.min((now - t0) / dur, 1);
+          const p = Math.max(0, Math.min((now - t0) / dur, 1));
           const eased = 1 - Math.pow(1 - p, 3);
           el.textContent = pre + Math.round(target * eased) + suf;
           if (p < 1) requestAnimationFrame(step);
@@ -395,6 +457,7 @@
       if (btn) btn.addEventListener('click', e => { e.stopPropagation(); flip(); });
       if (cover) cover.addEventListener('click', flip);
     });
+    root.classList.add('blog-ready');
     /* Deep links (blog.html#home-nas) open the post — on load and when the
        hash changes from the page's own nav. */
     function openFromHash() {
@@ -424,9 +487,9 @@
     };
     const items = [
       { label: 'About', sub: 'section', icon: ico.hash, href: onIndex ? '#about' : 'index.html#about' },
+      { label: 'Projects', sub: 'section', icon: ico.hash, href: onIndex ? '#projects' : 'index.html#projects' },
       { label: 'Career Timeline', sub: 'section', icon: ico.hash, href: onIndex ? '#experience' : 'index.html#experience' },
       { label: 'Skills', sub: 'section', icon: ico.hash, href: onIndex ? '#skills' : 'index.html#skills' },
-      { label: 'Projects', sub: 'section', icon: ico.hash, href: onIndex ? '#projects' : 'index.html#projects' },
       { label: 'Certificates & Honors', sub: 'section', icon: ico.hash, href: onIndex ? '#certificates' : 'index.html#certificates' },
       { label: 'Contact', sub: 'section', icon: ico.mail, href: onIndex ? '#contact' : 'index.html#contact' },
       { label: 'Home / Profile', sub: 'page', icon: ico.doc, href: 'index.html' },
@@ -444,7 +507,11 @@
       { label: 'GitHub', sub: 'external', icon: ico.ext, href: 'https://github.com/FarahPeter', blank: true },
       { label: 'Privacy', sub: 'page', icon: ico.doc, href: 'privacy.html' }
     ];
-    let filtered = items.slice(), active = 0, lastFocus = null;
+    let filtered = items.slice(), active = 0, lastFocus = null, unlock = null;
+    const status = document.createElement('p');
+    status.className = 'visually-hidden';
+    status.setAttribute('role', 'status');
+    pal.appendChild(status);
 
     /* ARIA combobox → listbox wiring (the markup carries the same attributes;
        setting them here keeps every page consistent). */
@@ -458,9 +525,10 @@
 
     function render() {
       results.innerHTML = '';
+      status.textContent = filtered.length ? filtered.length + ' results' : 'No matches found';
       if (!filtered.length) {
-        results.innerHTML = '<div class="cmd-empty" role="option" aria-selected="false" id="cmd-opt-none">No matches found</div>';
-        input.setAttribute('aria-activedescendant', 'cmd-opt-none');
+        results.innerHTML = '<div class="cmd-empty" role="option" aria-disabled="true" aria-selected="false">No matches found</div>';
+        input.removeAttribute('aria-activedescendant');
         return;
       }
       filtered.forEach((it, idx) => {
@@ -477,6 +545,7 @@
       input.setAttribute('aria-activedescendant', 'cmd-opt-' + active);
     }
     function paint() {
+      if (!filtered.length) { input.removeAttribute('aria-activedescendant'); return; }
       $$('.cmd-item', results).forEach((r, i) => {
         const on = i === active;
         r.classList.toggle('active', on);
@@ -490,26 +559,32 @@
       active = 0; render();
     }
     function go(it) {
-      close(); if (!it) return;
-      if (it.href.charAt(0) === '#') { const t = document.querySelector(it.href); if (t) t.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' }); }
+      if (!it) return;
+      close(it.href.charAt(0) !== '#');
+      if (it.href.charAt(0) === '#') { navigateSection(it.href); }
       else if (it.blank) { window.open(it.href, '_blank', 'noopener'); }
       else { window.location.href = it.href; }
     }
     function isOpen() { return pal.classList.contains('open'); }
     function open() {
+      if (isOpen()) return;
+      document.dispatchEvent(new CustomEvent('pf:close-overlays'));
       lastFocus = document.activeElement;
       back.classList.add('open'); pal.classList.add('open');
       input.setAttribute('aria-expanded', 'true');
       if (trigger) trigger.setAttribute('aria-expanded', 'true');
       input.value = ''; filter('');
+      unlock = lockBackground(pal, back);
       input.focus();      // synchronous: the panel's visibility now flips instantly on open
     }
-    function close() {
+    function close(restoreFocus = true) {
       if (!isOpen()) return;
       back.classList.remove('open'); pal.classList.remove('open');
       input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
       if (trigger) trigger.setAttribute('aria-expanded', 'false');
-      if (lastFocus && typeof lastFocus.focus === 'function' && document.contains(lastFocus)) lastFocus.focus();
+      if (unlock) { unlock(); unlock = null; }
+      if (restoreFocus && lastFocus && typeof lastFocus.focus === 'function' && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
       lastFocus = null;
     }
 
@@ -517,10 +592,9 @@
     back.addEventListener('click', close);
     input.addEventListener('input', () => filter(input.value));
     input.addEventListener('keydown', e => {
+      if (!filtered.length && ['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) { e.preventDefault(); return; }
       if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, filtered.length - 1); paint(); scrollActive(); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); paint(); scrollActive(); }
-      else if (e.key === 'Home') { e.preventDefault(); active = 0; paint(); scrollActive(); }
-      else if (e.key === 'End') { e.preventDefault(); active = Math.max(filtered.length - 1, 0); paint(); scrollActive(); }
       else if (e.key === 'Enter') { e.preventDefault(); go(filtered[active]); }
       else if (e.key === 'Tab') { e.preventDefault(); }   // the input is the dialog's only control: keep focus inside
     });
@@ -529,6 +603,7 @@
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); isOpen() ? close() : open(); }
       else if (e.key === 'Escape' && isOpen()) { close(); }
     });
+    document.addEventListener('pf:close-overlays', () => close());
   })();
 
   /* ============================== CURSOR SPOTLIGHT ============================== */

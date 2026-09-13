@@ -47,7 +47,7 @@ adding one.
 ### Pages (root)
 | File | Lines | Role |
 |------|-------|------|
-| `index.html` | ~660 | Landing/profile. Hero "bento" grid (responsive WebP portrait), count-up stats, About, Experience & Education timeline, Skills (tag tiles), Projects, Certificates, Contact. Contains a JSON-LD `@graph` (WebSite + ProfilePage + Person). |
+| `index.html` | ~600 | Landing/profile. Hero "bento" grid (responsive WebP portrait), count-up stats, About, Selected Projects (three illustrated case studies plus four smaller projects), Experience & Education timeline, Skills (tag tiles), Certificates, Contact. Contains a JSON-LD `@graph` (WebSite + ProfilePage + Person). |
 | `journey.html` | ~2060 | "Journey" — immersive Apple-style scrollytelling intro. Nine pinned, scroll-scrubbed scenes: hero, statement, route timeline, **photo reel (`jn-s3b`, "Two years, away")**, craft gallery, **photo reel (`jn-s4b`, "Where it actually runs")**, packet flow, **photo reel (`jn-s5b`, "And the rest of it")**, finale. The three reels share one `buildReel()` factory (full-bleed dissolve + Ken Burns) and derive every timing, the counter and the tick strip from the number of `.jn-frame` figures in the markup — adding a photo is a markup-only change. Photos live in `Files/images/journey/web/` at two widths (`-900`/`-1600`), EXIF-stripped. Self-contained: page-scoped `<style>` + inline engine, all `jn-` prefixed; static fallback when JS is off, when `prefers-reduced-motion` is set, or if the engine throws. The `<head>` boot script adds `jn-on` before first paint; the engine's IntersectionObserver toggles `.jn-live` on the scene on screen, which is what scopes `will-change` and the decorative loops. |
 | `blog.html` | ~560 | Research blog. Three expandable write-ups: `#aqm-research`, `#home-server`, `#home-nas`; each cover has a real `<button class="cover-toggle" aria-expanded>` and a `…-body` wrapper. Covers are responsive WebP/JPEG derivatives. Carries `Blog`/`BlogPosting` JSON-LD (no dates — the owner has to add `datePublished`). |
 | `fun.html` | ~780 | "Interactive Hub" — filterable grid of cards linking into `FUN/`. Has a page-specific `<style>` block (hub grid) and a small inline filter script (`aria-pressed` pills + a live result count). |
@@ -119,15 +119,15 @@ Shared state at the top of the IIFE: `reduceMotion` (the OS preference),
 3. **cursor** — soft glow under the pointer + canvas mouse-trail (fine-pointer devices only); the trail loop runs only while a point is fading.
 4. **network** — animated node/packet network on `#net-canvas`; colors derive from the live `--accent` CSS variable (re-read on `pf:theme`); pauses while `motion.running` is false; draws one still frame under reduced motion.
 5. **scrollUI** — scroll-progress bar + nav shadow + auto-hide-on-scroll-down (never while focus is inside the nav).
-6. **drawer** — mobile nav drawer open/close + overlay + Esc handling; moves focus in/out and makes the rest of the page `inert` while open.
-7. **reveal** — `IntersectionObserver` adds `.in` to `.reveal` sections (CSS only hides them under `html.js`).
+6. **drawer** — mobile nav drawer open/close + overlay + Esc handling, Tab wrapping, section focus, and desktop resize cleanup. Uses `lockBackground` to preserve prior inert/scroll state and coordinates with the palette through `pf:close-overlays`.
+7. **reveal** — `IntersectionObserver` adds `.in` to `.reveal` sections (CSS only hides them after `html.reveal-ready` is enabled; keyboard focus also reveals a section).
 8. **counters** — count-up animation for `.hero-stat-number` (`data-target` / `data-prefix` / `data-suffix`); instant under reduced motion.
 9. **typing** — typewriter effect for `.typing-effect` (`data-text`), typing into `.typing-out` over an invisible `.typing-sizer` so the line never reflows.
 10. **activeNav** — highlights the in-view section's nav link (`.active` + `aria-current="location"`).
 11. **copyEmail** — copies `peter@peterfarah.com` + shows (and announces) a toast.
 12. **backTop** — back-to-top button visibility + smooth scroll.
 13. **blog** — expand/collapse posts via the `.cover-toggle` button (`aria-expanded`, collapsed bodies `inert`); opens the post matching `location.hash` on load and on `hashchange`.
-14. **palette** — ⌘K / Ctrl-K command palette (search + jump to sections/pages/external links). Combobox/listbox ARIA, Tab trap, focus return, Escape. Its item list is hard-coded inside this module — **update it when adding pages or sections.**
+14. **palette** — ⌘K / Ctrl-K command palette (search + jump to sections/pages/external links). Combobox/listbox ARIA, announced result counts, empty-result guards, Tab trap, background isolation, focus return, and Escape. Section actions update the hash and focus the destination via `navigateSection`. Its item list is hard-coded inside this module — **update it when adding pages or sections.**
 15. **spotlight** — delegated, rAF-throttled pointer tracking; sets element-local `--mx`/`--my` on the nearest `.tile-hover`/`.hub-card`/`.blog-cover` so its CSS radial glow follows the cursor (fine-pointer only).
 16. **tilt** — 3D tilt (max 4°) on `.hero-photo` via pointermove + rAF; adds/removes `.tilt-3d` (fine-pointer only).
 17. **magnetic** — pulls `.btn`, `.copy-email-btn`, and `.social-icons a` a few px toward the cursor via `--mag-x`/`--mag-y` (fine-pointer only).
@@ -144,7 +144,7 @@ Shared state at the top of the IIFE: `reduceMotion` (the OS preference),
 - `:root` — design tokens: colors (`--bg`, `--accent*`, `--danger`, glass surfaces), radii, shadows, blur, nav height, max width, font families.
 - `[data-theme="light"]` — light-mode token overrides (`--accent-2` and `--faint` are tuned to pass AA on the light canvas).
 - Base: `[hidden]`, `main`, body layers (aurora, grid, grain), typography, `.skip-link`, `.visually-hidden`, focus ring.
-- Then component styles: nav/drawer (drawer is `visibility:hidden` while closed), hero bento (typing sizer), tiles, timeline (`.xp-*`), skills tiles, projects, certificates, footer (`.footer-links`), back-to-top, command palette (`.cmd-*`, `visibility` flips instantly on open), blog (`.blog-*`, collapsed bodies use `content-visibility: hidden`), server panel (`.setup-*`), 404, reveal (guarded by `html.js`).
+- Then component styles: nav/drawer (drawer is `visibility:hidden` while closed), hero bento (typing sizer), tiles, timeline (`.xp-*`), skills tiles, projects, certificates, footer (`.footer-links`), back-to-top, command palette (`.cmd-*`, `visibility` flips instantly on open), blog (`.blog-*`, collapsed bodies use `content-visibility: hidden` only after `html.blog-ready` is enabled), server panel (`.setup-*`), 404, reveal (guarded by `html.reveal-ready`).
 - `html.bg-idle` / `html.bg-static` pause rules, a `prefers-reduced-motion` block, a `@media print` block, then the responsive media queries.
 - Page-specific styling that isn't global lives in a `<style>` block in that page (e.g. the hub grid in `fun.html`, the reachability badges in `server.html`).
 
@@ -180,3 +180,11 @@ Shared state at the top of the IIFE: `reduceMotion` (the OS preference),
 | Change the share card of a page | `Files/images/og/` + that page's `og:image` / `twitter:image` |
 | Update crawler/SEO behavior | `sitemap.xml`, `robots.txt`, `llms.txt`, each page's `<head>` |
 | Change what the privacy page says | `privacy.html` (and the `telemetry` module if what is sent changes) |
+
+## 7. Follow-up review and checks
+
+`docs/PORTFOLIO_REVIEW_2026-09-13.md` records the navigation, project presentation,
+progressive-enhancement, and keyboard fixes from 13 September. HUB is removed
+from desktop/mobile navigation while remaining reachable via the footer and
+palette. `tests/portfolio.test.cjs` holds optional DOM regression checks; setup
+and the remaining visual-validation limitation are documented in that review.
