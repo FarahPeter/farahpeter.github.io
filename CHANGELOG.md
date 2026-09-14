@@ -8,6 +8,18 @@ deployed state.
 
 ## [Unreleased]
 
+### Fixed — restore full motion (14 September 2026)
+
+- Removed OS reduced-motion gates, save-data / low-hardware static backgrounds,
+  and the six-second visible-page idle pause. Reveals, counters, typing, smooth
+  scrolling, pointer effects and Journey retain the full animated experience.
+- Preserved hidden-tab pause/resume, off-screen scene culling, print styles and
+  readable no-JS / missing-API / engine-failure fallbacks.
+- Added the owner's full-motion rule to `AGENTS.md`, Claude/Copilot instructions
+  and project docs; marked conflicting historical audit guidance as superseded.
+- Added motion behavior tests and a live-source guard, run by the new
+  `Portfolio regression checks` workflow on pull requests and pushes.
+
 ### Changed — portfolio review (13 September 2026)
 
 - Removed HUB from desktop and mobile navigation on every root page.
@@ -55,7 +67,8 @@ owner, is in `docs/IMPROVEMENT_PLAN.md`. `FUN/` was left untouched.
   (`content-visibility: hidden`), and the three typefaces are self-hosted as
   variable WOFF2 under `Files/fonts/` instead of a render-blocking Google Fonts
   `@import` (which also removes the third-party request).
-- **Motion that respects the visitor.** `prefers-reduced-motion` is honoured again
+- **Historical motion change — reverted on 14 September 2026 per the owner's
+  full-motion requirement (`AGENTS.md`).** This pass had honoured `prefers-reduced-motion`
   in `script.js` and the journey engine (static layout, still network frame, no
   count-ups or typing), and a new `motionBudget` module pauses the aurora and the
   canvas loops after six seconds without input, in hidden tabs, and on

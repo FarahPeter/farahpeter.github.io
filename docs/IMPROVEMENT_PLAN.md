@@ -1,5 +1,10 @@
 # Improvement Plan — peterfarah.com (September 2026)
 
+> **Motion correction — 14 September 2026:** this is a historical audit. The
+> owner requires full motion; recommendations to enable reduced motion or
+> pause visible-page animations for inactivity or device settings were rejected
+> and reverted. Follow `AGENTS.md`, not those earlier recommendations.
+
 > Scope: the live site — `index.html`, `journey.html`, `blog.html`, `fun.html`,
 > `server.html`, `404.html`, `styles.css`, `script.js`, the SEO files and the
 > assets under `Files/`. **`FUN/` is out of scope by the owner's request** and is
@@ -39,8 +44,8 @@ UX, SEO, accessibility or performance · **L** = polish.
 
 | # | Finding | Where |
 |---|---------|-------|
-| 10 | `prefers-reduced-motion` is ignored (hard-coded `false` in both scripts) and infinite animations (aurora, canvas, name shimmer, pulses) have no pause. | `script.js`, `journey.html`, `styles.css` |
-| 11 | Animations never idle: aurora blur layers + two rAF canvas loops keep every `backdrop-filter` surface re-rendering (measured 12–14 fps in software compositing on index/fun vs 52–60 fps with the background paused); the mouse-trail loop clears the canvas forever. | `script.js`, `styles.css` |
+| 10 | **Superseded:** the audit treated always-on animation as a defect. Full motion is the owner's explicit requirement; do not add motion-preference gates. | `script.js`, `journey.html`, `styles.css` |
+| 11 | **Historical performance finding; visible-page idle pauses were rejected by the owner.** Animations never idle: aurora blur layers + two rAF canvas loops keep every `backdrop-filter` surface re-rendering (measured 12–14 fps in software compositing on index/fun vs 52–60 fps with the background paused); the mouse-trail loop clears the canvas forever. | `script.js`, `styles.css` |
 | 12 | Light theme contrast: `--accent-2` 2.4:1 on the background (gradient headings, stats, primary-button end, badges); `--faint` 2.5:1 light / 3.8:1 dark yet used for real text (probe footnote, palette placeholder, "bash" label). | `styles.css` tokens |
 | 13 | Palette has no ARIA pattern (unnamed input, no listbox/option roles, no focus return, no Tab trap); theme toggles expose no state; hub filter pills have no `aria-pressed` and no result announcement. | `index.html`, `journey.html`, `fun.html`, `script.js` |
 | 14 | No skip link and no `<main>` on five pages; the auto-hiding navbar keeps its links focusable while translated off-screen; journey off-stage links are focusable while invisible. | all pages, `script.js`, `journey.html` |
@@ -97,9 +102,10 @@ same chrome. Everything stays plain HTML/CSS/vanilla JS with no build step.
 - Palette and drawer: `visibility` flips instantly on open, delayed on close;
   `.nav-drawer` hidden from the tab order when closed. *(2, 4)*
 - `html.js .reveal` guard so content is visible without JavaScript. *(5)*
-- `@media (prefers-reduced-motion: reduce)` block that stops every infinite
-  animation and smooth scrolling; `html.bg-idle` / `html.bg-static` rules that
-  pause the aurora when the visitor is idle or on a low-end device. *(10, 11)*
+- **Motion recommendation superseded (14 September):** keep full CSS
+  animation and smooth scrolling. Only `html.bg-hidden` may pause the background
+  while the tab is actually hidden; do not restore motion-preference, idle or
+  device-based suppression. See `AGENTS.md`. *(10, 11)*
 - Skip link, `<main>` support, footer link row, print stylesheet, in-text link
   underlines, larger drawer close target, readable `.photo-geo` on light,
   typing-effect sizer, `content-visibility: hidden` for collapsed blog bodies,
@@ -114,10 +120,10 @@ same chrome. Everything stays plain HTML/CSS/vanilla JS with no build step.
 - **drawer:** move focus in/out, `inert` the page behind it, `aria-expanded`
   everywhere. *(4)*
 - **scrollUI:** never hide the nav while focus is inside it. *(14)*
-- **reveal / motion:** honour `prefers-reduced-motion`; add a small `motion`
-  module that marks the page idle after ~4 s without input, pauses the network
-  canvas and aurora, runs the mouse trail only while points are alive, and
-  stops both loops in hidden tabs. *(10, 11)*
+- **reveal / motion — corrected owner requirement:** preserve animated
+  reveals, counters, typing, backgrounds and Journey. No motion-preference,
+  idle or device/data-saving gates. Hidden-tab suspension and stopping an
+  already-faded mouse trail remain valid optimizations. See `AGENTS.md`. *(10, 11)*
 - **blog:** expander is a button with `aria-expanded`; collapsed bodies are
   `inert`; `hashchange` opens the target post. *(3, 15)*
 - **copyEmail:** re-insert the toast text so the live region announces. *(26)*

@@ -48,7 +48,7 @@ adding one.
 | File | Lines | Role |
 |------|-------|------|
 | `index.html` | ~600 | Landing/profile. Hero "bento" grid (responsive WebP portrait), count-up stats, About, Selected Projects (three illustrated case studies plus four smaller projects), Experience & Education timeline, Skills (tag tiles), Certificates, Contact. Contains a JSON-LD `@graph` (WebSite + ProfilePage + Person). |
-| `journey.html` | ~2060 | "Journey" — immersive Apple-style scrollytelling intro. Nine pinned, scroll-scrubbed scenes: hero, statement, route timeline, **photo reel (`jn-s3b`, "Two years, away")**, craft gallery, **photo reel (`jn-s4b`, "Where it actually runs")**, packet flow, **photo reel (`jn-s5b`, "And the rest of it")**, finale. The three reels share one `buildReel()` factory (full-bleed dissolve + Ken Burns) and derive every timing, the counter and the tick strip from the number of `.jn-frame` figures in the markup — adding a photo is a markup-only change. Photos live in `Files/images/journey/web/` at two widths (`-900`/`-1600`), EXIF-stripped. Self-contained: page-scoped `<style>` + inline engine, all `jn-` prefixed; static fallback when JS is off, when `prefers-reduced-motion` is set, or if the engine throws. The `<head>` boot script adds `jn-on` before first paint; the engine's IntersectionObserver toggles `.jn-live` on the scene on screen, which is what scopes `will-change` and the decorative loops. |
+| `journey.html` | ~2060 | "Journey" — immersive Apple-style scrollytelling intro. Nine pinned, scroll-scrubbed scenes: hero, statement, route timeline, **photo reel (`jn-s3b`, "Two years, away")**, craft gallery, **photo reel (`jn-s4b`, "Where it actually runs")**, packet flow, **photo reel (`jn-s5b`, "And the rest of it")**, finale. The three reels share one `buildReel()` factory (full-bleed dissolve + Ken Burns) and derive every timing, the counter and the tick strip from the number of `.jn-frame` figures in the markup — adding a photo is a markup-only change. Photos live in `Files/images/journey/web/` at two widths (`-900`/`-1600`), EXIF-stripped. Self-contained: page-scoped `<style>` + inline engine, all `jn-` prefixed; static fallback only when JS is off or the engine throws; full animated scrollytelling is required regardless of OS/device preferences (see `AGENTS.md`). The `<head>` boot script adds `jn-on` before first paint; the engine's IntersectionObserver toggles `.jn-live` on the scene on screen, which is what scopes `will-change` and the decorative loops. |
 | `blog.html` | ~560 | Research blog. Three expandable write-ups: `#aqm-research`, `#home-server`, `#home-nas`; each cover has a real `<button class="cover-toggle" aria-expanded>` and a `…-body` wrapper. Covers are responsive WebP/JPEG derivatives. Carries `Blog`/`BlogPosting` JSON-LD (no dates — the owner has to add `datePublished`). |
 | `fun.html` | ~780 | "Interactive Hub" — filterable grid of cards linking into `FUN/`. Has a page-specific `<style>` block (hub grid) and a small inline filter script (`aria-pressed` pills + a live result count). |
 | `server.html` | ~330 | "Service Access Panel" — buttons linking to self-hosted services behind Cloudflare Zero Trust, each showing a live reachability dot + RTT from the **svcStatus** module. Page-specific probe styling lives in its inline `<style>`. Some service groups are commented out. **Not** related to `server*.py`. |
@@ -58,7 +58,7 @@ adding one.
 ### Shared assets (root)
 | File | Lines | Role |
 |------|-------|------|
-| `styles.css` | ~1000 | Global stylesheet. `@font-face` block, `:root` design tokens + `[data-theme="light"]` overrides, components, motion-budget / reduced-motion / print blocks, responsive queries. The single source of truth for the look. |
+| `styles.css` | ~1000 | Global stylesheet. `@font-face` block, `:root` design tokens + `[data-theme="light"]` overrides, components, hidden-tab pause / print blocks, responsive queries. The single source of truth for the look. |
 | `script.js` | ~880 | All interactivity, wrapped in one `(function(){ 'use strict'; … })()`. Vanilla ES6+, no dependencies. See module list below. |
 
 ### SEO / config (root)
@@ -107,21 +107,20 @@ expect to find them in a fresh clone, and don't `git add` them.
 ## 3. `script.js` — module map
 
 One IIFE containing independent sub-modules (each its own inner IIFE). Helpers:
-`$` / `$$` (querySelector wrappers). Note `reduceMotion` is hard-coded `false`
-(animations always on).
+`$` / `$$` (querySelector wrappers). Full motion is an explicit owner requirement
+documented in `AGENTS.md`; there is no reduced-motion or device-based mode.
 
-Shared state at the top of the IIFE: `reduceMotion` (the OS preference),
-`lowEnd` (save-data / ≤2 GB / ≤2 cores) and a `motion` object (`idle`,
-`hidden`, `static`, `running`) that the decorative loops consult.
+The shared `motion` object tracks only `hidden` and its derived `running` state.
+Visible tabs keep animating, including while the visitor is reading without input.
 
 1. **theme** — applies `data-theme` from `localStorage['pf-theme']` (default `dark`); wires `#theme-toggle` + `#drawer-theme`; keeps `aria-pressed`, the toggle label and `meta[name=theme-color]` in sync; fires `pf:theme`.
-2. **motionBudget** — sets `html.bg-idle` after 6 s without input (removed on the next pointer/scroll/key event), `html.bg-static` for reduced-motion / low-end devices, tracks tab visibility, and fires `pf:motion` so loops can stop and restart.
+2. **motionVisibility** — tracks actual tab visibility, toggles `html.bg-hidden` and fires `pf:motion` so decorative loops pause in hidden tabs and resume when visible. No inactivity timer or OS/device/data-saving gates.
 3. **cursor** — soft glow under the pointer + canvas mouse-trail (fine-pointer devices only); the trail loop runs only while a point is fading.
-4. **network** — animated node/packet network on `#net-canvas`; colors derive from the live `--accent` CSS variable (re-read on `pf:theme`); pauses while `motion.running` is false; draws one still frame under reduced motion.
+4. **network** — animated node/packet network on `#net-canvas`; colors derive from the live `--accent` CSS variable (re-read on `pf:theme`); pauses only while the tab is hidden and resumes when visible.
 5. **scrollUI** — scroll-progress bar + nav shadow + auto-hide-on-scroll-down (never while focus is inside the nav).
 6. **drawer** — mobile nav drawer open/close + overlay + Esc handling, Tab wrapping, section focus, and desktop resize cleanup. Uses `lockBackground` to preserve prior inert/scroll state and coordinates with the palette through `pf:close-overlays`.
 7. **reveal** — `IntersectionObserver` adds `.in` to `.reveal` sections (CSS only hides them after `html.reveal-ready` is enabled; keyboard focus also reveals a section).
-8. **counters** — count-up animation for `.hero-stat-number` (`data-target` / `data-prefix` / `data-suffix`); instant under reduced motion.
+8. **counters** — count-up animation for `.hero-stat-number` (`data-target` / `data-prefix` / `data-suffix`); starts on viewport entry, with readable final values in the HTML fallback.
 9. **typing** — typewriter effect for `.typing-effect` (`data-text`), typing into `.typing-out` over an invisible `.typing-sizer` so the line never reflows.
 10. **activeNav** — highlights the in-view section's nav link (`.active` + `aria-current="location"`).
 11. **copyEmail** — copies `peter@peterfarah.com` + shows (and announces) a toast.
@@ -145,7 +144,7 @@ Shared state at the top of the IIFE: `reduceMotion` (the OS preference),
 - `[data-theme="light"]` — light-mode token overrides (`--accent-2` and `--faint` are tuned to pass AA on the light canvas).
 - Base: `[hidden]`, `main`, body layers (aurora, grid, grain), typography, `.skip-link`, `.visually-hidden`, focus ring.
 - Then component styles: nav/drawer (drawer is `visibility:hidden` while closed), hero bento (typing sizer), tiles, timeline (`.xp-*`), skills tiles, projects, certificates, footer (`.footer-links`), back-to-top, command palette (`.cmd-*`, `visibility` flips instantly on open), blog (`.blog-*`, collapsed bodies use `content-visibility: hidden` only after `html.blog-ready` is enabled), server panel (`.setup-*`), 404, reveal (guarded by `html.reveal-ready`).
-- `html.bg-idle` / `html.bg-static` pause rules, a `prefers-reduced-motion` block, a `@media print` block, then the responsive media queries.
+- `html.bg-hidden` pauses decorative CSS loops only in hidden tabs; a `@media print` block and responsive media queries follow. There are no motion-preference or idle/device suppression rules.
 - Page-specific styling that isn't global lives in a `<style>` block in that page (e.g. the hub grid in `fun.html`, the reachability badges in `server.html`).
 
 ---
@@ -158,7 +157,7 @@ Shared state at the top of the IIFE: `reduceMotion` (the OS preference),
 - **Comments:** if a block is commented out, leave it commented unless explicitly asked to change it (several pages intentionally park features in comments).
 - **Shared edits propagate:** `styles.css` and `script.js` are loaded by every page — a change affects the whole site. Sanity-check across pages.
 - **Keep cross-references in sync:** when adding/renaming a page or major section, update the navbar + mobile drawer + footer links on every page, the command-palette item list in `script.js`, and `sitemap.xml` (with a fresh `<lastmod>`).
-- **Motion:** decorative loops must check `motion.running` and listen for `pf:motion`; anything infinite in CSS should be listed in the `html.bg-idle` / `html.bg-static` rule so the idle pause covers it. `prefers-reduced-motion` is honoured — do not hard-code it off again.
+- **Motion (owner requirement):** keep full motion enabled. Never add reduced/low-motion modes, motion-preference gates, or device/save-data/battery/idle suppression; see `AGENTS.md`. Decorative loops may check `motion.running` and listen for `pf:motion` to pause only in hidden tabs. Preserve off-screen scene culling, pointer capability checks, print and readable failure/no-JS fallbacks.
 - **Images:** give every `<img>` `width`/`height`; anything above ~150 KB gets a WebP/JPEG derivative and `srcset` (the originals stay as sources).
 - **No build step:** test by opening the HTML directly or via a simple static server; there's nothing to compile.
 
@@ -186,5 +185,8 @@ Shared state at the top of the IIFE: `reduceMotion` (the OS preference),
 `docs/PORTFOLIO_REVIEW_2026-09-13.md` records the navigation, project presentation,
 progressive-enhancement, and keyboard fixes from 13 September. HUB is removed
 from desktop/mobile navigation while remaining reachable via the footer and
-palette. `tests/portfolio.test.cjs` holds optional DOM regression checks; setup
-and the remaining visual-validation limitation are documented in that review.
+palette. `tests/portfolio.test.cjs` holds DOM regression checks, including the
+full-motion requirement. `tests/motion-policy.test.cjs` scans live sources for
+forbidden motion gates. The `Portfolio regression checks` GitHub Actions workflow
+runs both on pull requests and pushes. Setup commands are in `AGENTS.md`; DOM
+tests do not replace real-browser visual verification.

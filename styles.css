@@ -895,20 +895,13 @@ html.reveal-ready .reveal.in .xp-list > .xp-row {
 
 @keyframes blink-cursor { 50% { opacity: 0; } }
 
-/* ============================ MOTION BUDGET ============================ */
-/* html.bg-idle is set by script.js after a few seconds without input and
-   removed on the next one; html.bg-static marks reduced-motion / save-data /
-   very low-end devices. Both freeze the decorative loops (the canvases stop
-   requesting frames from JS). */
-html.bg-idle #bg-aurora::before, html.bg-idle #bg-aurora::after, html.bg-idle #bg-aurora .orb, html.bg-idle #bg-aurora .orb2,
-html.bg-idle .hero-name, html.bg-idle .hero-now::after, html.bg-idle .err-code,
-html.bg-static #bg-aurora::before, html.bg-static #bg-aurora::after, html.bg-static #bg-aurora .orb, html.bg-static #bg-aurora .orb2,
-html.bg-static .hero-name, html.bg-static .hero-now::after, html.bg-static .err-code { animation-play-state: paused; }
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-}
+/* ============================ TAB VISIBILITY ============================ */
+/* Owner requirement (AGENTS.md): visible pages always retain full motion.
+   Pause decorative loops only while the document is actually hidden. */
+html.bg-hidden #bg-aurora::before, html.bg-hidden #bg-aurora::after,
+html.bg-hidden #bg-aurora .orb, html.bg-hidden #bg-aurora .orb2,
+html.bg-hidden .hero-name, html.bg-hidden .hero-now::after,
+html.bg-hidden .err-code { animation-play-state: paused; }
 
 /* ============================ PRINT ============================ */
 @media print {
