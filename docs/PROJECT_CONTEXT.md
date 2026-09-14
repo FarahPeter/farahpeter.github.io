@@ -4,7 +4,7 @@
 > project is** before touching anything. For the technical map (files, JS/CSS
 > modules, conventions, what to ignore), read `docs/ARCHITECTURE.md`.
 > For repo-level notes and things to know before editing, read the root
-> `CLAUDE.md`.
+> `AGENTS.md` and `CLAUDE.md`.
 
 ---
 
@@ -69,6 +69,13 @@ Defined centrally in `styles.css` (`:root` tokens). The aesthetic is
 
 Keep new work visually consistent with these tokens and patterns. Reuse the CSS
 variables instead of hard-coding colors.
+
+**Owner requirement — full motion stays enabled.** Never restore reduced-motion
+or low-motion modes, motion-preference gates, or device/save-data/battery/idle
+animation suppression. Journey must keep its animated pinned layout. Only an
+explicit new request from Peter can change this requirement. `AGENTS.md` defines
+the permitted no-JS, missing-API, engine-failure, print and visibility fallbacks
+and the regression checks. Earlier audit recommendations on motion are superseded.
 
 ---
 

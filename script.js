@@ -9,23 +9,13 @@
   const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
   const root = document.documentElement;
   root.classList.add('js');   // the <head> boot script does this too; belt and braces
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer  = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  /* Devices that should get the still version of the background: the OS asks
-     for reduced motion, the browser asks for data saving, or the hardware is
-     genuinely small. (Mid-range phones keep the full look.) */
-  const lowEnd = !!(navigator.connection && navigator.connection.saveData)
-    || (navigator.deviceMemory !== undefined && navigator.deviceMemory <= 2)
-    || (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 2);
-
-  /* Shared motion state, driven by the motionBudget module below. Decorative
-     loops check motion.running before requesting another frame and listen for
-     'pf:motion' to wake up again. */
+  /* Owner requirement: full motion on every visible page. Do not add OS,
+     device, data-saving or inactivity gates. See AGENTS.md. Only hidden tabs
+     pause decorative loops; 'pf:motion' wakes them when the tab is visible. */
   const motion = {
-    idle: false,
     hidden: !!document.hidden,
-    static: reduceMotion || lowEnd,
-    get running() { return !this.static && !this.idle && !this.hidden; }
+    get running() { return !this.hidden; }
   };
 
   /* Restore exactly the background state a dialog inherited. */
@@ -54,7 +44,7 @@
     }
     if (location.hash !== hash) location.hash = hash;
     target.focus({ preventScroll: true });
-    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /* ============================== THEME ============================== */
@@ -91,33 +81,17 @@
     sync();
   })();
 
-  /* ============================== MOTION BUDGET ============================== */
-  /* Marks the page idle after a few seconds without input so the aurora and the
-     canvases stop producing frames while a visitor is reading; the next
-     pointer/scroll/key event resumes them. Hidden tabs and static devices are
-     handled the same way. */
-  (function motionBudget() {
-    const IDLE_MS = 6000;
-    let timer = null;
+  /* ============================== TAB VISIBILITY ============================== */
+  (function motionVisibility() {
     function emit() {
-      root.classList.toggle('bg-idle', motion.idle);
-      root.classList.toggle('bg-static', motion.static);
+      root.classList.toggle('bg-hidden', motion.hidden);
       document.dispatchEvent(new CustomEvent('pf:motion'));
     }
-    function wake() {
-      if (motion.idle) { motion.idle = false; emit(); }
-      clearTimeout(timer);
-      timer = setTimeout(() => { motion.idle = true; emit(); }, IDLE_MS);
-    }
-    ['pointermove', 'pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel']
-      .forEach(t => window.addEventListener(t, wake, { passive: true }));
     document.addEventListener('visibilitychange', () => {
       motion.hidden = document.hidden;
       emit();
-      if (!document.hidden) wake();
     });
     emit();
-    wake();
   })();
 
   /* ============================== CUSTOM CURSOR ============================== */
@@ -136,7 +110,7 @@
     document.addEventListener('mouseout',  e => { if (e.target.closest(hov)) glow.classList.remove('hover'); });
 
     const cv = $('#mouse-trail');
-    if (cv && !motion.static) {
+    if (cv) {
       const ctx = cv.getContext('2d');
       if (!ctx) return;
       function size() { cv.width = innerWidth; cv.height = innerHeight; }
@@ -206,7 +180,7 @@
       COL = rgb();
     }
     init();
-    window.addEventListener('resize', () => { init(); if (motion.static) frame(); });   // a resize clears the canvas
+    window.addEventListener('resize', init);
 
     function spawnPacket() {
       if (nodes.length < 2) return;
@@ -218,6 +192,7 @@
     let raf = null;
     function frame() {
       raf = null;
+      if (!motion.running) return;
       ctx.clearRect(0, 0, w, h);
       for (const nd of nodes) {
         nd.x += nd.vx; nd.y += nd.vy;
@@ -248,9 +223,7 @@
     }
     function kick() { if (!raf && motion.running) raf = requestAnimationFrame(frame); }
     document.addEventListener('pf:motion', kick);
-    /* Reduced motion / static devices still get the network — as one still frame. */
-    if (motion.static) { frame(); document.addEventListener('pf:theme', frame); }
-    else kick();
+    kick();
   })();
 
   /* ============================== SCROLL PROGRESS + NAV ============================== */
@@ -332,7 +305,7 @@
   (function reveal() {
     const items = $$('.reveal');
     if (!items.length) return;
-    if (reduceMotion || !('IntersectionObserver' in window)) { items.forEach(i => i.classList.add('in')); return; }
+    if (!('IntersectionObserver' in window)) { items.forEach(i => i.classList.add('in')); return; }
     const io = new IntersectionObserver((entries) => {
       entries.forEach(en => {
         if (en.isIntersecting) {
@@ -360,7 +333,6 @@
       nums.forEach(el => {
         const target = parseFloat(el.dataset.target || '0');
         const pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
-        if (reduceMotion) { el.textContent = pre + target + suf; return; }
         const dur = 1500, t0 = performance.now();
         function step(now) {
           const p = Math.max(0, Math.min((now - t0) / dur, 1));
@@ -382,7 +354,6 @@
     if (!el) return;
     const out = $('.typing-out', el) || el;      // .typing-out sits over an invisible full-width sizer
     const text = el.dataset.text || el.textContent.trim();
-    if (reduceMotion) { out.textContent = text; return; }
     out.textContent = '';
     let i = 0;
     (function type() { if (i <= text.length) { out.textContent = text.slice(0, i++); setTimeout(type, 55); } })();
@@ -430,7 +401,7 @@
     const btn = $('#back-to-top');
     if (!btn) return;
     window.addEventListener('scroll', () => btn.classList.toggle('visible', window.scrollY > 520), { passive: true });
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }));
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   })();
 
   /* ============================== BLOG EXPAND ============================== */
@@ -466,7 +437,7 @@
       try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) { return; }
       if (!target || !target.classList.contains('blog-post')) return;
       setOpen(target, true);
-      setTimeout(() => target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }), 400);
+      setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
     }
     openFromHash();
     window.addEventListener('hashchange', openFromHash);

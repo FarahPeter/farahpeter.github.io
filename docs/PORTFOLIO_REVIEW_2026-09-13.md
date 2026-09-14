@@ -1,5 +1,10 @@
 # Portfolio review — 13 September 2026
 
+> **Motion correction — 14 September 2026:** this review retained reduced-motion
+> behavior from the preceding audit. It has since been removed at the owner's
+> request. Full animations are required; `AGENTS.md` is authoritative, and the
+> regression suite now verifies full motion even when OS reduced motion is set.
+
 This pass follows the existing September audit. It reviews the current root
 pages, shared CSS/JavaScript, local links, and the published homepage. The
 portfolio remains a static GitHub Pages site with its existing blue glass

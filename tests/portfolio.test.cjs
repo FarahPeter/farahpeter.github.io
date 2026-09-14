@@ -13,11 +13,11 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const pages = fs.readdirSync(root).filter(file => file.endsWith('.html'));
 
 function setup(file = 'index.html', options = {}) {
-  const dom = new JSDOM(read(file), { url: `https://portfolio.test/${file}`, runScripts: 'outside-only' });
-  const w = dom.window, d = w.document, observers = [], frames = [], media = new Map();
+  const dom = new JSDOM(read(file), { url: `https://portfolio.test/${file}`, runScripts: 'outside-only', pretendToBeVisual: true });
+  const w = dom.window, d = w.document, observers = [], frames = [], media = new Map(), canvasDraws = new Map();
   w.matchMedia = query => {
     if (!media.has(query)) media.set(query, {
-      matches: query.includes('prefers-reduced-motion') ? options.reduceMotion !== false : false,
+      matches: query.includes('prefers-reduced-motion') ? !!options.reduceMotion : query.includes('pointer: fine') && !!options.finePointer,
       addEventListener(type, listener) { this.listener = listener; }
     });
     return media.get(query);
@@ -26,9 +26,19 @@ function setup(file = 'index.html', options = {}) {
     get() { return this.hasAttribute('inert'); },
     set(value) { this.toggleAttribute('inert', !!value); }
   });
-  w.HTMLCanvasElement.prototype.getContext = () => options.noCanvas ? null : new Proxy({}, { get: () => () => {} });
-  w.HTMLElement.prototype.scrollIntoView = function () { this.dataset.scrolled = 'true'; };
-  w.scrollTo = () => {};
+  Object.defineProperties(w.navigator, {
+    connection: { value: { saveData: !!options.saveData } },
+    deviceMemory: { value: options.deviceMemory ?? 8 },
+    hardwareConcurrency: { value: options.cores ?? 8 }
+  });
+  w.HTMLCanvasElement.prototype.getContext = function () {
+    const id = this.id;
+    return options.noCanvas ? null : new Proxy({}, { get: (_, name) => () => {
+      if (name === 'clearRect') canvasDraws.set(id, (canvasDraws.get(id) || 0) + 1);
+    } });
+  };
+  w.HTMLElement.prototype.scrollIntoView = function (options) { this.dataset.scrolled = 'true'; this.scrollOptions = options; };
+  w.scrollTo = options => { w.lastScroll = options; };
   w.requestAnimationFrame = callback => { frames.push(callback); return frames.length; };
   w.cancelAnimationFrame = () => {};
   w.IntersectionObserver = class {
@@ -37,6 +47,35 @@ function setup(file = 'index.html', options = {}) {
     unobserve() {}
     disconnect() {}
   };
+  const clock = { now: 0 };
+  if (options.clock) {
+    const timers = new Map();
+    let nextId = 0;
+    w.performance.now = () => clock.now;
+    w.setTimeout = (callback, delay = 0) => {
+      const id = ++nextId;
+      timers.set(id, { at: clock.now + delay, callback });
+      return id;
+    };
+    w.clearTimeout = id => timers.delete(id);
+    clock.advance = ms => {
+      const end = clock.now + ms;
+      let next;
+      while ((next = [...timers].filter(([, timer]) => timer.at <= end).sort((a, b) => a[1].at - b[1].at)[0])) {
+        timers.delete(next[0]);
+        clock.now = next[1].at;
+        next[1].callback();
+      }
+      clock.now = end;
+    };
+  }
+  const runFrame = () => frames.splice(0).forEach(callback => callback(clock.now));
+  const setVisible = visible => {
+    Object.defineProperty(d, 'hidden', { configurable: true, value: !visible });
+    Object.defineProperty(d, 'visibilityState', { configurable: true, value: visible ? 'visible' : 'hidden' });
+    d.dispatchEvent(new w.Event('visibilitychange'));
+  };
+  if (options.hidden) setVisible(false);
   if (options.theme) w.localStorage.setItem('pf-theme', options.theme);
   d.querySelectorAll('head script:not([type])').forEach(script => w.eval(script.textContent));
   if (options.load !== false) w.eval(read('script.js'));
@@ -51,7 +90,7 @@ function setup(file = 'index.html', options = {}) {
     input.dispatchEvent(new w.Event('input', { bubbles: true }));
     return input;
   };
-  return { dom, w, d, key, search, observers, frames, media };
+  return { dom, w, d, key, search, observers, frames, media, clock, runFrame, canvasDraws, setVisible };
 }
 
 for (const file of pages) {
@@ -212,3 +251,88 @@ test('CSS parses and preserves fallback visibility and short-screen scrolling', 
   assert.ok(rules.some(rule => rule.selector === 'html:not(.blog-ready) .blog-content-wrapper' && rule.nodes.some(n => n.prop === 'grid-template-rows' && n.value === '1fr')));
   assert.ok(!rules.some(rule => /html\.js \.reveal/.test(rule.selector)));
 });
+
+// The owner requires the full animated experience even when these settings
+// would otherwise select a static mode. Exercise observable behavior, not flags.
+for (const [label, options] of [
+  ['OS reduced motion', { reduceMotion: true }],
+  ['save-data', { saveData: true }],
+  ['2 GB device', { deviceMemory: 2 }],
+  ['2 CPU cores', { cores: 2 }],
+  ['all settings combined', { reduceMotion: true, saveData: true, deviceMemory: 1, cores: 1 }]
+]) {
+  test(`full motion survives ${label} and 60 seconds without input`, t => {
+    const { dom, w, d, observers, clock, runFrame, canvasDraws } = setup('index.html', { ...options, finePointer: true, clock: true });
+    t.after(() => dom.window.close());
+
+    runFrame(); runFrame();
+    assert.equal(canvasDraws.get('net-canvas'), 2, 'network keeps drawing frames');
+    w.dispatchEvent(new w.MouseEvent('mousemove', { clientX: 50, clientY: 50 }));
+    runFrame();
+    assert.ok(canvasDraws.get('mouse-trail') > 0, 'pointer trail remains enabled');
+
+    const reveal = observers.find(io => io.targets.some(target => target.id === 'projects'));
+    assert.ok(reveal, 'reveals keep their viewport animation');
+    assert.equal(d.getElementById('projects').classList.contains('in'), false);
+    reveal.callback([{ target: d.getElementById('projects'), isIntersecting: true }]);
+    assert.equal(d.getElementById('projects').classList.contains('in'), true);
+
+    observers.find(io => io.targets.some(target => target.classList.contains('hero-stats')))
+      .callback([{ isIntersecting: true }]);
+    runFrame();
+    assert.equal(d.querySelector('.hero-stat-number').textContent, '0+', 'counter starts an animation');
+    clock.advance(110); runFrame();
+    const out = d.querySelector('.typing-out');
+    const fullRole = d.querySelector('.typing-effect').dataset.text;
+    assert.ok(out.textContent.length > 0 && out.textContent.length < fullRole.length, 'role types progressively');
+
+    clock.advance(60000); runFrame();
+    assert.equal(out.textContent, fullRole);
+    assert.equal(d.querySelector('.hero-stat-number').textContent, '3+');
+    const before = canvasDraws.get('net-canvas');
+    runFrame(); runFrame();
+    assert.equal(canvasDraws.get('net-canvas'), before + 2, 'reading without input never freezes the background');
+    assert.equal(d.documentElement.classList.contains('bg-idle'), false);
+    assert.equal(d.documentElement.classList.contains('bg-static'), false);
+    d.getElementById('back-to-top').click();
+    assert.equal(w.lastScroll.behavior, 'smooth');
+    d.getElementById('mobile-menu-btn').click();
+    d.querySelector('#nav-drawer a[href="#projects"]').click();
+    assert.equal(d.getElementById('projects').scrollOptions.behavior, 'smooth');
+  });
+}
+
+test('network pauses in hidden tabs and resumes, including an initially hidden load', t => {
+  const { dom, d, runFrame, canvasDraws, setVisible } = setup('index.html', { hidden: true, clock: true });
+  t.after(() => dom.window.close());
+  runFrame();
+  assert.equal(canvasDraws.get('net-canvas') || 0, 0);
+  setVisible(true); runFrame(); runFrame();
+  assert.equal(canvasDraws.get('net-canvas'), 2);
+  setVisible(false); runFrame(); runFrame();
+  assert.equal(canvasDraws.get('net-canvas'), 2);
+  assert.equal(d.documentElement.classList.contains('bg-hidden'), true);
+  setVisible(true); runFrame(); runFrame();
+  assert.equal(canvasDraws.get('net-canvas'), 4);
+  assert.equal(d.documentElement.classList.contains('bg-hidden'), false);
+});
+
+for (const reduceMotion of [false, true]) {
+  test(`Journey boots and updates animated scenes with OS reduced motion ${reduceMotion}`, t => {
+    const { dom, w, d, observers, runFrame } = setup('journey.html', { reduceMotion, clock: true });
+    t.after(() => dom.window.close());
+    assert.equal(d.documentElement.classList.contains('jn-on'), true, 'pinned layout starts in the head script');
+    d.querySelectorAll('body script:not([src]):not([type])').forEach(script => w.eval(script.textContent));
+    assert.equal(d.documentElement.classList.contains('jn-boot'), true, 'full engine initializes');
+    assert.ok(d.querySelectorAll('#jn-hero-name .jn-l').length > 0);
+    const scene = d.getElementById('jn-s1');
+    const sceneObserver = observers.find(io => io.config.rootMargin === '50% 0px 50% 0px');
+    assert.equal(sceneObserver.targets.length, 9, 'all nine scenes register');
+    sceneObserver.callback([{ target: scene, isIntersecting: true }]);
+    runFrame();
+    assert.equal(scene.classList.contains('jn-live'), true);
+    assert.match(d.getElementById('jn-hero-name').style.transform, /^scale\(/, 'engine renders the active scene');
+    assert.equal(d.querySelectorAll('.jn-rail-ring').length, 9);
+    assert.equal(d.querySelectorAll('.jn-frame').length, 13, 'all photo-reel frames are retained');
+  });
+}

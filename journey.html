@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#07112e">
   <!-- Runs before first paint: restores the saved theme, marks the document as
        script-capable, and switches straight to the pinned scrollytelling layout
-       (unless the OS asks for reduced motion) so the first paint already has
-       the final geometry — the engine at the end of the body used to flip it. -->
-  <script>(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('pf-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);}}catch(e){}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('jn-on');}})();</script>
+       so the first paint already has the final geometry. Full motion is an
+       owner requirement; see AGENTS.md. -->
+  <script>(function(){var d=document.documentElement;d.classList.add('js','jn-on');try{var t=localStorage.getItem('pf-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);}}catch(e){}})();</script>
   <title>Peter Farah | Journey</title>
   <meta name="description" content="An immersive scroll through Peter Farah's journey — from Beirut to Paris and back: networks, research, automation, and a homelab that never sleeps.">
   <link rel="canonical" href="https://peterfarah.com/journey.html">
@@ -248,7 +248,7 @@
     .jn-craft-scene .jn-stage { place-items: center; }
     .jn-gallery { position: relative; width: 100%; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
     html.jn-on .jn-gallery { height: 100%; overflow: hidden; }
-    /* static (no-JS / reduced motion): cards stack vertically, all readable */
+    /* static fallback (no JS / engine failure): cards stack, all readable */
     .jn-track { display: block; padding: 0 22px; will-change: transform; }
     .jn-track .jn-gcard { margin: 0 auto 26px; max-width: 780px; }
     html.jn-on .jn-track {
@@ -1278,7 +1278,7 @@
   <!-- ============================================================
        journey.html — scrollytelling engine
        Vanilla ES6, one IIFE. Animations always on (site convention —
-       see `reduceMotion` in script.js); the static stacked layout is
+       see AGENTS.md); the static stacked layout is
        kept as the no-JS fallback. Writes only transform
        / opacity (and a few scene-scoped custom props); one passive
        scroll listener flips a dirty flag, one rAF loop reads scrollY
@@ -1289,14 +1289,9 @@
     'use strict';
 
     const root = document.documentElement;
-    /* The OS "reduce motion" preference gets the static stacked article (which
-       is also the no-JS fallback); the <head> boot script already made the
-       same decision for the first paint. */
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    /* Static-page rail: plain jump links (used under reduced motion and if the
-       engine below fails). Declared here, outside the try block, so both callers
-       can reach it under strict mode's block-scoped function declarations. */
+    /* Full motion is required in both the boot script and this engine.
+       Static-page rail: plain jump links used only if the engine fails.
+       Keep this outside the try block so the catch handler can reach it. */
     function wireRailStaticFallback() {
       const railEl = document.getElementById('jn-rail');
       if (!railEl) return;
@@ -1306,14 +1301,6 @@
           if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       });
-    }
-
-    /* No motion → leave the page as a plain static article. Still wire the
-       dot-rail as simple jump links (native smooth scroll handles the rest). */
-    if (prefersReduced) {
-      root.classList.remove('jn-on');
-      wireRailStaticFallback();
-      return;
     }
 
     root.classList.add('jn-on');
