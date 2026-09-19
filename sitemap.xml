@@ -3,38 +3,44 @@
 
   <url>
     <loc>https://peterfarah.com/</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-09-13</lastmod>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/blog.html</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-09-13</lastmod>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/journey.html</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-09-14</lastmod>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/fun.html</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-09-13</lastmod>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/server.html</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-09-13</lastmod>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://peterfarah.com/FUN/AQMgame.html</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-06-20</lastmod>
     <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://peterfarah.com/privacy.html</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.3</priority>
   </url>
 
 </urlset>

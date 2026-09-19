@@ -4,18 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#07112e">
+  <!-- Runs before first paint: restores the saved theme (no dark flash for light-theme
+       visitors) and marks the document as script-capable so reveal animations only
+       hide content when JavaScript is actually running. -->
+  <script>(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('pf-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);}}catch(e){}})();</script>
   <title>Peter Farah | Research &amp; Technical Blog</title>
   <meta name="description" content="Technical write-ups on AQM classification research, home server infrastructure, and network automation by Peter Farah.">
+  <link rel="canonical" href="https://peterfarah.com/blog.html">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta property="og:site_name" content="Peter Farah">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://peterfarah.com/blog.html">
   <meta property="og:title" content="Peter Farah | Research &amp; Technical Blog">
   <meta property="og:description" content="Deep dives into AQM classification, home server architecture, and network automation.">
-  <meta property="og:image" content="https://peterfarah.com/Files/images/profile/profile_old.jpg">
-  <meta property="og:url" content="https://peterfarah.com/blog.html">
-  <meta property="og:type" content="website">
-  <link rel="icon" type="image/x-icon" href="Files/images/favicon.ico">
+  <meta property="og:image" content="https://peterfarah.com/Files/images/og/og-blog.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Research and technical blog by Peter Farah — fingerprinting the queue">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Peter Farah | Research &amp; Technical Blog">
+  <meta name="twitter:description" content="Deep dives into AQM classification, home server architecture, and network automation.">
+  <meta name="twitter:image" content="https://peterfarah.com/Files/images/og/og-blog.jpg">
+  <link rel="icon" href="Files/images/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307112e'/><circle cx='16' cy='16' r='8' fill='none' stroke='%234d8dff' stroke-width='2.5'/><circle cx='16' cy='16' r='2.6' fill='%2322d3ee'/></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="apple-touch-icon" href="Files/images/icons/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preload" href="Files/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="Files/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "@id": "https://peterfarah.com/blog.html#blog",
+    "url": "https://peterfarah.com/blog.html",
+    "name": "Peter Farah — Research & Technical Blog",
+    "author": { "@id": "https://peterfarah.com/#person" },
+    "blogPost": [
+      {
+        "@type": "BlogPosting",
+        "@id": "https://peterfarah.com/blog.html#aqm-research",
+        "url": "https://peterfarah.com/blog.html#aqm-research",
+        "headline": "Research on Active Queue Management (AQM) Classification and Analysis",
+        "description": "A C testbed and a two-stage DTW classifier that identify which AQM algorithm a bottleneck router runs from RTT traces alone.",
+        "image": "https://peterfarah.com/Files/images/Blog/AQMResearche/LAB-1600.jpg",
+        "author": { "@id": "https://peterfarah.com/#person" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BlogPosting",
+        "@id": "https://peterfarah.com/blog.html#home-server",
+        "url": "https://peterfarah.com/blog.html#home-server",
+        "headline": "Home Server Infrastructure, Automation & Observability Platform",
+        "description": "A self-hosted Ubuntu server running Python services, an automated YouTube pipeline, Prometheus and Grafana, exposed through Cloudflare Zero Trust.",
+        "image": "https://peterfarah.com/Files/images/Blog/HomeServer/FullArchitecture-1467.jpg",
+        "author": { "@id": "https://peterfarah.com/#person" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BlogPosting",
+        "@id": "https://peterfarah.com/blog.html#home-nas",
+        "url": "https://peterfarah.com/blog.html#home-nas",
+        "headline": "Enterprise-Grade Home Storage: Synology DS925+",
+        "description": "A Synology DS925+ with two 18 TB drives in SHR-1, Btrfs snapshots, Docker apps and a single Cloudflare Zero Trust tunnel.",
+        "image": "https://peterfarah.com/Files/images/Blog/NAS/NAS_main-1600.jpg",
+        "author": { "@id": "https://peterfarah.com/#person" },
+        "inLanguage": "en"
+      }
+    ]
+  }
+  </script>
   <style>
     /* ── blog.html page-specific polish ── */
 
@@ -34,6 +93,15 @@
       margin: 24px 0;
     }
 
+    /* Results legend: series colours follow the theme tokens (the literal
+       blue/orange/cyan only passed contrast on the dark canvas) */
+    .results-legend { font-size: 0.82rem; color: var(--muted); }
+    .results-legend .lg { font-weight: 600; white-space: nowrap; }
+    .lg-blue { color: var(--accent-bright); }
+    .lg-orange { color: #f5a524; }
+    [data-theme="light"] .lg-orange { color: #a15c00; }
+    .lg-cyan { color: var(--accent-2); }
+
     /* Figure caption: mono, muted, centered, small */
     .fig-cap {
       font-family: var(--font-mono);
@@ -47,33 +115,38 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- Background + Cursor -->
   <div id="bg-aurora"><span class="orb"></span><span class="orb2"></span></div>
   <canvas id="net-canvas"></canvas>
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
-  <div id="cursor-ring"></div>
 
   <!-- Scroll Progress -->
   <div id="vertical-scroll-track"><div id="vertical-scroll-progress"></div></div>
 
   <!-- ===== NAVIGATION ===== -->
   <nav aria-label="Main navigation">
-    <a href="https://peterfarah.com" class="nav-logo">Peter Farah</a>
+    <a href="index.html" class="nav-logo">Peter Farah</a>
 
     <div class="nav-right">
       <ul class="nav-links">
         <li><a href="#aqm-research">AQM Research</a></li>
         <li><a href="#home-server">Home Server</a></li>
         <li><a href="#home-nas">Home NAS</a></li>
+        <li><a href="index.html" class="nav-highlight">Home</a></li>
         <li><a href="journey.html" class="nav-highlight">Journey</a></li>
-        <li><a href="index.html" class="nav-highlight">Home / Profile</a></li>
-        <li><a href="FUN/AQMgame.html" id="rainbow-btn" class="nav-highlight">AQM Simulation</a></li>
-        <li><a href="server.html" class="nav-highlight">Server Access</a></li>
+        <li><a href="blog.html" class="nav-highlight" aria-current="page">Research</a></li>
+        <li><a href="server.html" class="nav-highlight">Server</a></li>
+        <li><a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">CV</a></li>
       </ul>
 
-      <button id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
+      <button type="button" class="cmd-trigger-hint" id="cmd-trigger" aria-label="Open command palette">
+        <kbd>⌘K</kbd> Search
+      </button>
+
+      <button type="button" id="theme-toggle" aria-label="Toggle theme" style="position:relative;">
         <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -85,7 +158,7 @@
         </svg>
       </button>
 
-      <button class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+      <button type="button" class="menu-toggle" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -98,22 +171,25 @@
   <aside class="nav-drawer" id="nav-drawer" aria-label="Mobile navigation">
     <div class="nav-drawer-header">
       <span class="nav-logo">Research</span>
-      <button class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
+      <button type="button" class="nav-drawer-close" id="drawer-close" aria-label="Close navigation">✕</button>
     </div>
     <a href="#aqm-research">AQM Research</a>
     <a href="#home-server">Home Server Architecture</a>
     <a href="#home-nas">Home NAS Architecture</a>
     <div class="nav-drawer-divider"></div>
-    <a href="journey.html" class="nav-highlight">Journey</a>
     <a href="index.html" class="nav-highlight">Home / Profile</a>
-    <a href="FUN/AQMgame.html" class="nav-highlight">AQM Simulation</a>
+    <a href="journey.html" class="nav-highlight">Journey</a>
+    <a href="blog.html" class="nav-highlight" aria-current="page">Research &amp; Blog</a>
     <a href="server.html" class="nav-highlight">Server Access</a>
+    <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" class="nav-highlight" target="_blank" rel="noopener">Download CV</a>
     <div class="nav-drawer-divider"></div>
-    <button class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
+    <button type="button" class="nav-drawer-theme" id="drawer-theme" aria-label="Toggle theme">
       <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/></svg>
       Toggle Theme
     </button>
   </aside>
+
+  <main id="main" tabindex="-1">
 
   <!-- ===== PAGE HEADER ===== -->
   <div class="blog-page-header">
@@ -127,19 +203,19 @@
   ======================================== -->
   <section class="reveal blog-post" id="aqm-research">
     <div class="blog-cover">
-      <img src="Files/images/journey/LAB.png" loading="lazy" alt="AQM Research Architecture Diagram">
+      <img src="Files/images/Blog/AQMResearche/LAB-1600.jpg" srcset="Files/images/Blog/AQMResearche/LAB-900.webp 900w, Files/images/Blog/AQMResearche/LAB-1600.webp 1600w" sizes="(max-width: 620px) calc(100vw - 36px), min(856px, calc(100vw - 44px))" width="1600" height="900" fetchpriority="high" decoding="async" alt="">
       <div class="blog-cover-overlay">
         <h2 class="blog-title">Research on Active Queue Management (AQM) Classification and Analysis</h2>
-        <span class="btn cover-toggle">Click to Expand &amp; Read</span>
+        <button type="button" class="btn cover-toggle" aria-expanded="false" aria-controls="aqm-research-body">Expand &amp; read</button>
       </div>
     </div>
 
-    <div class="blog-content-wrapper">
+    <div class="blog-content-wrapper" id="aqm-research-body">
       <div class="blog-content">
         <div class="blog-content-inner">
 
         <p>
-          During my research internship at <strong>Institut Polytechnique de Paris</strong> and later at <strong>Telecom Sud-Paris</strong>, I developed a full testbed and classification framework capable of identifying which <strong>Active Queue Management (AQM)</strong> algorithm is running in a bottleneck router. The system was designed to distinguish between algorithms such as <strong>CoDel</strong>, <strong>FQ-CoDel</strong>, <strong>Cake</strong>, <strong>PIE</strong>, <strong>RED</strong>, <strong>FIFO</strong>, and <strong>FQ</strong>. The ultimate goal was to analyse how these queue disciplines affect congestion, latency, and fairness, and to build a detection system that operates without privileged access to the router.
+          During my research internship at <strong>Institut Polytechnique de Paris</strong> and later at <strong>Télécom SudParis</strong>, I developed a full testbed and classification framework capable of identifying which <strong>Active Queue Management (AQM)</strong> algorithm is running in a bottleneck router. The system was designed to distinguish between algorithms such as <strong>CoDel</strong>, <strong>FQ-CoDel</strong>, <strong>Cake</strong>, <strong>PIE</strong>, <strong>RED</strong>, <strong>FIFO</strong>, and <strong>FQ</strong>. The ultimate goal was to analyse how these queue disciplines affect congestion, latency, and fairness, and to build a detection system that operates without privileged access to the router.
         </p>
 
         <h3>Objective</h3>
@@ -171,7 +247,7 @@
         </ol>
 
         <div class="fig">
-          <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" loading="lazy" alt="AQM Research Architecture Diagram">
+          <img src="Files/images/Blog/AQMResearche/ALL_deployed_V4.drawio.jpg" srcset="Files/images/Blog/AQMResearche/ALL_deployed_V4-1600.webp 1600w" sizes="(max-width: 900px) calc(100vw - 80px), 836px" width="2349" height="2248" loading="lazy" decoding="async" alt="Architecture diagram: the master client and server coordinate bottleneck measurement, queue-size measurement, a CoDel simulation, RTT capture, CSV transfer and the DTW classifier over SSH.">
           <p class="fig-cap">Figure 1 – Overall architecture of the AQM classification and analysis framework.</p>
         </div>
 
@@ -188,7 +264,7 @@
           <li>Support for concurrent sender threads to simulate multiple independent flows.</li>
         </ul>
         <p>Round-Trip Times (RTTs) were measured at the client side by timestamping outgoing packets and matching them with acknowledgement timestamps received from the server. The resulting RTT traces were stored as time-series datasets, capturing queue buildup, delay oscillations, and congestion patterns under each tested AQM discipline.</p>
-        <img src="Files/images/Blog/AQMResearche/RTTtracesAQMs.jpg" loading="lazy" alt="AQM Signature RTT traces">
+        <img src="Files/images/Blog/AQMResearche/RTTtracesAQMs.jpg" width="1623" height="841" loading="lazy" decoding="async" alt="RTT-over-time traces for each AQM: CoDel and PIE show periodic sawtooth oscillations, RED smoother random variation, FIFO a flat congestion plateau with spikes, and the fair-queuing disciplines stable, well-separated per-flow RTTs.">
 
         <h4>2. Router Configuration and AQM Control</h4>
         <p>The router (a Linux system acting as a virtual bottleneck) was configured using <strong>tc qdisc</strong> commands. A shell-based configuration script applied the desired AQM discipline on the egress interface:</p>
@@ -242,8 +318,8 @@
         </ul>
 
         <h3>Results</h3>
-        <p style="font-size:0.82rem; color:var(--muted);">Legend: <span style="color:#60a5fa;">Blue</span> = Ideal Testbench &nbsp;|&nbsp; <span style="color:#f59e0b;">Orange</span> = Ideal Testbench with remote server &nbsp;|&nbsp; <span style="color:#22d3ee;">Cyan</span> = Home network tests</p>
-        <img src="Files/images/Blog/AQMResearche/Results.jpg" loading="lazy" alt="AQM Research Results">
+        <p class="results-legend">Legend for the chart below: <span class="lg lg-blue">Blue</span> = ideal testbench &nbsp;|&nbsp; <span class="lg lg-orange">Orange</span> = ideal testbench with remote server &nbsp;|&nbsp; <span class="lg lg-cyan">Cyan</span> = home network tests</p>
+        <img src="Files/images/Blog/AQMResearche/Results.jpg" width="975" height="605" loading="lazy" decoding="async" alt="Classification accuracy per AQM for the ideal testbench, the testbench with a remote server, and home-network tests; the home-network line stays close to the two lab lines.">
         <p>
           The developed framework achieved <strong>high classification accuracy</strong> under a wide range of network conditions, including variations in bitrate, queue length, and packet size. In controlled testbed environments, the system consistently distinguished between all tested AQM algorithms with strong separation in their RTT profiles. When evaluated in a real-world scenario involving a live client and router over an operational network, the classifier maintained an overall accuracy of <strong>87%</strong>, demonstrating its robustness outside laboratory conditions.
         </p>
@@ -257,7 +333,7 @@
         <p>These results confirm that end-to-end RTT measurements carry sufficient information to infer the active queue management policy at a bottleneck router. The classification performance validates the effectiveness of combining precise C-level traffic generation, kernel-level AQM configuration, and DTW-based pattern matching for automated queue behaviour identification.</p>
 
         <h3>Conclusion</h3>
-        <img src="Files/images/Blog/AQMResearche/realLifeExample.JPG" loading="lazy" alt="Real-life AQM classification example">
+        <img src="Files/images/Blog/AQMResearche/realLifeExample.JPG" srcset="Files/images/Blog/AQMResearche/realLifeExample-1600.webp 1600w" sizes="(max-width: 900px) calc(100vw - 80px), 836px" width="1883" height="949" loading="lazy" decoding="async" alt="Terminal output of a live classification run on an operational network, ending with the detected AQM algorithm.">
         <p>
           This project represents a <strong>state-of-the-art framework</strong> for the identification and analysis of Active Queue Management (AQM) algorithms using only end-to-end network measurements. By integrating <strong>C-based traffic generation</strong>, <strong>precise RTT collection</strong>, <strong>kernel-level AQM configuration</strong>, and <strong>Dynamic Time Warping (DTW)-based classification</strong>, it achieves an unprecedented level of accuracy and automation in recognising queue management behaviour without requiring any access to routers.
         </p>
@@ -282,14 +358,14 @@
   ======================================== -->
   <section class="reveal blog-post" id="home-server">
     <div class="blog-cover">
-      <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Home Server Architecture">
+      <img src="Files/images/Blog/HomeServer/FullArchitecture-1467.jpg" srcset="Files/images/Blog/HomeServer/FullArchitecture-900.webp 900w, Files/images/Blog/HomeServer/FullArchitecture-1467.webp 1467w" sizes="(max-width: 620px) calc(100vw - 36px), min(856px, calc(100vw - 44px))" width="1467" height="1507" loading="lazy" decoding="async" alt="">
       <div class="blog-cover-overlay">
         <h2 class="blog-title">Home Server Infrastructure, Automation &amp; Observability Platform</h2>
-        <span class="btn cover-toggle">Click to Expand &amp; Read</span>
+        <button type="button" class="btn cover-toggle" aria-expanded="false" aria-controls="home-server-body">Expand &amp; read</button>
       </div>
     </div>
 
-    <div class="blog-content-wrapper">
+    <div class="blog-content-wrapper" id="home-server-body">
       <div class="blog-content">
         <div class="blog-content-inner">
 
@@ -298,7 +374,8 @@
         </p>
 
         <div class="fig">
-          <img src="Files/images/Blog/HomeServer/FullArchitecture.JPG" loading="lazy" alt="Full Architecture Diagram">
+          <img src="Files/images/Blog/HomeServer/FullArchitecture-1467.jpg" srcset="Files/images/Blog/HomeServer/FullArchitecture-900.webp 900w, Files/images/Blog/HomeServer/FullArchitecture-1467.webp 1467w" sizes="(max-width: 900px) calc(100vw - 80px), 836px" width="1467" height="1507" loading="lazy" decoding="async" alt="Hand-drawn architecture sketch: Python YouTube and FTP services on the server, a Cloudflare secure tunnel replacing NAT port forwarding, SSH portal and request-access pages, and a Grafana usage monitor.">
+          <p class="fig-cap">Figure 1 – How the pieces connect: services, tunnel, access pages and monitoring.</p>
         </div>
 
         <h3>Infrastructure Architecture</h3>
@@ -354,7 +431,7 @@
           <li><strong>Prometheus</strong> collects system-level metrics (CPU, RAM, disk I/O, network).</li>
           <li><strong>Grafana</strong> dashboards provide real-time visualisation and historical trend analysis.</li>
         </ul>
-        <img src="Files/images/Blog/HomeServer/Grafana2.JPG" loading="lazy" alt="Grafana dashboard 2">
+        <img src="Files/images/Blog/HomeServer/Grafana2.JPG" width="1918" height="842" loading="lazy" decoding="async" alt="Grafana dashboard of host metrics: CPU, memory, disk I/O and network throughput over time.">
 
         <h4>2. Custom Application Metrics</h4>
         <ul>
@@ -363,7 +440,7 @@
           <li>Exports task-level metrics such as upload success rate, processing duration, and error counters.</li>
           <li>Tracks FTP server activity and connection statistics.</li>
         </ul>
-        <img src="Files/images/Blog/HomeServer/Grafana.JPG" loading="lazy" alt="Grafana dashboard">
+        <img src="Files/images/Blog/HomeServer/Grafana.JPG" width="1914" height="690" loading="lazy" decoding="async" alt="Grafana dashboard fed by the custom Python exporter: service states, upload success rate, processing durations and FTP activity.">
 
         <h4>3. Uptime Monitoring</h4>
         <ul>
@@ -376,11 +453,11 @@
           </li>
           <li>Alerting mechanisms for downtime detection.</li>
         </ul>
-        <img src="Files/images/Blog/HomeServer/Uptime.JPG" loading="lazy" alt="Uptime Kuma dashboard">
+        <img src="Files/images/Blog/HomeServer/Uptime.JPG" width="1899" height="894" loading="lazy" decoding="async" alt="Uptime Kuma status page listing the server, peterfarah.com and farmavetservices.com monitors with their response-time history.">
 
         <h3>Zero Trust Remote Access Architecture</h3>
         <p>Instead of exposing services via port forwarding, I implemented <strong>Cloudflare Zero Trust Tunnel</strong> to securely expose internal services while keeping the server protected behind NAT.</p>
-        <img src="Files/images/Blog/HomeServer/cloudflareAplications.JPG" loading="lazy" alt="Cloudflare Zero Trust applications">
+        <img src="Files/images/Blog/HomeServer/cloudflareAplications.JPG" width="1593" height="215" loading="lazy" decoding="async" alt="Cloudflare Zero Trust application list for the SSH, Grafana and uptime hostnames.">
         <ul>
           <li>Secure SSH access via <code>ssh.peterfarah.com</code>.</li>
           <li>Grafana dashboard accessible at <code>grafana.peterfarah.com</code>.</li>
@@ -411,34 +488,34 @@
   ======================================== -->
   <section class="reveal blog-post" id="home-nas">
     <div class="blog-cover">
-      <img src="Files/images/Blog/NAS/NAS_main.jpg" loading="lazy" alt="Synology DS925+ Architecture">
+      <img src="Files/images/Blog/NAS/NAS_main-1600.jpg" srcset="Files/images/Blog/NAS/NAS_main-900.webp 900w, Files/images/Blog/NAS/NAS_main-1600.webp 1600w" sizes="(max-width: 620px) calc(100vw - 36px), min(856px, calc(100vw - 44px))" width="1600" height="1200" loading="lazy" decoding="async" alt="">
       <div class="blog-cover-overlay">
         <h2 class="blog-title">Enterprise-Grade Home Storage: Synology DS925+</h2>
-        <span class="btn cover-toggle">Click to Expand &amp; Read</span>
+        <button type="button" class="btn cover-toggle" aria-expanded="false" aria-controls="home-nas-body">Expand &amp; read</button>
       </div>
     </div>
 
-    <div class="blog-content-wrapper">
+    <div class="blog-content-wrapper" id="home-nas-body">
       <div class="blog-content">
         <div class="blog-content-inner">
 
         <p>
-          To support growing data requirements and ensure reliable backups for the home infrastructure, a dedicated Network Attached Storage (NAS) solution was implemented. The architecture centers around a <strong>Synology DS925+</strong>, populated with dual <strong>18TB Seagate Exos</strong> enterprise-grade hard drives.
+          To support growing data requirements and ensure reliable backups for the home infrastructure, a dedicated Network Attached Storage (NAS) solution was implemented. The architecture centers around a <strong>Synology DS925+</strong>, populated with dual <strong>18 TB Seagate Exos</strong> enterprise-grade hard drives.
         </p>
 
         <h3>Storage Configuration &amp; File System</h3>
         <p>
-          The drives are configured using <strong>Synology Hybrid RAID (SHR1)</strong>, which offers superior flexibility, expansion capabilities, and storage optimization compared to traditional RAID 5 arrays. To guarantee data integrity and protect against bit rot, the volumes leverage the <strong>Btrfs file system</strong>, enabling proactive data scrubbing and advanced snapshot capabilities.
+          The drives are configured using <strong>Synology Hybrid RAID (SHR1)</strong>, which offers superior flexibility, expansion capabilities, and storage optimisation compared to traditional RAID 5 arrays. To guarantee data integrity and protect against bit rot, the volumes leverage the <strong>Btrfs file system</strong>, enabling proactive data scrubbing and advanced snapshot capabilities.
         </p>
 
         <h3>Snapshot Retention &amp; Storage Efficiency</h3>
         <p>
-          A core advantage of this Btrfs setup is the implementation of robust snapshot retention policies. The system takes automated daily snapshots that are retained for 90 days, alongside monthly snapshots kept for a full year. Because the NAS is primarily utilized for mobile photo backups, file edits and deletions are highly infrequent. As a result, these extensive point-in-time snapshots consume very little additional storage space, while still providing an immediate rollback mechanism against accidental deletion or ransomware attacks.
+          A core advantage of this Btrfs setup is the implementation of robust snapshot retention policies. The system takes automated daily snapshots that are retained for 90 days, alongside monthly snapshots kept for a full year. Because the NAS is primarily used for mobile photo backups, file edits and deletions are highly infrequent. As a result, these extensive point-in-time snapshots consume very little additional storage space, while still providing an immediate rollback mechanism against accidental deletion or ransomware attacks.
         </p>
 
         <h3>Automated Workflows &amp; Cold Storage</h3>
         <p>
-          The NAS acts as a centralized, self-hosted hub for multiple critical backup streams. Utilizing <strong>Synology Photos</strong>, automated workflows sync mobile media seamlessly over the network, keeping it entirely within a Zero Trust environment. Additionally, the NAS continuously backs up critical files from the primary PC. For ultimate disaster recovery, any data living exclusively on the NAS is manually backed up to an offline cold storage drive every few months, ensuring an air-gapped fallback is always available.
+          The NAS acts as a centralised, self-hosted hub for multiple critical backup streams. Utilizing <strong>Synology Photos</strong>, automated workflows sync mobile media seamlessly over the network, keeping it entirely within a Zero Trust environment. Additionally, the NAS continuously backs up critical files from the primary PC. For ultimate disaster recovery, any data living exclusively on the NAS is manually backed up to an offline cold storage drive every few months, ensuring an air-gapped fallback is always available.
         </p>
 
         <h3>Network Integration &amp; Transfer Speeds</h3>
@@ -450,13 +527,13 @@
         <p>
           Beyond simple storage, the NAS serves as a robust application host running Docker containers. The observability stack includes <strong>Prometheus</strong> and <strong>Grafana</strong> (operating on host networking) alongside an <strong>SNMP exporter</strong> to monitor system health, storage metrics, and network performance. Additionally, the NAS hosts a custom-built Python application (<strong>Treasury Vault</strong>) for financial tracking and bookkeeping.
         </p>
-        <img src="Files/images/Blog/NAS/containersProject.JPG" loading="lazy" alt="Docker Projects">
+        <img src="Files/images/Blog/NAS/containersProject.JPG" width="966" height="190" loading="lazy" decoding="async" alt="Synology Container Manager project list: the observability stack, the Treasury Vault app and the Cloudflare tunnel.">
 
         <h3>Centralized Zero Trust Architecture</h3>
         <p>
-          Instead of exposing services via port forwarding, a centralized <strong>Cloudflare Zero Trust Tunnel</strong> is deployed as a standalone Docker container. Rather than running a separate tunnel for each individual application, this single global gateway handles routing to multiple services (including Grafana, and Treasury Vault) by mapping Cloudflare Public Hostnames directly to the NAS's local IP and corresponding container ports. This architecture drastically simplifies the deployment of new services while maintaining strict access control and isolating the internal network.
+          Instead of exposing services via port forwarding, a centralised <strong>Cloudflare Zero Trust Tunnel</strong> is deployed as a standalone Docker container. Rather than running a separate tunnel for each individual application, this single global gateway handles routing to multiple services (including Grafana, and Treasury Vault) by mapping Cloudflare Public Hostnames directly to the NAS's local IP and corresponding container ports. This architecture drastically simplifies the deployment of new services while maintaining strict access control and isolating the internal network.
         </p>
-        <img src="Files/images/Blog/NAS/cloudflareapps.JPG" loading="lazy" alt="Cloudflare Zero Trust applications">
+        <img src="Files/images/Blog/NAS/cloudflareapps.JPG" width="1433" height="557" loading="lazy" decoding="async" alt="Cloudflare Zero Trust public hostnames mapped to the NAS containers.">
         <ul>
           <li>Grafana dashboard accessible at <code>nas-grafana.peterfarah.com</code>.</li>
           <li>No inbound ports opened on the router.</li>
@@ -468,15 +545,42 @@
     </div>
   </section>
 
-  <!-- ===== FOOTER ===== -->
+  </main>
+
   <footer>
-    <p>&copy; 2026 Peter Farah. All rights reserved.</p>
+    <div class="footer-links" role="navigation" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="journey.html">Journey</a>
+      <a href="blog.html" aria-current="page">Research</a>
+      <a href="fun.html">Hub</a>
+      <a href="server.html">Server</a>
+      <a href="Files/CV/CV_V16/CV-Peter_Farah.pdf" target="_blank" rel="noopener">CV</a>
+      <a href="https://www.linkedin.com/in/peter-farah-i" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/FarahPeter" target="_blank" rel="noopener">GitHub</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+    <p>&copy; 2026 Peter Farah &middot; <a href="mailto:peter@peterfarah.com">peter@peterfarah.com</a> &middot; Hand-built with HTML, CSS and JavaScript.</p>
   </footer>
 
   <!-- Back to Top -->
-  <button id="back-to-top" aria-label="Back to top">
+  <button type="button" id="back-to-top" aria-label="Back to top">
     <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
   </button>
+
+  <!-- Command Palette -->
+  <div id="cmd-backdrop" aria-hidden="true"></div>
+  <div id="cmd-palette" role="dialog" aria-label="Command palette" aria-modal="true">
+    <div id="cmd-input-wrap">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input id="cmd-input" type="text" placeholder="Search or jump to..." autocomplete="off" spellcheck="false" role="combobox" aria-label="Search pages and sections" aria-autocomplete="list" aria-controls="cmd-results" aria-expanded="false">
+    </div>
+    <div id="cmd-results" role="listbox" aria-label="Results"></div>
+    <div id="cmd-footer">
+      <span class="cmd-hint"><kbd>↑↓</kbd> navigate</span>
+      <span class="cmd-hint"><kbd>↵</kbd> open</span>
+      <span class="cmd-hint"><kbd>Esc</kbd> close</span>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

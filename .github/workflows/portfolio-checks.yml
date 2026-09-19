@@ -1,0 +1,28 @@
+name: Portfolio regression checks
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  portfolio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test-only dependencies
+        run: npm install --prefix "$RUNNER_TEMP/portfolio-checks" --no-audit --no-fund jsdom@26.1.0 postcss@8.5.6
+      - name: Check JavaScript syntax
+        run: node --check script.js
+      - name: Check portfolio behavior and the full-motion requirement
+        env:
+          NODE_PATH: ${{ runner.temp }}/portfolio-checks/node_modules
+        run: node --test tests/*.test.cjs

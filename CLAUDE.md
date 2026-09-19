@@ -4,12 +4,20 @@
 CSS + vanilla JS) deployed on **GitHub Pages** at **https://peterfarah.com**.
 No framework, no build step: edit a file, push to the default branch, it's live.
 
-This file is **context only** — what the project is and how it's put together.
-There is no mandated workflow, gate, or review process for this repo.
+**Read and follow `AGENTS.md` first.** It contains the owner's requirements and
+the regression checks. This file supplies additional project context.
+
+**Full motion is mandatory:** never introduce or re-enable reduced/low-motion
+modes, OS motion-preference gates, or animation suppression based on device
+capabilities, save-data, battery or inactivity. Keep Journey scrollytelling,
+backgrounds and interactions animated. Only an explicit new request from Peter
+may change this policy; older audit recommendations do not override it. See
+`AGENTS.md` for legitimate fallbacks and the motion regression checks.
 
 **Background reading:**
 - `docs/PROJECT_CONTEXT.md` — what the project is, who it's for, the owner's factual bio, the design language, deployment, and what to ignore.
 - `docs/ARCHITECTURE.md` — file-by-file index, the `script.js` module map, the `styles.css` structure, and coding conventions.
+- `docs/IMPROVEMENT_PLAN.md` — the September 2026 audit: what was found, what was changed, and the decisions left to the owner.
 
 ---
 
@@ -27,18 +35,25 @@ There is no mandated workflow, gate, or review process for this repo.
 10. **The owner's bio is factual.** Don't invent skills, jobs, dates, or certs; use what's on the site / in `docs/PROJECT_CONTEXT.md`.
 
 ## Cross-references to keep in sync
-When a page or section is added or renamed: navbar + mobile-drawer links, the
-command-palette item list in `script.js` (`palette` module), and `sitemap.xml`.
+When a page or section is added or renamed: navbar + mobile-drawer links **and the
+footer link row** (every page carries the same set), the command-palette item
+list in `script.js` (`palette` module), and `sitemap.xml` — and bump that page's
+`<lastmod>` in `sitemap.xml` in the same commit as any content change.
+
+Every page also carries the same `<head>` boilerplate: the one-line boot script
+(theme + `html.js`), canonical/Open Graph/Twitter tags with a card from
+`Files/images/og/`, the icon set + `site.webmanifest`, and two font preloads.
+Copy an existing page's head when adding a new one.
 
 ---
 
 ## Repo at a glance
 ```
-index.html  journey.html  blog.html  fun.html  server.html  404.html   ← pages (root)
+index.html  journey.html  blog.html  fun.html  server.html  privacy.html  404.html   ← pages (root)
 styles.css  script.js                                     ← shared, site-wide
-Files/                                                     ← CV, images, favicon
+Files/                                                     ← CV, images (+ og/ cards, icons/), fonts/
 FUN/AQMgame.html                                           ← live tool (rest of FUN/: standalone)
-sitemap.xml  robots.txt  llms.txt  CNAME                   ← SEO / config
+sitemap.xml  robots.txt  llms.txt  CNAME  site.webmanifest ← SEO / config
 server.py  serverV2.py  serverV3.py                        ← Flask telemetry (local-only, gitignored)
 docs/                                                      ← project context + architecture
 Old/  Old2/  OLD3/                                         ← archived snapshots (local-only, gitignored)
