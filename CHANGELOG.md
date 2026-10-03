@@ -8,6 +8,45 @@ deployed state.
 
 ## [Unreleased]
 
+### Changed — Homepage motion: quiet telemetry, typeset (3 October 2026)
+
+`index.html` borrows the Journey's visual vocabulary at a much lower volume:
+motion that rewards attention without competing with the content. Copy,
+structure, ids and every fallback are unchanged.
+
+- **Hero boot.** The glass panel is there at first paint and its lines rise in
+  sequence; the name settles with a slight scale; the "now" tile rises, the
+  stats strip fades in. The portrait, the page's largest paint (LCP), is never
+  faded: it is visible from the first frame and only settles 14 px. The role
+  types with a human cadence and an inline caret that sits right after the last
+  character (no more tall bar at the box edge on phones), blinks four times,
+  then rests dimmed.
+- **Stats.** The figures count 90 ms apart (easeOutQuart, tabular numerals) once
+  the strip is visible, and the hairline dividers draw with them. The authored
+  values no longer fade in and then reset to zero.
+- **One heartbeat.** The "now" dot and the current timeline hop share a sonar
+  ping instead of blinking and pulsing.
+- **Section heads.** The kicker's dash draws and its label decodes once (the
+  real words stay readable to screen readers, and the label is back to plain
+  text afterwards); the title rises past a fixed edge; the hairline rule is
+  revealed in place with a packet on its visible tip; the ghost number and the
+  intro follow.
+- **Career route trace.** A brighter line fills down the timeline rail with the
+  reader, a packet on its tip, lighting each hop it passes. On phones it stays
+  hidden until the cards have landed, so it never draws over them.
+- **Hover and arrival.** Glass rings catch the light at the cursor (and along the
+  top edge for a keyboard-focused card), with per-theme strength so dark and
+  light read alike; a soft glare follows the pointer over the portrait;
+  case-study images open through an aperture and zoom slightly on hover; skills
+  ports power on; certificate chips glint once.
+- **Fixes.** Project and skill cards lift on hover again: the grid entrance now
+  uses `translate`, leaving `transform` to the hover lift. A card reached by
+  keyboard enters at once.
+- **Fallbacks.** Without JS nothing is hidden or animated. Print shows the real
+  figures, the full role and identical timeline hops, and nothing injected.
+  Hidden tabs pause the cascade, the typing and the caret, which resume when
+  visible. Full motion is unconditional, per `AGENTS.md`.
+
 ### Changed — Journey redesign: maximum motion (3 October 2026)
 
 `journey.html` was rebuilt around a single continuous "flight". The nine scenes,
