@@ -327,25 +327,48 @@
     const wrap = $('.hero-stats');
     if (!wrap) return;
     const nums = $$('.hero-stat-number', wrap);
-    let done = false;
+    const authored = nums.map(el => el.textContent);
+    let done = false, settled = false;
+    /* Stats count in left to right (90 ms apart, easeOutQuart). 'counted' lets
+       the strip's hairline dividers draw in step (index.html's motion CSS);
+       'count-armed' marks a strip that is waiting for its observer.
+       The first count holds at zero until the strip's entrance fade is mostly
+       in (~500 ms after the page is first visible), so it is seen whole. */
+    let readyAt = motion.hidden ? -1 : performance.now() + 500;
+    if (readyAt < 0) document.addEventListener('pf:motion', function wake() {
+      if (motion.hidden) return;
+      readyAt = performance.now() + 500;
+      document.removeEventListener('pf:motion', wake);
+    });
     function run() {
       if (done) return; done = true;
-      nums.forEach(el => {
+      wrap.classList.add('counted');
+      nums.forEach((el, idx) => {
         const target = parseFloat(el.dataset.target || '0');
         const pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
-        const dur = 1500, t0 = performance.now();
+        const dur = 1600;
+        let t0 = -1;
         function step(now) {
-          const p = Math.max(0, Math.min((now - t0) / dur, 1));
-          const eased = 1 - Math.pow(1 - p, 3);
+          if (settled) return;
+          if (t0 < 0) t0 = Math.max(now, readyAt) + idx * 90;
+          const p = Math.max(0, Math.min((now - t0) / dur, 1));   // holds 0 through the hold and stagger
+          const eased = 1 - Math.pow(1 - p, 4);
           el.textContent = pre + Math.round(target * eased) + suf;
           if (p < 1) requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
       });
     }
+    /* Paper gets the real figures, never a frame of the count. */
+    window.addEventListener('beforeprint', () => {
+      done = settled = true;
+      wrap.classList.add('counted');
+      nums.forEach((el, idx) => { el.textContent = authored[idx]; });
+    });
     if (!('IntersectionObserver' in window)) { run(); return; }
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) run(); }), { threshold: 0.4 });
     io.observe(wrap);
+    wrap.classList.add('count-armed');
   })();
 
   /* ============================== TYPING ROLE ============================== */
@@ -355,8 +378,21 @@
     const out = $('.typing-out', el) || el;      // .typing-out sits over an invisible full-width sizer
     const text = el.dataset.text || el.textContent.trim();
     out.textContent = '';
+    /* Human cadence: 38–54 ms per key with a deterministic wobble and a short
+       beat after each word. 'typing-done' hands the caret to its blink-then-rest.
+       A hidden tab holds the next keystroke until 'pf:motion' reports the tab
+       visible again (the hero cascade is paused there too); print gets the
+       whole role at once. */
     let i = 0;
-    (function type() { if (i <= text.length) { out.textContent = text.slice(0, i++); setTimeout(type, 55); } })();
+    window.addEventListener('beforeprint', () => { i = text.length; out.textContent = text; });
+    (function type() {
+      if (motion.hidden) { document.addEventListener('pf:motion', type, { once: true }); return; }
+      out.textContent = text.slice(0, i);
+      if (i >= text.length) { el.classList.add('typing-done'); return; }
+      const pause = text.charAt(i - 1) === ' ' ? 70 : 0;
+      i++;
+      setTimeout(type, 46 + ((i * 37) % 17) - 8 + pause);
+    })();
   })();
 
   /* ============================== ACTIVE NAV ============================== */
@@ -684,6 +720,201 @@
       });
       mo.observe(section, { attributes: true, attributeFilter: ['class'] });
     });
+  })();
+
+  /* ============================== EDITORIAL MOTION (INDEX) ============================== */
+  /* index.html only — Journey's vocabulary at a tenth of the volume. Section
+     kickers and the portrait's coordinates decode once, and the career route
+     traces down the timeline with the reader. The choreography itself is CSS
+     (<style id="index-motion"> in index.html); this module only injects the
+     few nodes it needs and drives one self-stopping rAF ticker that runs while
+     a decode is playing or the trace is settling. Hidden tabs pause rAF
+     natively; the decoders are time-based, so they simply finish on return. */
+  (function editorial() {
+    if (!$('.hero-bento')) return;
+
+    const make = (tag, cls) => { const n = document.createElement(tag); n.className = cls; return n; };
+
+    /* Ticker: a job returns true to stay scheduled. A job that throws is
+       dropped, so nothing here can break another module's frame. */
+    const jobs = new Set();
+    let pending = false;
+    function frame(now) {
+      pending = false;
+      jobs.forEach(job => {
+        let keep = false;
+        try { keep = job(now); } catch (e) { keep = false; }
+        if (!keep) jobs.delete(job);
+      });
+      if (jobs.size && !pending) { pending = true; requestAnimationFrame(frame); }
+    }
+    function run(job) {
+      jobs.add(job);
+      if (!pending) { pending = true; requestAnimationFrame(frame); }
+    }
+
+    /* Decode: characters matching `mask` churn through `set` (a new glyph
+       every 55 ms, never every frame) and lock in left to right over `dur`.
+       Everything else — spaces, punctuation, degree signs — never moves. */
+    const AZ09 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', DIGITS = '0123456789';
+    const glyph = (set, i, step) => set.charAt(((Math.imul(i + 7, 2654435761) ^ Math.imul(step + 3, 40503)) >>> 0) % set.length);
+    const finishers = new Set();
+    function decode(el, text, set, mask, dur, done) {
+      const slots = [];
+      for (let i = 0; i < text.length; i++) if (mask.test(text.charAt(i))) slots.push(i);
+      let t0 = -1, shown = null;
+      function finish() {
+        finishers.delete(finish);
+        if (shown !== text) { el.textContent = text; shown = text; }
+        if (done) done();
+      }
+      finishers.add(finish);
+      run(now => {
+        if (!finishers.has(finish)) return false;            // already finished (print)
+        try {
+          if (t0 < 0) t0 = now;
+          const k = Math.max(0, Math.min(1, (now - t0) / dur));
+          const fixed = Math.floor((1 - Math.pow(1 - k, 3)) * slots.length);
+          const step = Math.floor(now / 55);
+          const ch = text.split('');
+          for (let j = fixed; j < slots.length; j++) ch[slots[j]] = glyph(set, slots[j], step);
+          const out = ch.join('');
+          if (out !== shown) { el.textContent = out; shown = out; }
+          if (k >= 1) { finish(); return false; }
+          return true;
+        } catch (e) { finish(); return false; }
+      });
+    }
+    window.addEventListener('beforeprint', () => finishers.forEach(f => f()));
+
+    /* Section kickers decode as their section arrives (viewport, focus, palette
+       or drawer all add .in). Only while the glyphs churn, screen readers get
+       the real words from a hidden twin and the churning copy is aria-hidden;
+       when the decode ends the kicker is restored to its authored text node,
+       so find-in-page and copy see the label once. A section that is already
+       in at init is left as authored. */
+    if (root.classList.contains('reveal-ready') && 'MutationObserver' in window) {
+      $$('main > section.reveal').forEach(section => {
+        const kicker = $('.kicker', section);
+        if (!kicker || section.classList.contains('in')) return;
+        const text = kicker.textContent.trim();
+        if (!text) return;
+        const mo = new MutationObserver(() => {
+          if (!section.classList.contains('in')) return;
+          mo.disconnect();
+          const twin = make('span', 'visually-hidden');
+          twin.textContent = text;
+          const vis = document.createElement('span');
+          vis.setAttribute('aria-hidden', 'true');
+          vis.textContent = text;
+          kicker.textContent = '';
+          kicker.appendChild(twin);
+          kicker.appendChild(vis);
+          decode(vis, text, AZ09, /[A-Za-z0-9]/, 520, () => { kicker.textContent = text; });
+        });
+        mo.observe(section, { attributes: true, attributeFilter: ['class'] });
+      });
+    }
+
+    /* Portrait "GPS lock": the coordinate digits resolve once, 650 ms after
+       load or when the label first scrolls into view (phones), whichever is
+       later. The label is already aria-hidden, so it decodes in place. */
+    const geo = $('.photo-geo');
+    if (geo) {
+      const geoText = geo.textContent;
+      const lock = () => decode(geo, geoText, DIGITS, /[0-9]/, 700);
+      setTimeout(() => {
+        if (!('IntersectionObserver' in window)) { lock(); return; }
+        const io = new IntersectionObserver(es => {
+          if (!es.some(e => e.isIntersecting)) return;
+          io.disconnect();
+          lock();
+        }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
+        io.observe(geo);
+      }, 650);
+    }
+
+    /* Portrait glare: a soft catch-light that follows the --mx/--my the
+       spotlight module already writes. Fine pointers only. */
+    const photo = $('.hero-photo');
+    if (finePointer && photo) {
+      const glare = make('span', 'photo-glare');
+      glare.setAttribute('aria-hidden', 'true');
+      photo.appendChild(glare);
+    }
+
+    /* Career route trace: a brighter fill grows down the timeline rail to the
+       point where it crosses 58% of the viewport, with a packet on its tip and
+       each hop it passes lit. It only moves while the reader scrolls and the
+       scroll listener only exists while the list is near the viewport. */
+    const list = $('.xp-list'), rows = $$('.xp-list > .xp-row');
+    if (list && rows.length > 1) {
+      const trace = make('div', 'xp-trace');
+      trace.setAttribute('aria-hidden', 'true');
+      const fill = make('i', 'xp-fill'), pkt = make('b', 'xp-pkt');
+      trace.appendChild(fill);
+      trace.appendChild(pkt);
+      list.insertBefore(trace, list.firstChild);   // first child: .xp-row:last-child (track end) is untouched
+      list.classList.add('xp-armed');
+
+      let dot = 32.5, marks = [], len = 0, tip = null, last = 0, mid = false, live = false;
+      const lit = [], cache = {};
+      const put = (node, key, value) => { if (cache[key] !== value) { cache[key] = value; node.style.transform = value; } };
+
+      /* Row offsets are relative to .xp-list and ignore the stagger translate. */
+      function measure() {
+        const v = parseFloat(getComputedStyle(list).getPropertyValue('--xp-dot'));
+        dot = isFinite(v) ? v : 32.5;
+        marks = rows.map(r => r.offsetTop + dot);
+        len = Math.max(0, marks[marks.length - 1] - marks[0]);
+        trace.style.height = len + 'px';
+        if (live) run(step);
+      }
+      const goal = () => Math.max(dot - 2, Math.min(dot + len + 2, innerHeight * 0.58 - list.getBoundingClientRect().top));
+      function step(now) {
+        if (!(len > 0)) return false;               // no layout (yet)
+        const t = goal();
+        const dt = last ? Math.min(64, now - last) : 16.7;
+        last = now;
+        if (tip === null) tip = dot - 2;
+        const d = t - tip;
+        tip = Math.abs(d) < 0.5 ? t : tip + d * (1 - Math.pow(0.82, dt / 16.7));
+        const s = Math.max(0, Math.min(1, (tip - dot) / len));
+        put(fill, 'f', 'scaleY(' + s.toFixed(4) + ')');
+        put(pkt, 'p', 'translate3d(0,' + (s * len).toFixed(1) + 'px,0)');
+        const m = s > 0.002 && s < 0.998;           // the packet only rides between the first and last hop
+        if (m !== mid) { mid = m; trace.classList.toggle('is-mid', m); }
+        rows.forEach((r, i) => {
+          const on = tip >= marks[i] - 0.5;
+          if (on !== !!lit[i]) { lit[i] = on; r.classList.toggle('xp-lit', on); }
+        });
+        if (tip === t) { last = 0; return false; }
+        return true;
+      }
+      const kick = () => { if (live) run(step); };
+      /* The first approach draws the trace in from the top. A re-entry snaps to
+         where the reader is now (they may have jumped past the list while it was
+         parked), so hops never retract and relight in view; smoothing only
+         applies to scrolling within the list. */
+      function start() {
+        if (live) return;
+        live = true;
+        measure();
+        if (tip !== null && len > 0) { tip = goal(); last = 0; }
+        window.addEventListener('scroll', kick, { passive: true });
+        window.addEventListener('resize', measure);
+        run(step);
+      }
+      function stop() {
+        live = false;
+        window.removeEventListener('scroll', kick);
+        window.removeEventListener('resize', measure);
+      }
+      if ('ResizeObserver' in window) new ResizeObserver(() => { if (live) measure(); }).observe(list);
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(es => es.forEach(e => (e.isIntersecting ? start() : stop())), { rootMargin: '200px 0px' }).observe(list);
+      } else start();
+    }
   })();
 
   /* ============================== TELEMETRY ============================== */

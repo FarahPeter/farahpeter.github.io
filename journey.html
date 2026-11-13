@@ -38,10 +38,10 @@
   <!-- ============================================================
        journey.html — page-scoped scrollytelling styles.
        All classes/ids are jn- prefixed. The default (no-JS) state
-       keeps every scene a normal, fully readable static section.
-       html.jn-on (added by the inline engine on load) pins the
-       stages and hides the initial states so the scroll engine can
-       drive them.
+       keeps every scene a normal, fully readable static section and
+       hides every engine-only decoration. html.jn-on (added by the
+       boot script in <head>) pins the stages and hides the initial
+       states so the scroll engine can drive them.
        ============================================================ -->
   <style>
     /* ---- CRITICAL: styles.css sets body{overflow-x:hidden}, which computes
@@ -56,7 +56,6 @@
     .jn-scene { max-width: none; margin: 0; padding: 0; position: relative; }
     .jn-stage { width: 100%; }
 
-    /* Inner content max-width helper */
     .jn-wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; width: 100%; }
     .jn-visually-hidden {
       position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -64,9 +63,13 @@
     }
 
     /* ================= DEFAULT (static, progressive-enhancement) =================
-       Scenes read as ordinary stacked sections. Nothing is hidden, nothing pinned. */
+       Scenes read as ordinary stacked sections. Nothing is hidden, nothing pinned,
+       and none of the engine's decorations exist. */
     .jn-scene { padding: 72px 0; }
     .jn-stage { display: block; }
+    .jn-loader, .jn-loader-ring, .jn-fx, .jn-vf, .jn-cue, .jn-marquee, .jn-route-hud,
+    .jn-craft-bg, .jn-pkt, .jn-sonar, .jn-orbit, .jn-burst, .jn-rewind, .jn-replay,
+    .jn-scan, .jn-reel-flash, .jn-iris-ring { display: none; }
 
     /* ================= html.jn-on : pinned scrollytelling mode ================= */
     html.jn-on .jn-scene {
@@ -74,27 +77,96 @@
       padding: 0;
     }
     /* Scene lengths for the first paint (the engine re-applies them, shorter on mobile). */
-    #jn-s1 { --jn-len: 3; } #jn-s2 { --jn-len: 3; } #jn-s3 { --jn-len: 5; } #jn-s3b { --jn-len: 5.4; }
-    #jn-s4 { --jn-len: 4; } #jn-s4b { --jn-len: 2.2; } #jn-s5 { --jn-len: 4; } #jn-s5b { --jn-len: 4.6; } #jn-s6 { --jn-len: 2.5; }
-    /* Decorative loops only run for the scene that is actually on screen
-       (.jn-live is toggled by the engine's IntersectionObserver). */
-    html.jn-on #jn-s1:not(.jn-live) .jn-hero-name,
-    html.jn-on #jn-s1:not(.jn-live) .jn-cue svg,
-    html.jn-on #jn-s6:not(.jn-live) .jn-portrait,
-    html.jn-on #jn-s6:not(.jn-live) .jn-portrait img { animation-play-state: paused; }
+    #jn-s1 { --jn-len: 3.2; } #jn-s2 { --jn-len: 3.4; } #jn-s3 { --jn-len: 6; } #jn-s3b { --jn-len: 6.2; }
+    #jn-s4 { --jn-len: 4.4; } #jn-s4b { --jn-len: 2.8; } #jn-s5 { --jn-len: 4.6; } #jn-s5b { --jn-len: 5.4; } #jn-s6 { --jn-len: 3; }
     html.jn-on .jn-stage {
       position: sticky; top: 0;
       height: 100vh; height: 100svh;
       overflow: hidden;
       display: grid; place-items: center;
     }
+    /* keep the nav's compositor layer alive/stable while it auto-hides over
+       the animating scenes (prevents the stale-layer artifact) */
+    nav { will-change: transform; }
+    @keyframes jn-blink { 50% { opacity: 0; } }
+
+    /* ---------------- BOOT SEQUENCE ----------------
+       A terminal "traceroute" of the story, then an iris opens onto the hero.
+       Pure CSS timing, so it always clears itself even if a script stalls;
+       pointer-events:none so it never blocks the page underneath. Any wheel,
+       touch, key or click fast-forwards it (html.jn-loader-skip). */
+    @property --jn-iris { syntax: '<length>'; inherits: false; initial-value: 0px; }
+    html.jn-on .jn-loader {
+      display: grid; place-items: center; position: fixed; inset: 0; z-index: 3000;
+      pointer-events: none; padding: 22px;
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
+        radial-gradient(90% 70% at 50% 45%, var(--bg-2), var(--bg-0));
+      -webkit-mask: radial-gradient(circle at 50% 50%, transparent var(--jn-iris), #000 calc(var(--jn-iris) + 1px));
+              mask: radial-gradient(circle at 50% 50%, transparent var(--jn-iris), #000 calc(var(--jn-iris) + 1px));
+    }
+    html.jn-boot .jn-loader { animation: jn-iris-open 1s cubic-bezier(.76, 0, .24, 1) 1.9s forwards; }
+    html.jn-on .jn-loader-ring {
+      display: block; position: fixed; left: 50%; top: 50%; z-index: 3001; pointer-events: none;
+      width: 300vmax; height: 300vmax; margin: -150vmax 0 0 -150vmax; border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--accent-2), 0 0 70px 12px var(--accent-glow), inset 0 0 70px 8px var(--accent-glow);
+      transform: scale(0); opacity: 0;
+    }
+    html.jn-boot .jn-loader-ring { animation: jn-ring-open 1s cubic-bezier(.76, 0, .24, 1) 1.9s forwards; }
+    html.jn-boot.jn-loader-skip .jn-loader,
+    html.jn-boot.jn-loader-skip .jn-loader-ring { animation-delay: 0s; animation-duration: .55s; }
+    html.jn-loader-done .jn-loader, html.jn-loader-done .jn-loader-ring { display: none; }
+    @keyframes jn-iris-open { 0% { --jn-iris: 0px; } 86% { opacity: 1; } 100% { --jn-iris: 150vmax; opacity: 0; visibility: hidden; } }
+    @keyframes jn-ring-open { 0% { transform: scale(0); opacity: 1; } 70% { opacity: 1; } 100% { transform: scale(1); opacity: 0; visibility: hidden; } }
+
+    .jn-term {
+      width: min(560px, 100%); border-radius: 16px; overflow: hidden;
+      background: var(--glass-strong); border: 1px solid var(--accent-line);
+      box-shadow: var(--shadow-lg), 0 0 90px -20px var(--accent-glow);
+      font-family: var(--font-mono); font-size: clamp(0.64rem, 2.6vw, 0.86rem); line-height: 1.9; color: var(--text);
+    }
+    html.jn-boot .jn-term { animation: jn-term-in .5s var(--ease) both; }
+    @keyframes jn-term-in { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+    .jn-term-bar {
+      display: flex; align-items: center; gap: 7px; padding: 10px 14px;
+      border-bottom: 1px solid var(--hairline); color: var(--muted); font-size: .9em; letter-spacing: .06em;
+    }
+    .jn-term-bar i { width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; }
+    .jn-term-bar i:nth-child(2) { background: #febc2e; }
+    .jn-term-bar i:nth-child(3) { background: #28c840; }
+    .jn-term-bar span { margin-left: 8px; }
+    .jn-term-prog { height: 2px; background: var(--hairline); }
+    .jn-term-prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 12px var(--accent-glow); }
+    html.jn-boot .jn-term-prog i { animation: jn-prog 1.75s cubic-bezier(.4, 0, .2, 1) .1s forwards; }
+    @keyframes jn-prog { to { width: 100%; } }
+    .jn-term-body { padding: 14px 18px 18px; }
+    /* each line types itself out: width 0 → n characters in n steps (--n is
+       measured from the line by the engine before the boot class is added) */
+    .jn-tl { display: block; width: 0; overflow: hidden; white-space: pre; }
+    html.jn-boot .jn-tl { animation: jn-type var(--t, .4s) steps(var(--n, 30)) var(--d, 0s) forwards; }
+    @keyframes jn-type { to { width: calc(var(--n, 30) * 1ch + 1ch); } }
+    .jn-tl b { color: var(--accent-2); font-weight: 500; }
+    .jn-tl em { color: var(--accent-bright); font-style: normal; }
+    .jn-tl-dim { color: var(--muted); }
+    .jn-tl-ok { color: var(--accent-2); }
+    .jn-term-cursor { display: inline-block; width: .62em; height: 1.05em; vertical-align: -0.18em; background: var(--accent-2); animation: jn-blink 1s steps(2) infinite; }
+
+    /* ---------------- FULL-PAGE FX CANVASES ----------------
+       #jn-warp  — a 3D starfield that streaks into hyperspace with scroll speed.
+       #jn-globe — a dotted Earth whose camera is choreographed across S1 → S3.
+       Both sit behind the content (negative z-index, like #net-canvas) and are
+       drawn by the engine only while the tab is visible. */
+    html.jn-on .jn-fx { display: block; position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    #jn-warp { z-index: -2; }
+    #jn-globe { z-index: -1; opacity: 0; }
+    html.jn-on #net-canvas { opacity: .5; }
 
     /* ---------------- S1 HERO ---------------- */
-    .jn-hero { text-align: center; position: relative; }
+    .jn-hero { text-align: center; position: relative; z-index: 2; }
     .jn-hero-kicker {
       font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.28em;
       text-transform: uppercase; color: var(--accent-bright); margin-bottom: 20px;
-      display: block;
+      display: block; min-height: 1.4em;
     }
     .jn-hero-name {
       font-family: var(--font-display); font-weight: 700; line-height: 0.92;
@@ -104,103 +176,140 @@
       background-size: 200% 200%;
       -webkit-background-clip: text; background-clip: text; color: transparent;
       filter: drop-shadow(0 3px 26px var(--accent-glow));
-      will-change: transform;
     }
-    .jn-hero-name > .jn-hero-line { display: block; }
+    .jn-hero-name > .jn-hero-line { display: block; white-space: nowrap; }
     /* Per-letter split (engine only). background-clip:text does not reliably
        survive transform-animated child spans (the clip breaks per-glyph), so
        once the name is split each letter clips its OWN slice of a shared
        oversized gradient — sampled per letter via --jn-frac, drifted by the
-       inherited registered prop --jn-gs. Without @property support the drift
-       simply stays static; the gradient itself still renders. */
+       inherited registered prop --jn-gs. Each letter carries its own glow so
+       the 3D explosion never re-filters the whole headline. */
     @property --jn-gs { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
-    html.jn-on .jn-hero-name { background: none; animation: jn-gs-drift 9s ease-in-out infinite alternate; }
+    html.jn-on .jn-hero-name { background: none; filter: none; animation: jn-gs-drift 9s ease-in-out infinite alternate; }
+    html.jn-on .jn-hero-line { perspective: 800px; }
     html.jn-on .jn-l {
-      display: inline-block;
+      display: inline-block; text-align: center; opacity: 0;
       background: linear-gradient(115deg, var(--ink) 12%, var(--accent) 42%, var(--accent-2) 62%, var(--accent-3) 82%, var(--ink) 100%);
       background-size: 1100% 260%;
       background-position: calc(var(--jn-frac, 0) * 100% + var(--jn-gs, 0%)) 50%;
       -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 3px 20px var(--accent-glow));
+      will-change: transform, opacity;
     }
     @keyframes jn-gs-drift { from { --jn-gs: 0%; } to { --jn-gs: 26%; } }
-    /* Load intro: kicker → letters (staggered) → sub → scroll cue.
-       fill:backwards only — every end state equals the natural state, so the
-       engine's per-frame inline writes take over cleanly once each ends. */
-    html.jn-boot .jn-hero-kicker { animation: jn-rise-in .6s var(--ease) .05s backwards; }
-    html.jn-boot .jn-l { animation: jn-letter-in .65s var(--ease) backwards; animation-delay: calc(140ms + var(--jn-i, 0) * 42ms); }
-    html.jn-boot .jn-hero-sub { animation: jn-rise-in .7s var(--ease) .75s backwards; }
-    html.jn-boot .jn-cue { animation: jn-fade-in .8s var(--ease) 1.5s backwards; }
-    @keyframes jn-letter-in { from { opacity: 0; transform: translateY(0.4em); } }
-    @keyframes jn-rise-in { from { opacity: 0; transform: translateY(16px); } }
-    @keyframes jn-fade-in { from { opacity: 0; } }
     .jn-hero-sub {
       font-family: var(--font-mono); color: var(--text); margin-top: 26px;
       font-size: clamp(0.9rem, 2.2vw, 1.15rem); letter-spacing: 0.02em;
     }
-    /* interstitial line that rises after the zoom-through */
+    /* the engine's boot intro brings these in (kicker types, sub rises, …) */
+    html.jn-on .jn-hero-kicker, html.jn-on .jn-hero-sub { opacity: 0; }
+    /* interstitial line that flips in, character by character, after the explosion */
     .jn-hero-inter {
       display: none; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
       font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em;
-      font-size: clamp(1.6rem, 5.4vw, 3.4rem); color: var(--ink);
-      opacity: 0; pointer-events: none; will-change: transform, opacity;
+      font-size: clamp(1.7rem, 5.8vw, 3.8rem); color: var(--ink); line-height: 1.15;
+      opacity: 0; pointer-events: none; padding: 0 18px;
     }
-    html.jn-on .jn-hero-inter { display: block; }
-    .jn-hero-inter .jn-grad {
+    html.jn-on .jn-hero-inter { display: block; perspective: 700px; }
+    .jn-hero-inter .jn-cw { display: inline-block; white-space: nowrap; }
+    .jn-hero-inter .jn-c { display: inline-block; text-shadow: 0 2px 28px var(--bg); will-change: transform, opacity; }
+    .jn-grad {
       background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
-    /* scroll cue */
-    .jn-cue {
-      position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%);
-      display: none; flex-direction: column; align-items: center; gap: 8px;
-      font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--muted);
+    .jn-hero-inter .jn-grad { background-size: 220% 100%; animation: jn-shimmer 3.2s ease-in-out infinite alternate; }
+    @keyframes jn-shimmer { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+
+    /* camera viewfinder: corner brackets, a REC light and a scroll timecode */
+    html.jn-on .jn-vf {
+      display: block; position: absolute; z-index: 1; pointer-events: none; opacity: 0;
+      inset: clamp(78px, 12vh, 112px) clamp(14px, 3.6vw, 52px) clamp(20px, 4.5vh, 44px);
     }
-    .jn-cue svg { width: 20px; height: 20px; stroke: var(--accent-bright); animation: jn-bob 1.8s var(--ease) infinite; }
-    html.jn-on .jn-cue { display: flex; }
-    @keyframes jn-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+    .jn-vf-c { position: absolute; width: 24px; height: 24px; border: 0 solid var(--accent-bright); opacity: .75; }
+    .jn-vf-c:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+    .jn-vf-c:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+    .jn-vf-c:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+    .jn-vf-c:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+    .jn-vf-l {
+      position: absolute; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--muted); white-space: nowrap;
+    }
+    .jn-vf-tl { top: 4px; left: 36px; color: var(--ink); }
+    .jn-vf-tr { top: 4px; right: 36px; }
+    .jn-vf-bl { bottom: 2px; left: 36px; }
+    .jn-vf-br { bottom: 2px; right: 36px; font-variant-numeric: tabular-nums; color: var(--accent-bright); }
+    .jn-rec::before {
+      content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px;
+      background: #ff4d5e; box-shadow: 0 0 10px #ff4d5e; vertical-align: 1px; animation: jn-blink 1.1s steps(2) infinite;
+    }
+
+    /* scroll cue — a little mouse with a rolling wheel */
+    html.jn-on .jn-cue {
+      display: flex; position: absolute; left: 50%; bottom: clamp(26px, 5vh, 44px); transform: translateX(-50%);
+      flex-direction: column; align-items: center; gap: 10px; z-index: 2; opacity: 0;
+      font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted);
+    }
+    .jn-mouse { width: 22px; height: 34px; border: 1.5px solid var(--accent-bright); border-radius: 12px; position: relative; }
+    .jn-mouse i {
+      position: absolute; left: 50%; top: 7px; width: 3px; height: 7px; margin-left: -1.5px; border-radius: 2px;
+      background: var(--accent-2); animation: jn-wheel 1.6s var(--ease) infinite;
+    }
+    @keyframes jn-wheel { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(11px); opacity: 0; } 100% { opacity: 0; } }
 
     /* decorative ambience orbs (static — per-frame transforms on huge blurred
        layers are a known Chromium ghost-layer / jank trigger) */
-    .jn-orb {
-      position: absolute; border-radius: 50%; filter: blur(70px); pointer-events: none;
-      z-index: -1;
-    }
+    .jn-orb { position: absolute; border-radius: 50%; filter: blur(70px); pointer-events: none; z-index: -1; }
     .jn-orb-a { width: 40vw; height: 40vw; top: 6%; left: -6%; background: radial-gradient(circle at 50% 50%, var(--aurora-1), transparent 70%); }
     .jn-orb-b { width: 34vw; height: 34vw; bottom: 4%; right: -4%; background: radial-gradient(circle at 50% 50%, var(--aurora-3), transparent 70%); }
 
     /* ---------------- S2 STATEMENT ---------------- */
     .jn-statement {
       font-family: var(--font-display); font-weight: 600; text-align: center;
-      font-size: clamp(1.6rem, 5vw, 2.6rem); line-height: 1.32;
+      font-size: clamp(1.6rem, 5vw, 2.7rem); line-height: 1.32;
       max-width: 24ch; margin: 0 auto; letter-spacing: -0.015em;
-      color: var(--ink); will-change: transform, opacity;
+      color: var(--ink); position: relative; z-index: 2;
     }
-    .jn-w { transition: none; }
-    /* inline-block so words can drift/pop via transform without relayout */
-    html.jn-on .jn-w { opacity: 0.14; display: inline-block; }
+    /* words assemble out of a 3D scatter; inline-block so they transform without relayout */
+    html.jn-on .jn-w { display: inline-block; }
+    html.jn-on .jn-statement { perspective: 1100px; will-change: transform, opacity; }
+    html.jn-on .jn-statement .jn-w { opacity: 0.16; will-change: transform, opacity; }
     .jn-key {
       background: linear-gradient(110deg, var(--accent), var(--accent-2) 65%, var(--accent-3));
       -webkit-background-clip: text; background-clip: text; color: transparent;
       font-style: normal;
     }
+    /* highlighter sweep under each keyword, scaled by the engine via --u */
+    html.jn-on .jn-statement .jn-key { position: relative; }
+    html.jn-on .jn-statement .jn-key::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 0.02em; height: 0.09em; border-radius: 0.05em;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 14px var(--accent-glow);
+      transform: scaleX(var(--u, 0)); transform-origin: 0 50%;
+    }
+    /* giant outlined marquee rows behind the statement, driven by scroll */
+    html.jn-on .jn-marquee { display: block; position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .jn-mq-row {
+      position: absolute; left: 0; display: flex; white-space: nowrap; will-change: transform;
+      font-family: var(--font-display); font-weight: 700; letter-spacing: -0.045em; line-height: 1;
+      font-size: clamp(3.6rem, 12vw, 10rem); color: transparent; text-transform: uppercase;
+      -webkit-text-stroke: 1.2px var(--accent-line); opacity: 0;
+    }
+    .jn-mq-row span { padding-right: 0.35em; }
+    .jn-mq-row .jn-mq-fill { color: var(--accent-soft); -webkit-text-stroke-width: 0; }
+    .jn-mq-a { top: 7%; }
+    .jn-mq-b { bottom: 7%; -webkit-text-stroke-color: rgba(129, 140, 248, 0.42); }
 
-    /* ---------------- S3 TIMELINE ---------------- */
+    /* ---------------- S3 ROUTE (dotted-globe flight) ---------------- */
     .jn-route-scene .jn-stage { place-items: stretch; }
-    .jn-route-inner {
-      position: relative; width: 100%; height: 100%;
-      display: grid; place-items: center;
-    }
-    .jn-route-svg {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 0;
-    }
+    .jn-route-inner { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
+    /* SVG route — the fallback visual when the canvas globe is unavailable */
+    .jn-route-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+    html.jn-globe-on .jn-route-svg { display: none; }
     .jn-route-path { fill: none; stroke: url(#jn-route-grad); stroke-width: 3; stroke-linecap: round; }
     html.jn-on .jn-route-path { stroke-dasharray: 1; stroke-dashoffset: 1; }
     .jn-route-node { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
     .jn-route-node-core { fill: var(--accent-2); }
     html.jn-on .jn-route-node-g { opacity: 0; }
-    /* pulse ring + spark are engine-driven; both invisible in the static page */
     .jn-route-ring {
       fill: none; stroke: var(--accent-2); stroke-width: 2; opacity: 0;
       will-change: transform, opacity; transform-box: fill-box; transform-origin: center;
@@ -210,15 +319,14 @@
     .jn-beats {
       position: relative; z-index: 2; width: 100%;
       max-width: var(--maxw); margin: 0 auto; padding: 0 22px;
-      display: grid; place-items: center;
+      display: grid; place-items: center; gap: 22px;
     }
-    .jn-beats { gap: 22px; }
-    .jn-beat {
-      width: min(430px, 86vw);
-      will-change: transform, opacity;
-    }
+    .jn-beat { width: min(430px, 86vw); will-change: transform, opacity; }
     /* static: beats stack as a readable list; jn-on: overlaid + engine-driven */
     html.jn-on .jn-beat { grid-area: 1 / 1; opacity: 0; }
+    @media (min-width: 769px) {
+      html.jn-on.jn-globe-on .jn-beats { justify-items: start; }
+    }
     .jn-beat-geo {
       display: block; font-family: var(--font-mono); font-size: 0.66rem;
       letter-spacing: 0.14em; color: var(--accent-bright); margin-bottom: 12px;
@@ -240,30 +348,66 @@
       backdrop-filter: none;
       background: var(--glass-strong);
     }
-    /* keep the nav's compositor layer alive/stable while it auto-hides over
-       the animating scenes (prevents the stale-layer artifact) */
-    nav { will-change: transform; }
+    /* holographic entrance: the card is clipped in from the top while a scan bar sweeps down it */
+    html.jn-on .jn-card { overflow: hidden; }
+    html.jn-on .jn-card .jn-scan {
+      display: block; position: absolute; left: 0; right: 0; top: 0; height: 40%; z-index: 2; pointer-events: none; opacity: 0;
+      background: linear-gradient(180deg, transparent, var(--accent-soft) 70%, var(--accent-line) 97%, transparent);
+    }
+    /* live flight telemetry for the globe */
+    html.jn-on.jn-globe-on .jn-route-hud { display: grid; }
+    .jn-route-hud {
+      position: absolute; right: clamp(16px, 4vw, 54px); bottom: clamp(24px, 6vh, 64px); z-index: 3;
+      grid-template-columns: auto auto; gap: 3px 20px; padding: 14px 18px; border-radius: 14px;
+      background: var(--glass-strong); border: 1px solid var(--accent-line);
+      box-shadow: 0 0 44px -14px var(--accent-glow);
+      font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); font-variant-numeric: tabular-nums; opacity: 0; pointer-events: none;
+    }
+    .jn-route-hud b { color: var(--ink); font-weight: 500; text-align: right; }
+    .jn-hud-status {
+      grid-column: 1 / -1; color: var(--accent-2); white-space: nowrap;
+      border-bottom: 1px solid var(--hairline); padding-bottom: 7px; margin-bottom: 4px;
+    }
+    .jn-hud-status::before {
+      content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 8px; vertical-align: 1px;
+      background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); animation: jn-blink 1.4s steps(2) infinite;
+    }
 
-    /* ---------------- S4 CRAFT (horizontal gallery) ---------------- */
+    /* ---------------- S4 CRAFT (3D coverflow) ---------------- */
     .jn-craft-scene .jn-stage { place-items: center; }
-    .jn-gallery { position: relative; width: 100%; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
-    html.jn-on .jn-gallery { height: 100%; overflow: hidden; }
+    .jn-gallery { position: relative; width: 100%; display: flex; flex-direction: column; justify-content: center; gap: 26px; z-index: 1; }
+    html.jn-on .jn-gallery { height: 100%; overflow: hidden; perspective: 1600px; perspective-origin: 50% 45%; }
     /* static fallback (no JS / engine failure): cards stack, all readable */
     .jn-track { display: block; padding: 0 22px; will-change: transform; }
     .jn-track .jn-gcard { margin: 0 auto 26px; max-width: 780px; }
     html.jn-on .jn-track {
-      display: flex; gap: 26px; align-items: stretch;
+      display: flex; gap: 26px; align-items: stretch; transform-style: preserve-3d;
       padding-left: max(22px, calc((100vw - min(70vw, 780px)) / 2));
       padding-right: max(22px, calc((100vw - min(70vw, 780px)) / 2));
     }
     html.jn-on .jn-track .jn-gcard { margin: 0; flex: 0 0 min(70vw, 780px); min-height: 62vh; }
-    /* the engine writes a per-frame focus transform/opacity on each card —
+    /* the engine writes a per-frame transform/opacity on each card —
        the .tile transition would smear those writes, so drop it here */
-    html.jn-on .jn-gcard { transition: none; }
-    .jn-gcard {
-      padding: 40px 42px; display: flex; flex-direction: column;
-      position: relative;
+    html.jn-on .jn-gcard { transition: none; will-change: transform, opacity; }
+    .jn-gcard { padding: 40px 42px; display: flex; flex-direction: column; position: relative; }
+    /* the cursor spotlight (script.js · spotlight) on the solid coverflow glass */
+    html.jn-on .jn-gcard.tile-hover {
+      background:
+        radial-gradient(380px circle at var(--mx) var(--my),
+          color-mix(in srgb, var(--spot) calc(var(--spot-a, 1) * 100%), transparent),
+          transparent 65%) border-box,
+        var(--glass-strong);
     }
+    /* the centred card gets a spinning conic light-border */
+    @property --jn-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+    html.jn-on .jn-gcard.jn-focus::after {
+      padding: 1.5px;
+      background: conic-gradient(from var(--jn-ang), var(--accent), var(--accent-2), var(--accent-3), transparent 38%, transparent 62%, var(--accent));
+      animation: jn-ang 4s linear infinite;
+    }
+    html.jn-on .jn-gcard.jn-focus { box-shadow: var(--shadow-lg), 0 0 80px -18px var(--accent-glow), inset 0 1px 0 var(--specular); }
+    @keyframes jn-ang { to { --jn-ang: 360deg; } }
     .jn-gcard-vis { position: absolute; top: 34px; right: 40px; width: 118px; height: 66px; opacity: 0.9; will-change: transform; }
     .jn-gcard-vis svg { width: 100%; height: 100%; }
     .jn-gcard-tag {
@@ -275,7 +419,7 @@
     .jn-gstat { margin-top: auto; display: flex; align-items: baseline; gap: 12px; padding-top: 22px; }
     .jn-gstat-num {
       font-family: var(--font-display); font-weight: 700; font-size: clamp(2.4rem, 6vw, 3.6rem);
-      line-height: 1;
+      line-height: 1; font-variant-numeric: tabular-nums;
       background: linear-gradient(120deg, var(--accent), var(--accent-2));
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
@@ -287,6 +431,14 @@
       transition: transform .25s var(--ease), border-color .25s, background .25s;
     }
     .jn-gcard-link:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--glass-2); }
+    /* oversized outlined word behind the coverflow — names the centred card */
+    html.jn-on .jn-craft-bg {
+      display: block; position: absolute; left: 0; right: 0; top: 50%; z-index: 0; pointer-events: none;
+      text-align: center; white-space: nowrap; transform: translateY(-50%);
+      font-family: var(--font-display); font-weight: 700; letter-spacing: -0.05em; line-height: 1;
+      font-size: clamp(4.6rem, 19vw, 17rem); color: transparent;
+      -webkit-text-stroke: 1.4px var(--accent-line); opacity: .55;
+    }
     /* progress ticks under the track */
     .jn-ticks { display: none; justify-content: center; gap: 12px; }
     html.jn-on .jn-ticks { display: flex; }
@@ -296,54 +448,74 @@
     /* ---------------- S5 PACKET FLOW ---------------- */
     .jn-flow-scene .jn-stage { place-items: center; }
     .jn-flow-inner { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 22px; }
+    html.jn-on .jn-flow-inner { max-width: 1180px; }
     .jn-flow-svg { width: 100%; height: auto; display: block; overflow: visible; }
     .jn-flow-route { fill: none; stroke: var(--accent-line); stroke-width: 2; stroke-dasharray: 6 7; opacity: 0.5; }
+    /* marching dashes: the wire is always carrying something */
+    html.jn-on .jn-flow-route { animation: jn-march 1.1s linear infinite; }
+    @keyframes jn-march { to { stroke-dashoffset: -26; } }
     .jn-flow-trail { fill: none; stroke: url(#jn-flow-grad); stroke-width: 3.5; stroke-linecap: round; }
     html.jn-on .jn-flow-trail { stroke-dasharray: 1; stroke-dashoffset: 1; }
     .jn-flow-node { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
-    .jn-flow-ring { fill: none; stroke: var(--accent-2); stroke-width: 2; opacity: 0; will-change: transform, opacity; transform-box: fill-box; transform-origin: center; }
+    .jn-flow-ring, .jn-flow-wave { fill: none; stroke: var(--accent-2); stroke-width: 2; opacity: 0; will-change: transform, opacity; transform-box: fill-box; transform-origin: center; }
+    .jn-flow-wave { stroke-width: 1.2; }
     .jn-flow-node-lbl { font-family: var(--font-mono); font-size: 12px; fill: var(--accent-bright); letter-spacing: 0.08em; }
     .jn-packet { fill: var(--accent-2); filter: drop-shadow(0 0 6px var(--accent-glow)); }
     html.jn-on .jn-packet { opacity: 0; }
-    /* comet-trail ghosts + light-up cores are engine-driven; hidden statically */
-    .jn-ghost { opacity: 0; }
+    .jn-packet-halo { fill: none; stroke: var(--accent-2); stroke-width: 1.2; opacity: 0; }
+    /* comet-trail ghosts, light-up cores, hop sparks and the protocol stream are engine-driven */
+    .jn-ghost, .jn-spark { opacity: 0; }
+    .jn-spark { fill: var(--accent-2); }
     .jn-flow-core { fill: var(--accent-2); opacity: 0; }
+    .jn-flow-stream { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; fill: var(--accent-2); opacity: 0; }
+    html.jn-on .jn-flow-stream { opacity: 0.36; }
     /* nodes/labels rest dimmed and light up as the packet reaches them */
     html.jn-on .jn-flow-node { opacity: 0.55; }
     html.jn-on .jn-flow-node-lbl { opacity: 0.5; }
     .jn-flow-caption {
       text-align: center; margin-top: 26px;
       font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em;
-      font-size: clamp(1.5rem, 4.6vw, 2.6rem); will-change: transform, opacity;
+      font-size: clamp(1.6rem, 5vw, 2.9rem); will-change: transform, opacity;
     }
-    html.jn-on .jn-flow-caption { position: absolute; left: 0; right: 0; bottom: 6%; margin: 0; opacity: 0; }
-    .jn-flow-caption .jn-grad {
-      background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
-    /* per-hop one-liners — static: readable stacked list; jn-on: centered grid overlay */
+    html.jn-on .jn-flow-caption { position: absolute; left: 0; right: 0; bottom: 5%; margin: 0; opacity: 0; }
+    /* per-hop one-liners — static: readable stacked list; jn-on: centred grid overlay */
     .jn-hop-notes { text-align: center; display: grid; gap: 8px; margin-top: 18px; place-items: center; }
-    html.jn-on .jn-hop-notes { position: absolute; left: 0; right: 0; top: 14%; min-height: 3.2em; margin: 0; gap: 0; }
+    html.jn-on .jn-hop-notes { position: absolute; left: 0; right: 0; top: 13%; min-height: 3.2em; margin: 0; gap: 0; }
     .jn-hop-note {
       font-family: var(--font-mono); font-size: clamp(0.82rem, 2.2vw, 1rem);
-      color: var(--text); padding: 0 22px; margin: 0;
-      will-change: opacity;
+      color: var(--text); padding: 0 22px; margin: 0; will-change: opacity, transform;
     }
     html.jn-on .jn-hop-note { grid-area: 1 / 1; opacity: 0; }
     .jn-hop-note b { color: var(--accent-bright); font-weight: 500; }
+    /* packet header readout */
+    html.jn-on .jn-pkt {
+      display: block; position: absolute; left: clamp(16px, 4vw, 54px); top: clamp(86px, 15vh, 140px); z-index: 3;
+      padding: 12px 16px; border-radius: 12px; min-width: 190px; pointer-events: none;
+      background: var(--glass-strong); border: 1px solid var(--accent-line); box-shadow: 0 0 40px -14px var(--accent-glow);
+      font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); font-variant-numeric: tabular-nums;
+    }
+    .jn-pkt-h { display: flex; justify-content: space-between; color: var(--accent-bright); border-bottom: 1px solid var(--hairline); padding-bottom: 6px; margin-bottom: 6px; }
+    .jn-pkt dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 16px; margin: 0; }
+    .jn-pkt dt { margin: 0; }
+    .jn-pkt dd { margin: 0; color: var(--ink); text-align: right; }
+    .jn-pkt-st { margin-top: 7px; padding-top: 6px; border-top: 1px solid var(--hairline); color: var(--accent-2); }
 
     /* ---------------- S6 FINALE ---------------- */
     .jn-finale-scene .jn-stage { place-items: center; }
-    .jn-finale { text-align: center; max-width: 640px; margin: 0 auto; padding: 0 22px; will-change: transform; }
+    .jn-finale { text-align: center; max-width: 640px; margin: 0 auto; padding: 0 22px; will-change: transform; position: relative; z-index: 1; }
+    /* the orbit ring overhangs the portrait, so the zone reserves room below it */
+    .jn-pzone { position: relative; width: clamp(140px, 34vw, 216px); aspect-ratio: 1; margin: 0 auto 30px; }
+    html.jn-on .jn-pzone { margin-bottom: calc(clamp(140px, 34vw, 216px) * 0.3); }
     .jn-portrait {
-      width: clamp(140px, 34vw, 216px); aspect-ratio: 1; margin: 0 auto 26px;
+      position: relative; z-index: 2; width: 100%; height: 100%;
       border-radius: var(--radius-xl); overflow: hidden;
       box-shadow: 0 0 0 1px var(--ring-accent), 0 0 0 6px var(--accent-soft), var(--shadow-lg);
       will-change: transform, opacity;
     }
     .jn-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
     /* gentle float on the img + glow-pulse on the frame — the engine's scale
-       lives on the wrapper, so the three transforms never fight */
+       lives on the wrapper, so the transforms never fight */
     html.jn-on .jn-portrait img { animation: jn-float 6s ease-in-out infinite; }
     html.jn-on .jn-portrait { animation: jn-portrait-glow 4.5s ease-in-out infinite; }
     @keyframes jn-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
@@ -351,39 +523,75 @@
       0%, 100% { box-shadow: 0 0 0 1px var(--ring-accent), 0 0 0 6px var(--accent-soft), var(--shadow-lg); }
       50%      { box-shadow: 0 0 0 1px var(--ring-accent), 0 0 0 9px var(--accent-soft), 0 0 44px -6px var(--accent-glow), var(--shadow-lg); }
     }
+    /* sonar ripples behind the portrait */
+    html.jn-on .jn-sonar { display: block; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; }
+    .jn-sonar i {
+      position: absolute; inset: 0; border-radius: var(--radius-xl); border: 1.5px solid var(--accent-2);
+      opacity: 0; animation: jn-sonar 3.6s cubic-bezier(.2, .6, .3, 1) infinite;
+    }
+    .jn-sonar i:nth-child(2) { animation-delay: 1.2s; }
+    .jn-sonar i:nth-child(3) { animation-delay: 2.4s; }
+    @keyframes jn-sonar { 0% { transform: scale(1); opacity: .75; } 100% { transform: scale(2.2); opacity: 0; } }
+    /* orbiting name ring */
+    html.jn-on .jn-orbit {
+      display: block; position: absolute; left: 50%; top: 50%; width: 162%; height: 162%; z-index: 1;
+      transform: translate(-50%, -50%); pointer-events: none; overflow: visible; opacity: 0;
+    }
+    .jn-orbit-spin { transform-box: view-box; transform-origin: 50% 50%; animation: jn-orbit 30s linear infinite; }
+    .jn-orbit text { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 3.4px; fill: var(--accent-bright); }
+    .jn-orbit-ring { fill: none; stroke: var(--accent-line); stroke-width: 1; stroke-dasharray: 2 7; }
+    .jn-orbit-dot { fill: var(--accent-2); }
+    @keyframes jn-orbit { to { transform: rotate(360deg); } }
+    /* packet burst */
+    html.jn-on .jn-burst { display: block; position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 3; pointer-events: none; }
+    .jn-burst i { position: absolute; left: 0; top: 0; border-radius: 50%; opacity: 0; box-shadow: 0 0 10px currentColor; will-change: transform, opacity; }
+
     .jn-finale-name { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-bright); margin-bottom: 12px; display: block; }
     .jn-finale-line {
       font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em;
       font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.05; color: var(--ink); margin: 0;
     }
-    .jn-finale-line .jn-grad {
-      background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
+    html.jn-on .jn-finale-line { perspective: 600px; }
     .jn-finale-sub { color: var(--muted); margin-top: 14px; font-size: clamp(1rem, 2.4vw, 1.2rem); }
-    .jn-finale-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; will-change: transform, opacity; }
+    .jn-finale-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; }
     /* engine-driven entrances: kicker → headline words → sub → CTAs cascade.
        CTA children fade only (their .btn transitions + magnetic transform
        must stay untouched); everything rests at natural state at p=1. */
     html.jn-on .jn-finale-name { opacity: 0; }
-    html.jn-on .jn-finale-line .jn-w { opacity: 0; }
+    html.jn-on .jn-finale-line .jn-w { opacity: 0; transform-origin: 50% 100%; }
     html.jn-on .jn-finale-sub { opacity: 0; }
     html.jn-on .jn-finale-cta > * { opacity: 0; }
+    /* "rewind" — scrolls the whole film back to the start and replays the intro */
+    html.jn-on .jn-replay {
+      display: inline-flex; align-items: center; gap: 9px; margin-top: 20px; opacity: 0;
+      background: none; border: 0; cursor: pointer; padding: 9px 14px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); transition: color .2s, background .2s;
+    }
+    .jn-replay:hover { color: var(--accent-2); background: var(--accent-soft); }
+    .jn-replay svg { width: 15px; height: 15px; transition: transform .5s var(--ease); }
+    .jn-replay:hover svg { transform: rotate(-300deg); }
+    html.jn-rewinding .jn-rewind {
+      display: block; position: fixed; inset: 0; z-index: 2500; pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 4px);
+      animation: jn-vhs .16s steps(2) infinite;
+    }
+    .jn-rewind span {
+      position: absolute; top: clamp(86px, 13vh, 124px); left: clamp(18px, 4vw, 56px);
+      font-family: var(--font-mono); font-weight: 700; font-size: clamp(1.2rem, 3.4vw, 2rem); letter-spacing: 0.14em;
+      color: #f1f6ff; text-shadow: 3px 0 rgba(255, 60, 90, 0.8), -3px 0 rgba(60, 230, 255, 0.8);
+    }
+    @keyframes jn-vhs { 50% { transform: translateY(2px); opacity: .85; } }
 
-    /* ---------------- photo reel (S3b · Paris, S5b · the rest of it) ----------------
-       A cinematic full-bleed dissolve — deliberately a different motion
-       grammar from S4's horizontal track, so the two photo/gallery chapters
-       never read as the same trick twice.
-
-       Frames are stacked by index (z-index = i) and each one only ever fades
-       IN over the one below; the outgoing frame stays fully opaque underneath
-       until it is completely covered. A symmetric fade-out/fade-in pair would
-       show the navy backdrop through both at mid-crossfade (a visible dip) —
-       this never dips.
+    /* ---------------- photo reels (S3b · iris, S4b · shutter, S5b · fly-in) ----------------
+       Three reels, three transition grammars, one builder. Frames are stacked
+       by index (z-index = i) and each one only ever reveals OVER the one below;
+       the outgoing frame stays fully painted underneath until it is completely
+       covered, so no transition ever dips to the navy backdrop.
 
        Each caption lives INSIDE its own frame (real <figcaption>), which is
        safe because caption i is fully faded out BEFORE frame i+1 begins to
-       cover it, and caption i+1 only starts once frame i+1 is fully opaque.
+       cover it, and caption i+1 only starts once frame i+1 is fully revealed.
        ---- */
     .jn-reel { position: relative; width: 100%; }
     /* on-photo ink: captions sit on a dark scrim in BOTH themes, so these are
@@ -400,10 +608,6 @@
       font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em;
       font-size: clamp(1.9rem, 5.6vw, 3.2rem); line-height: 1.04; color: var(--ink); margin: 0;
     }
-    .jn-reel-title .jn-grad {
-      background: linear-gradient(110deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
     .jn-reel-sub { color: var(--muted); margin-top: 12px; font-size: clamp(0.98rem, 2.2vw, 1.12rem); }
 
     .jn-frames { display: grid; gap: 40px; max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
@@ -419,19 +623,13 @@
       font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.2em;
       text-transform: uppercase; color: var(--accent-bright); display: block; margin-bottom: 8px;
     }
-    .jn-cap-line {
-      margin: 0; color: var(--text); font-size: clamp(1rem, 2.4vw, 1.22rem);
-      line-height: 1.45; max-width: 46ch;
-    }
+    .jn-cap-line { margin: 0; color: var(--text); font-size: clamp(1rem, 2.4vw, 1.22rem); line-height: 1.45; max-width: 46ch; }
     .jn-reel-hud { display: none; }
 
     /* ===== html.jn-on : pinned full-bleed cinema ===== */
     html.jn-on .jn-reel { position: absolute; inset: 0; }
-
     html.jn-on .jn-frames { display: block; position: absolute; inset: 0; max-width: none; margin: 0; padding: 0; }
-    html.jn-on .jn-frame {
-      position: absolute; inset: 0; opacity: 0; overflow: hidden;
-    }
+    html.jn-on .jn-frame { position: absolute; inset: 0; opacity: 0; overflow: hidden; }
     /* Portrait photos lose ~half their height to a landscape stage, so the
        default centre crop can land badly (a face filling the frame, a tower
        with its top cut). Per-photo framing is an inline
@@ -448,23 +646,22 @@
     html.jn-on .jn-frame-scrim {
       display: block; position: absolute; inset: 0; pointer-events: none;
       background:
-        /* left wash: the chapter head and the caption are both left-aligned,
-           and a photo can put anything bright behind them (a lit monitor, a
-           whiteboard, a sky). This keeps that column readable without
-           flattening the rest of the frame. */
-        linear-gradient(to right,
-          rgba(4, 10, 28, 0.50) 0%,
-          rgba(4, 10, 28, 0.24) 30%,
-          rgba(4, 10, 28, 0) 56%),
+        linear-gradient(to right, rgba(4, 10, 28, 0.50) 0%, rgba(4, 10, 28, 0.24) 30%, rgba(4, 10, 28, 0) 56%),
         linear-gradient(to top,
-          rgba(4, 10, 28, 0.92) 0%,
-          rgba(4, 10, 28, 0.60) 22%,
-          rgba(4, 10, 28, 0.12) 46%,
-          rgba(4, 10, 28, 0.42) 72%,
-          rgba(4, 10, 28, 0.66) 88%,
-          rgba(4, 10, 28, 0.82) 100%),
+          rgba(4, 10, 28, 0.92) 0%, rgba(4, 10, 28, 0.60) 22%, rgba(4, 10, 28, 0.12) 46%,
+          rgba(4, 10, 28, 0.42) 72%, rgba(4, 10, 28, 0.66) 88%, rgba(4, 10, 28, 0.82) 100%),
         radial-gradient(125% 82% at 50% 48%, rgba(7, 17, 46, 0) 42%, rgba(7, 17, 46, 0.58) 100%);
     }
+    /* light leak that sweeps across every transition */
+    html.jn-on .jn-reel-flash {
+      display: block; position: absolute; inset: -10% -30%; z-index: 55; pointer-events: none; opacity: 0;
+      background: linear-gradient(100deg, transparent 32%, rgba(140, 220, 255, 0.28) 46%, rgba(255, 255, 255, 0.55) 50%, rgba(140, 220, 255, 0.28) 54%, transparent 68%);
+      mix-blend-mode: screen; will-change: transform, opacity;
+    }
+    /* the iris reel's expanding aperture ring */
+    html.jn-on .jn-iris-ring { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 56; pointer-events: none; opacity: 0; overflow: visible; }
+    .jn-ir-glow { fill: none; stroke: rgba(110, 231, 255, 0.28); stroke-width: 18; }
+    .jn-ir-core { fill: none; stroke: var(--jn-photo-accent); stroke-width: 2.5; }
 
     /* chapter head — top-left, above every frame */
     html.jn-on .jn-reel-head {
@@ -472,19 +669,17 @@
       z-index: 60; margin: 0; pointer-events: none; opacity: 0;
       will-change: transform, opacity;
     }
-    /* on-photo text always has to clear whatever is behind it, and a photo can
-       put anything there — so the scrim does the bulk and these shadows cover
-       the bright patches it can't fully knock down */
     html.jn-on .jn-reel-title {
-      color: var(--jn-photo-ink);
+      color: var(--jn-photo-ink); perspective: 600px;
       text-shadow: 0 2px 20px rgba(2, 7, 22, 0.8), 0 1px 3px rgba(2, 7, 22, 0.55);
     }
+    html.jn-on .jn-reel-title .jn-w { transform-origin: 50% 100%; }
+    html.jn-on .jn-reel-title .jn-grad { text-shadow: none; }
     html.jn-on .jn-reel-kicker { color: var(--jn-photo-accent); text-shadow: 0 1px 10px rgba(2, 7, 22, 0.85); }
     html.jn-on .jn-reel-sub {
       color: rgba(232, 240, 255, 0.82); max-width: 40ch;
       text-shadow: 0 1px 14px rgba(2, 7, 22, 0.9), 0 1px 3px rgba(2, 7, 22, 0.6);
     }
-
     /* caption — bottom-left, inside its own frame (see note above) */
     html.jn-on .jn-cap {
       position: absolute; left: 0; right: 0; bottom: clamp(74px, 12vh, 118px);
@@ -497,20 +692,13 @@
       letter-spacing: -0.015em; font-size: clamp(1.15rem, 3vw, 1.85rem);
       line-height: 1.28; max-width: 22ch; text-shadow: 0 2px 20px rgba(2, 7, 22, 0.7);
     }
-
     /* frame counter + tick strip — bottom band, above every frame */
     html.jn-on .jn-reel-hud {
       display: block; position: absolute; left: 0; right: 0;
       bottom: clamp(30px, 5vh, 46px); z-index: 60; pointer-events: none;
     }
-    .jn-reel-hud-inner {
-      max-width: var(--maxw); margin: 0 auto; padding: 0 22px;
-      display: flex; align-items: center; gap: 16px;
-    }
-    .jn-reel-count {
-      font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
-      color: rgba(226, 236, 255, 0.62); flex-shrink: 0;
-    }
+    .jn-reel-hud-inner { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; display: flex; align-items: center; gap: 16px; }
+    .jn-reel-count { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em; color: rgba(226, 236, 255, 0.62); flex-shrink: 0; }
     .jn-reel-num { color: var(--jn-photo-accent); }
     .jn-reel-ticks { display: flex; gap: 7px; align-items: center; }
     .jn-rtick {
@@ -518,7 +706,7 @@
       background: rgba(226, 236, 255, 0.24);
       transition: background .35s var(--ease), width .35s var(--ease);
     }
-    .jn-rtick-on { background: var(--jn-photo-accent); width: 42px; }
+    .jn-rtick-on { background: var(--jn-photo-accent); width: 42px; box-shadow: 0 0 10px rgba(110, 231, 255, 0.6); }
 
     /* ---------------- chapter dot-rail ----------------
        The rail is a <nav>, so it inherits the site navbar's element styles
@@ -560,6 +748,23 @@
       pointer-events: none;
     }
     .jn-rail button:hover .jn-rail-lbl, .jn-rail button:focus .jn-rail-lbl, .jn-rail button.jn-rail-active .jn-rail-lbl { opacity: 1; transform: translateX(0); }
+    .jn-rail button.jn-rail-active .jn-rail-lbl { color: var(--accent-bright); }
+
+    /* ---- decorative CSS loops run only for the scene on screen (.jn-live is
+       toggled by the engine's IntersectionObserver) and pause in hidden tabs ---- */
+    html.jn-on #jn-s1:not(.jn-live) .jn-hero-name,
+    html.jn-on #jn-s1:not(.jn-live) .jn-hero-inter .jn-grad,
+    html.jn-on #jn-s1:not(.jn-live) .jn-mouse i,
+    html.jn-on #jn-s1:not(.jn-live) .jn-rec::before,
+    html.jn-on #jn-s3:not(.jn-live) .jn-hud-status::before,
+    html.jn-on #jn-s4:not(.jn-live) .jn-gcard.jn-focus::after,
+    html.jn-on #jn-s5:not(.jn-live) .jn-flow-route,
+    html.jn-on #jn-s6:not(.jn-live) .jn-portrait,
+    html.jn-on #jn-s6:not(.jn-live) .jn-portrait img,
+    html.jn-on #jn-s6:not(.jn-live) .jn-sonar i,
+    html.jn-on #jn-s6:not(.jn-live) .jn-orbit-spin,
+    html.bg-hidden .jn-hero-name, html.bg-hidden .jn-flow-route, html.bg-hidden .jn-sonar i,
+    html.bg-hidden .jn-orbit-spin, html.bg-hidden .jn-gcard.jn-focus::after { animation-play-state: paused; }
 
     /* ================= RESPONSIVE ================= */
     @media (max-width: 900px) {
@@ -576,16 +781,42 @@
       .jn-gcard-vis { top: 26px; right: 26px; width: 92px; height: 52px; }
       .jn-beat { width: min(92vw, 400px); }
       .jn-flow-node-lbl { font-size: 10px; }
-      .jn-hero-inter { padding: 0 18px; }
       html.jn-on .jn-cap-line { max-width: 15ch; }
       html.jn-on .jn-cap { bottom: clamp(66px, 14vh, 104px); }
       html.jn-on .jn-reel-head { top: clamp(70px, 11vh, 110px); }
       html.jn-on .jn-reel-sub { display: none; }
+      /* globe sits in the top half; the cards dock to the bottom */
+      html.jn-on.jn-globe-on .jn-route-inner { place-items: end center; }
+      html.jn-on.jn-globe-on .jn-beats { padding-bottom: clamp(18px, 4vh, 40px); }
+      .jn-route-hud { right: auto; left: 16px; bottom: auto; top: 78px; padding: 9px 12px; gap: 1px 14px; font-size: 0.58rem; }
+      .jn-vf-tr { display: none; }
+      html.jn-on .jn-pkt { top: 76px; left: 16px; right: 16px; min-width: 0; padding: 8px 12px; font-size: 0.58rem; }
+      .jn-pkt dl { grid-template-columns: repeat(2, auto 1fr); gap: 2px 10px; }
+      .jn-pkt dd { white-space: nowrap; }
+      .jn-pkt-h { display: none; }
+      /* a phone stage is tall: notes dock above the diagram, the caption below it */
+      html.jn-on .jn-hop-notes { top: auto; bottom: 100%; margin-bottom: 22px; }
+      html.jn-on .jn-flow-caption { bottom: auto; top: 100%; margin-top: 18px; padding: 0 16px; }
+      /* the wire only spans x 110–800 of the 1000-wide viewBox: crop the
+         empty margins so the diagram is ~28% larger on a phone */
+      html.jn-on .jn-flow-inner { padding: 0; }
+      html.jn-on .jn-flow-svg { width: 128%; margin-left: -11%; }
     }
 
     /* light-theme touch-ups where new tinted surfaces need it */
     [data-theme="light"] .jn-orb { filter: blur(80px); opacity: 0.8; }
     [data-theme="light"] .jn-flow-route { stroke: var(--accent-line); opacity: 0.6; }
+    [data-theme="light"] .jn-mq-b { -webkit-text-stroke-color: rgba(99, 102, 241, 0.34); }
+    [data-theme="light"] .jn-reel-flash { mix-blend-mode: soft-light; }
+
+    /* print: the engine drops jn-on on beforeprint; these neutralise its inline styles */
+    @media print {
+      .jn-loader, .jn-loader-ring, .jn-fx, .jn-rail, .jn-rewind, .jn-vf, .jn-cue, .jn-marquee, .jn-route-hud,
+      .jn-craft-bg, .jn-pkt, .jn-sonar, .jn-orbit, .jn-burst, .jn-replay, .jn-iris-ring, .jn-reel-flash, .jn-scan { display: none !important; }
+      .jn-story [style] { opacity: 1 !important; transform: none !important; clip-path: none !important; filter: none !important; }
+      /* printers drop backgrounds, which would leave gradient (background-clip:text) words invisible */
+      .jn-key, .jn-grad, .jn-gstat-num, .jn-hero-name { background: none !important; color: #111 !important; -webkit-text-fill-color: #111; filter: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -596,6 +827,31 @@
   <canvas id="net-canvas"></canvas>
   <canvas id="mouse-trail"></canvas>
   <div id="cursor-dot"></div>
+
+  <!-- Journey FX layers (engine only) -->
+  <canvas class="jn-fx" id="jn-warp" aria-hidden="true"></canvas>
+  <canvas class="jn-fx" id="jn-globe" aria-hidden="true"></canvas>
+
+  <!-- Boot sequence (engine only; CSS-timed, never blocks input) -->
+  <div class="jn-loader" aria-hidden="true">
+    <div class="jn-term">
+      <div class="jn-term-bar"><i></i><i></i><i></i><span>peter@journey: ~</span></div>
+      <div class="jn-term-prog"><i></i></div>
+      <div class="jn-term-body">
+        <span class="jn-tl" style="--t:.45s;--d:.15s">$ traceroute --life peter.farah</span>
+        <span class="jn-tl jn-tl-dim" style="--t:.12s;--d:.66s">traceroute to peter.farah, 4 hops max</span>
+        <span class="jn-tl" style="--t:.14s;--d:.84s"> 1  <b>beirut</b>     33.89°N  35.50°E   <em>2018</em></span>
+        <span class="jn-tl" style="--t:.14s;--d:1.0s"> 2  <b>paris</b>      48.86°N   2.35°E   <em>2023</em></span>
+        <span class="jn-tl" style="--t:.14s;--d:1.16s"> 3  <b>palaiseau</b>  48.71°N   2.25°E   <em>2024</em></span>
+        <span class="jn-tl" style="--t:.14s;--d:1.32s"> 4  <b>beirut</b>     33.89°N  35.50°E   <em>2026</em></span>
+        <span class="jn-tl jn-tl-ok" style="--t:.32s;--d:1.5s">[ok] route established · 4 hops · 0 lost <span class="jn-term-cursor"></span></span>
+      </div>
+    </div>
+  </div>
+  <div class="jn-loader-ring" aria-hidden="true"></div>
+
+  <!-- "Rewind" overlay shown while the replay button scrolls back to the start -->
+  <div class="jn-rewind" aria-hidden="true"><span>&#9664;&#9664; REWIND</span></div>
 
   <!-- Scroll Progress -->
   <div id="vertical-scroll-track"><div id="vertical-scroll-progress"></div></div>
@@ -686,14 +942,22 @@
   <main class="jn-story" id="main" tabindex="-1">
 
     <!-- ===== S1 · HERO ===== -->
-    <section class="jn-scene" id="jn-s1" data-len="3" aria-label="Introduction">
+    <section class="jn-scene" id="jn-s1" data-len="3.2" aria-label="Introduction">
       <div class="jn-stage">
         <span class="jn-orb jn-orb-a" id="jn-orb-a" aria-hidden="true"></span>
         <span class="jn-orb jn-orb-b" id="jn-orb-b" aria-hidden="true"></span>
 
+        <div class="jn-vf" id="jn-vf" aria-hidden="true">
+          <span class="jn-vf-c"></span><span class="jn-vf-c"></span><span class="jn-vf-c"></span><span class="jn-vf-c"></span>
+          <span class="jn-vf-l jn-vf-tl jn-rec">Rec · journey.log</span>
+          <span class="jn-vf-l jn-vf-tr">33.89°N 35.50°E</span>
+          <span class="jn-vf-l jn-vf-bl">2018 &rarr; 2026</span>
+          <span class="jn-vf-l jn-vf-br" id="jn-timecode">00:00:00:00</span>
+        </div>
+
         <div class="jn-hero">
           <div id="jn-hero-block">
-            <span class="jn-hero-kicker">// journey</span>
+            <span class="jn-hero-kicker" aria-hidden="true">// journey</span>
             <h1 class="jn-hero-name" id="jn-hero-name"><span class="visually-hidden">Peter Farah</span><span class="jn-hero-line" aria-hidden="true">PETER</span> <span class="jn-hero-line" aria-hidden="true">FARAH</span></h1>
             <p class="jn-hero-sub" id="jn-hero-sub">Infrastructure Automation Engineer — Beirut, Lebanon</p>
           </div>
@@ -701,25 +965,30 @@
         </div>
 
         <div class="jn-cue" id="jn-cue" aria-hidden="true">
-          <span>Scroll</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>
+          <span class="jn-mouse"><i></i></span>
+          <span>Scroll to take off</span>
         </div>
       </div>
     </section>
 
     <!-- ===== S2 · STATEMENT ===== -->
-    <section class="jn-scene" id="jn-s2" data-len="3" aria-label="What I do">
+    <section class="jn-scene" id="jn-s2" data-len="3.4" aria-label="What I do">
       <div class="jn-stage">
         <h2 class="jn-visually-hidden">What I do</h2>
+        <div class="jn-marquee" aria-hidden="true">
+          <div class="jn-mq-row jn-mq-a" id="jn-mq-a"><span>Low-level networking</span><span class="jn-mq-fill">·</span><span>Infrastructure automation</span><span class="jn-mq-fill">·</span><span>Threat intelligence</span><span class="jn-mq-fill">·</span></div>
+          <div class="jn-mq-row jn-mq-b" id="jn-mq-b"><span>Measure</span><span class="jn-mq-fill">·</span><span>Automate</span><span class="jn-mq-fill">·</span><span>Trust</span><span class="jn-mq-fill">·</span></div>
+        </div>
         <p class="jn-statement" id="jn-statement">I work in the space between packets — <em class="jn-key">low-level networking</em>, <em class="jn-key">infrastructure automation</em>, and <em class="jn-key">threat intelligence</em>. I like systems I can measure, automate, and trust.</p>
       </div>
     </section>
 
-    <!-- ===== S3 · JOURNEY TIMELINE ===== -->
-    <section class="jn-scene jn-route-scene" id="jn-s3" data-len="5" aria-label="Route">
+    <!-- ===== S3 · ROUTE — a flight across the dotted globe ===== -->
+    <section class="jn-scene jn-route-scene" id="jn-s3" data-len="6" aria-label="Route">
       <div class="jn-stage">
         <h2 class="jn-visually-hidden">The route — Beirut to Paris and back</h2>
         <div class="jn-route-inner">
+          <!-- fallback route (shown only when the canvas globe can't run) -->
           <svg class="jn-route-svg" id="jn-route-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
             <defs>
               <linearGradient id="jn-route-grad" x1="0" y1="0" x2="1" y2="1">
@@ -729,14 +998,12 @@
             </defs>
             <path class="jn-route-path" id="jn-route-path" pathLength="1"
               d="M 150 120 C 340 120 360 260 500 270 C 640 280 700 150 830 170 C 900 182 900 300 780 340 C 560 410 420 380 400 480 C 385 560 560 590 830 590"/>
-            <!-- node markers (positions match the 4 waypoints) -->
             <g id="jn-route-nodes">
               <g class="jn-route-node-g" data-beat="0"><circle class="jn-route-ring" cx="150" cy="120" r="19"/><circle class="jn-route-node" cx="150" cy="120" r="11"/><circle class="jn-route-node-core" cx="150" cy="120" r="4"/></g>
               <g class="jn-route-node-g" data-beat="1"><circle class="jn-route-ring" cx="830" cy="170" r="19"/><circle class="jn-route-node" cx="830" cy="170" r="11"/><circle class="jn-route-node-core" cx="830" cy="170" r="4"/></g>
               <g class="jn-route-node-g" data-beat="2"><circle class="jn-route-ring" cx="400" cy="480" r="19"/><circle class="jn-route-node" cx="400" cy="480" r="11"/><circle class="jn-route-node-core" cx="400" cy="480" r="4"/></g>
               <g class="jn-route-node-g" data-beat="3"><circle class="jn-route-ring" cx="830" cy="590" r="19"/><circle class="jn-route-node" cx="830" cy="590" r="11"/><circle class="jn-route-node-core" cx="830" cy="590" r="4"/></g>
             </g>
-            <!-- spark riding the head of the drawn route -->
             <circle class="jn-route-spark" id="jn-route-spark" cx="150" cy="120" r="6"/>
           </svg>
 
@@ -774,15 +1041,24 @@
               </div>
             </div>
           </div>
+
+          <!-- live flight telemetry (engine + globe only) -->
+          <div class="jn-route-hud" id="jn-route-hud" aria-hidden="true">
+            <span class="jn-hud-status" id="jn-hud-status">Holding · Beirut</span>
+            <span>Lat</span><b id="jn-hud-lat">33.89°N</b>
+            <span>Lon</span><b id="jn-hud-lon">35.50°E</b>
+            <span>Flown</span><b id="jn-hud-km">0 km</b>
+            <span>Year</span><b id="jn-hud-year">2018</b>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== S3B · PHOTO REEL — Two years, away =====
-         Frame count drives everything (counter, ticks, dissolve windows) off
+    <!-- ===== S3B · PHOTO REEL — Two years, away (iris transitions) =====
+         Frame count drives everything (counter, ticks, transition windows) off
          the DOM: to add a photo, drop in another <figure class="jn-frame">
          and bump data-len. Nothing else needs touching. ===== -->
-    <section class="jn-scene jn-reel-scene" id="jn-s3b" data-len="5.4" aria-label="Two years, away">
+    <section class="jn-scene jn-reel-scene" id="jn-s3b" data-len="6.2" data-fx="iris" aria-label="Two years, away">
       <div class="jn-stage">
         <div class="jn-reel">
 
@@ -894,14 +1170,15 @@
       </div>
     </section>
 
-    <!-- ===== S4 · CRAFT (horizontal gallery) ===== -->
-    <section class="jn-scene jn-craft-scene" id="jn-s4" data-len="4" aria-label="Craft">
+    <!-- ===== S4 · CRAFT (3D coverflow) ===== -->
+    <section class="jn-scene jn-craft-scene" id="jn-s4" data-len="4.4" aria-label="Craft">
       <div class="jn-stage">
         <h2 class="jn-visually-hidden">The craft — research, homelab, automation, security</h2>
+        <div class="jn-craft-bg" aria-hidden="true">RESEARCH</div>
         <div class="jn-gallery">
           <div class="jn-track" id="jn-track">
 
-            <article class="tile jn-gcard">
+            <article class="tile tile-hover jn-gcard">
               <div class="jn-gcard-vis" aria-hidden="true">
                 <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2 50 H20 V30 H38 V44 H56 V18 H74 V38 H92 V26 H110 V50 H118" stroke="var(--accent-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -917,7 +1194,7 @@
               <a class="jn-gcard-link" href="blog.html#aqm-research">Read the AQM write-up →</a>
             </article>
 
-            <article class="tile jn-gcard">
+            <article class="tile tile-hover jn-gcard">
               <div class="jn-gcard-vis" aria-hidden="true">
                 <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <g stroke="var(--accent-2)" stroke-width="1.6" opacity="0.75">
@@ -938,7 +1215,7 @@
               <a class="jn-gcard-link" href="blog.html#home-nas">Read the NAS write-up →</a>
             </article>
 
-            <article class="tile jn-gcard">
+            <article class="tile tile-hover jn-gcard">
               <div class="jn-gcard-vis" aria-hidden="true">
                 <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <g stroke="var(--accent-2)" stroke-width="1.8" stroke-linecap="round">
@@ -958,7 +1235,7 @@
               <a class="jn-gcard-link" href="index.html#experience">See experience →</a>
             </article>
 
-            <article class="tile jn-gcard">
+            <article class="tile tile-hover jn-gcard">
               <div class="jn-gcard-vis" aria-hidden="true">
                 <svg viewBox="0 0 120 66" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M60 8 L86 18 V34 C86 48 74 56 60 60 C46 56 34 48 34 34 V18 Z" fill="none" stroke="var(--accent)" stroke-width="2"/>
@@ -984,11 +1261,11 @@
       </div>
     </section>
 
-    <!-- ===== S4B · PHOTO REEL — Where it actually runs =====
-         Frame count drives everything (counter, ticks, dissolve windows) off
+    <!-- ===== S4B · PHOTO REEL — Where it actually runs (shutter transitions) =====
+         Frame count drives everything (counter, ticks, transition windows) off
          the DOM: to add a photo, drop in another <figure class="jn-frame">
          and bump data-len. Nothing else needs touching. ===== -->
-    <section class="jn-scene jn-reel-scene" id="jn-s4b" data-len="2.2" aria-label="Where it actually runs">
+    <section class="jn-scene jn-reel-scene" id="jn-s4b" data-len="2.8" data-fx="blinds" aria-label="Where it actually runs">
       <div class="jn-stage">
         <div class="jn-reel">
 
@@ -1045,9 +1322,19 @@
     </section>
 
     <!-- ===== S5 · PACKET FLOW ===== -->
-    <section class="jn-scene jn-flow-scene" id="jn-s5" data-len="4" aria-label="Packet flow">
+    <section class="jn-scene jn-flow-scene" id="jn-s5" data-len="4.6" aria-label="Packet flow">
       <div class="jn-stage">
         <h2 class="jn-visually-hidden">A packet's journey — client to router to tunnel to home server</h2>
+        <div class="jn-pkt" aria-hidden="true">
+          <div class="jn-pkt-h"><span>Packet</span><span>#0001</span></div>
+          <dl>
+            <dt>Src</dt><dd>you</dd>
+            <dt>Dst</dt><dd>home-server</dd>
+            <dt>TTL</dt><dd id="jn-pkt-ttl">64</dd>
+            <dt>Hop</dt><dd id="jn-pkt-hop">0 / 3</dd>
+          </dl>
+          <div class="jn-pkt-st" id="jn-pkt-st">queued</div>
+        </div>
         <div class="jn-flow-inner">
           <svg class="jn-flow-svg" id="jn-flow-svg" viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
             <defs>
@@ -1060,6 +1347,8 @@
                  exactly on the HOME SERVER node (the packet's destination) -->
             <path class="jn-flow-route" id="jn-flow-route" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130"/>
             <path class="jn-flow-trail" id="jn-flow-trail" pathLength="1" d="M 110 250 C 200 250 240 150 340 150 C 440 150 470 250 560 250 C 660 250 700 130 800 130"/>
+            <!-- the handshake, streaming along the wire (engine-driven offset) -->
+            <text class="jn-flow-stream" dy="-12"><textPath id="jn-flow-stream" href="#jn-flow-route" startOffset="0">SYN · SYN-ACK · ACK · TLS 1.3 · GET / · 200 OK · </textPath></text>
 
             <!-- nodes + pulse rings + labels -->
             <g data-hop="0">
@@ -1087,9 +1376,8 @@
               <text class="jn-flow-node-lbl" x="800" y="106" text-anchor="middle">HOME SERVER</text>
             </g>
 
-            <!-- travelling packet + comet-trail ghosts (ghosts under the packet) -->
-            <circle class="jn-packet jn-ghost" id="jn-ghost-2" cx="110" cy="250" r="2.6"/>
-            <circle class="jn-packet jn-ghost" id="jn-ghost-1" cx="110" cy="250" r="4"/>
+            <!-- travelling packet (its comet-trail ghosts + halo are added by the engine) -->
+            <circle class="jn-packet-halo" id="jn-packet-halo" cx="110" cy="250" r="13"/>
             <circle class="jn-packet" id="jn-packet" cx="110" cy="250" r="6"/>
           </svg>
 
@@ -1105,11 +1393,11 @@
       </div>
     </section>
 
-    <!-- ===== S5B · PHOTO REEL — And the rest of it =====
-         Frame count drives everything (counter, ticks, dissolve windows) off
+    <!-- ===== S5B · PHOTO REEL — And the rest of it (fly-in transitions) =====
+         Frame count drives everything (counter, ticks, transition windows) off
          the DOM: to add a photo, drop in another <figure class="jn-frame">
          and bump data-len. Nothing else needs touching. ===== -->
-    <section class="jn-scene jn-reel-scene" id="jn-s5b" data-len="4.6" aria-label="And the rest of it">
+    <section class="jn-scene jn-reel-scene" id="jn-s5b" data-len="5.4" data-fx="fly" aria-label="And the rest of it">
       <div class="jn-stage">
         <div class="jn-reel">
 
@@ -1208,11 +1496,25 @@
     </section>
 
     <!-- ===== S6 · FINALE ===== -->
-    <section class="jn-scene jn-finale-scene" id="jn-s6" data-len="2.5" aria-label="Hello">
+    <section class="jn-scene jn-finale-scene" id="jn-s6" data-len="3" aria-label="Hello">
       <div class="jn-stage">
         <div class="jn-finale">
-          <div class="jn-portrait" id="jn-portrait">
-            <img src="Files/images/profile/profile-480.jpg" srcset="Files/images/profile/profile-480.webp 480w, Files/images/profile/profile-720.webp 720w" sizes="(max-width: 640px) 34vw, 216px" width="480" height="640" alt="Portrait of Peter Farah" loading="lazy" decoding="async">
+          <div class="jn-pzone">
+            <span class="jn-sonar" aria-hidden="true"><i></i><i></i><i></i></span>
+            <svg class="jn-orbit" viewBox="0 0 300 300" aria-hidden="true">
+              <defs><path id="jn-orbit-path" d="M 150 150 m -122 0 a 122 122 0 1 1 244 0 a 122 122 0 1 1 -244 0"/></defs>
+              <g class="jn-orbit-spin">
+                <circle class="jn-orbit-ring" cx="150" cy="150" r="138"/>
+                <text><textPath href="#jn-orbit-path">PETER FARAH · BEIRUT · PARIS · PALAISEAU · BEIRUT · 2018 — 2026 ·</textPath></text>
+                <circle class="jn-orbit-dot" cx="150" cy="12" r="3.2"/>
+                <circle class="jn-orbit-dot" cx="288" cy="150" r="2.2"/>
+                <circle class="jn-orbit-dot" cx="52" cy="248" r="2.6"/>
+              </g>
+            </svg>
+            <div class="jn-portrait" id="jn-portrait">
+              <img src="Files/images/profile/profile-480.jpg" srcset="Files/images/profile/profile-480.webp 480w, Files/images/profile/profile-720.webp 720w" sizes="(max-width: 640px) 34vw, 216px" width="480" height="640" alt="Portrait of Peter Farah" loading="lazy" decoding="async">
+            </div>
+            <span class="jn-burst" aria-hidden="true"></span>
           </div>
           <span class="jn-finale-name">Peter Farah</span>
           <h2 class="jn-finale-line">That's the <span class="jn-grad">short version.</span></h2>
@@ -1228,6 +1530,10 @@
               Copy Email
             </button>
           </div>
+          <button type="button" class="jn-replay" id="jn-replay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            Replay the journey
+          </button>
         </div>
       </div>
     </section>
@@ -1278,11 +1584,15 @@
   <!-- ============================================================
        journey.html — scrollytelling engine
        Vanilla ES6, one IIFE. Animations always on (site convention —
-       see AGENTS.md); the static stacked layout is
-       kept as the no-JS fallback. Writes only transform
-       / opacity (and a few scene-scoped custom props); one passive
-       scroll listener flips a dirty flag, one rAF loop reads scrollY
-       once per frame and updates only the on-screen scenes.
+       see AGENTS.md); the static stacked layout is kept as the no-JS
+       and engine-failure fallback.
+
+       One rAF loop runs while the tab is visible: it reads scrollY once
+       per frame, derives a smoothed scroll velocity, updates only the
+       on-screen scenes, ticks the text scramblers and draws the two FX
+       canvases (warp starfield + dotted globe). Each FX layer is isolated:
+       if a canvas API is missing it switches itself off and the scenes
+       carry on.
        ============================================================ -->
   <script>
   (function () {
@@ -1291,16 +1601,32 @@
     const root = document.documentElement;
     /* Full motion is required in both the boot script and this engine.
        Static-page rail: plain jump links used only if the engine fails.
-       Keep this outside the try block so the catch handler can reach it. */
+       Keep these outside the try block so the failure path can reach them. */
     function wireRailStaticFallback() {
       const railEl = document.getElementById('jn-rail');
-      if (!railEl) return;
+      if (!railEl || railEl.dataset.static) return;
+      railEl.dataset.static = '1';
       Array.from(railEl.querySelectorAll('button')).forEach(function (btn) {
         btn.addEventListener('click', function () {
           const target = document.getElementById(btn.dataset.target);
           if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       });
+    }
+    let failed = false;
+    /* Drop back to the readable static layout: un-pin, and strip the engine's
+       inline states so nothing is left half-faded or clipped. */
+    function fail(err) {
+      if (failed) return;
+      failed = true;
+      root.classList.remove('jn-on', 'jn-boot', 'jn-globe-on', 'jn-rewinding');
+      Array.from(document.querySelectorAll('.jn-scene.jn-live')).forEach(function (el) { el.classList.remove('jn-live'); });
+      Array.from(document.querySelectorAll('.jn-story [style]')).forEach(function (el) {
+        if (el.tagName !== 'IMG') el.removeAttribute('style');
+        else { el.style.transform = ''; el.style.filter = ''; }
+      });
+      wireRailStaticFallback();
+      if (window.console) console.error('journey engine failed, static layout kept:', err);
     }
 
     root.classList.add('jn-on');
@@ -1309,15 +1635,36 @@
     try {
 
     /* ---------------------------- helpers ---------------------------- */
+    const $id = function (id) { return document.getElementById(id); };
     const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
     const lerp  = (a, b, t) => a + (b - a) * t;
     /* normalized sub-progress of p within [a, b] */
     const seg   = (p, a, b) => clamp((p - a) / (b - a), 0, 1);
+    /* 0 → 1 → 0 across [a, b] */
+    const bump  = (p, a, b) => Math.sin(seg(p, a, b) * Math.PI);
     const easeOutCubic   = t => 1 - Math.pow(1 - t, 3);
+    const easeInCubic    = t => t * t * t;
     const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     const easeOutExpo    = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    const easeOutBack    = t => { const c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+    const DEG = Math.PI / 180;
     const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
-    const MOBILE_LEN = 0.65; // mobile scenes are ~65% of desktop scroll length
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const MOBILE_LEN = 0.7; // mobile scenes are ~70% of desktop scroll length
+    const clock = () => (window.performance && performance.now ? performance.now() : Date.now());
+    const scrollTop = () => window.pageYOffset || root.scrollTop || 0;
+    const pad2 = n => (n < 10 ? '0' : '') + n;
+    /* deterministic PRNG (xorshift32) so every visit explodes the same way */
+    function rng(seed) {
+      let s = (seed | 0) || 1;
+      return function () { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return (s >>> 0) / 4294967296; };
+    }
+    /* Style writes go through a per-element cache: an identical value is never
+       re-written, so idle scenes cost no style invalidation. */
+    function css(el, prop, val) {
+      const c = el._jn || (el._jn = {});
+      if (c[prop] !== val) { c[prop] = val; el.style[prop] = val; }
+    }
 
     /* For each point, the fraction of the path's length nearest to it.
        One-time sample; locks scroll timings to the drawn geometry instead of
@@ -1341,224 +1688,512 @@
       });
     }
 
+    /* ---------------------------- frame state ---------------------------- */
+    // F is handed to every scene update and FX draw.
+    //   vel  — smoothed scroll velocity in px/ms (signed; drives warp + skew)
+    //   warp — extra hyperspace push requested by the hero this frame
+    const F = { now: 0, dt: 16, y: 0, vel: 0, moving: false, vw: window.innerWidth, vh: window.innerHeight, warp: 0, covered: false, light: false };
+    // pointer in normalised [-1, 1] (nx/ny raw, sx/sy smoothed); fine pointers only
+    const ptr = { nx: 0, ny: 0, sx: 0, sy: 0, x: -1e4, y: -1e4 };
+    if (finePointer) {
+      window.addEventListener('pointermove', function (e) {
+        ptr.x = e.clientX; ptr.y = e.clientY;
+        ptr.nx = clamp(e.clientX / F.vw * 2 - 1, -1, 1);
+        ptr.ny = clamp(e.clientY / F.vh * 2 - 1, -1, 1);
+      }, { passive: true });
+      document.addEventListener('mouseleave', function () { ptr.nx = ptr.ny = 0; ptr.x = ptr.y = -1e4; });
+    }
+
+    /* theme colours for the canvases, re-read whenever the theme flips */
+    const COL = { a1: [77, 141, 255], a2: [34, 211, 238], a3: [129, 140, 248], ink: [238, 244, 255], bg: [7, 17, 46], bg2: [10, 24, 56] };
+    function parseColor(v) {
+      v = (v || '').trim();
+      if (v.charAt(0) === '#') {
+        const h = v.length === 4 ? v.slice(1).split('').map(function (c) { return c + c; }).join('') : v.slice(1, 7);
+        const n = parseInt(h, 16);
+        if (h.length === 6 && !isNaN(n)) return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      }
+      const m = v.match(/rgba?\(([^)]+)\)/);
+      if (m) { const p = m[1].split(',').map(parseFloat); if (p.length >= 3 && !isNaN(p[2])) return [p[0], p[1], p[2]]; }
+      return null;
+    }
+    function readColors() {
+      let cs = null;
+      try { cs = getComputedStyle(root); } catch (e) { cs = null; }
+      [['a1', '--accent'], ['a2', '--accent-2'], ['a3', '--accent-3'], ['ink', '--ink'], ['bg', '--bg'], ['bg2', '--bg-2']].forEach(function (k) {
+        const c = cs && parseColor(cs.getPropertyValue(k[1]));
+        if (c) COL[k[0]] = c;
+      });
+      F.light = root.getAttribute('data-theme') === 'light';
+    }
+    const rgba = (c, a) => 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + clamp(a, 0, 1).toFixed(3) + ')';
+    readColors();
+    document.addEventListener('pf:theme', readColors);
+
+    /* ---------------------------- text scramblers ----------------------------
+       "Decode" a label: characters resolve left → right while the rest cycle
+       through glyphs. Real text stays readable to assistive tech: unless the
+       target is already decorative, the visible copy is aria-hidden and a
+       visually-hidden twin carries the words. */
+    const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+<>/=?$';
+    const scrambling = new Set();
+    function scrambler(el, opts) {
+      opts = opts || {};
+      const real = el.textContent;
+      let target = el;
+      if (!opts.decorative) {
+        el.textContent = '';
+        const sr = document.createElement('span');
+        sr.className = 'jn-visually-hidden';
+        sr.textContent = real;
+        target = document.createElement('span');
+        target.setAttribute('aria-hidden', 'true');
+        target.textContent = real;
+        el.appendChild(sr); el.appendChild(target);
+      }
+      const S = { el: target, text: real, t0: 0, dur: opts.dur || 600, shown: real };
+      S.play = function (text) {
+        if (text != null) S.text = text;
+        S.t0 = F.now || clock();
+        scrambling.add(S);
+      };
+      return S;
+    }
+    function glyphAt(i, step) { return GLYPHS.charAt(((Math.imul(i + 7, 2654435761) ^ Math.imul(step + 3, 40503)) >>> 0) % GLYPHS.length); }
+    function tickScramblers(now) {
+      scrambling.forEach(function (S) {
+        const k = clamp((now - S.t0) / S.dur, 0, 1);
+        const txt = S.text, n = txt.length;
+        const fixed = Math.floor(easeOutCubic(k) * n);
+        const step = Math.floor(now / 48);
+        let out = txt.slice(0, fixed);
+        for (let i = fixed; i < n; i++) {
+          const ch = txt.charAt(i);
+          out += /[\s·.,—–\-/]/.test(ch) ? ch : glyphAt(i, step);
+        }
+        if (out !== S.shown) { S.el.textContent = out; S.shown = out; }
+        if (k >= 1) scrambling.delete(S);
+      });
+    }
+
     /* ---------------------------- scene registry ---------------------------- */
     const scenes = [];
-
-    function registerScene(id, buildUpdate) {
-      const el = document.getElementById(id);
+    const byId = {};
+    /* A scene builder returns either an update(p, F) function or
+       { update, always, covers, focusP }: `always` re-runs every frame
+       (time-based motion), `covers` marks a full-bleed photo stage that hides
+       the canvases behind it while pinned, and focusP(el) names the progress
+       at which a focused control inside the scene is fully on screen. */
+    function registerScene(id, build) {
+      const el = $id(id);
       if (!el) return;
       const stage = el.querySelector('.jn-stage');
       if (!stage) return;
-      const update = buildUpdate(el, stage);
-      if (!update) return;
-      const baseLen = parseFloat(el.dataset.len) || 3;
-      const scene = { el, stage, top: 0, height: 0, stageH: 0, update, active: false, baseLen: baseLen };
-      applyLen(scene);
-      scenes.push(scene);
+      const r = build(el, stage);
+      if (!r) return;
+      const s = {
+        el: el, stage: stage, top: 0, height: 0, stageH: 0, active: false, p: -1,
+        update: typeof r === 'function' ? r : r.update,
+        always: !!r.always, covers: !!r.covers, focusP: r.focusP || null,
+        baseLen: parseFloat(el.dataset.len) || 3
+      };
+      applyLen(s);
+      scenes.push(s);
+      byId[id] = s;
     }
-
     /* Drive the CSS scene height from data-len (--jn-len), shrinking on mobile. */
     function applyLen(scene) {
-      const len = isMobile() ? Math.max(1.5, scene.baseLen * MOBILE_LEN) : scene.baseLen;
+      const len = isMobile() ? Math.max(1.6, scene.baseLen * MOBILE_LEN) : scene.baseLen;
       scene.el.style.setProperty('--jn-len', len.toFixed(3));
     }
+    function progressOf(s, y) {
+      const denom = s.height - s.stageH;
+      return denom > 0 ? clamp((y - s.top) / denom, 0, 1) : (y >= s.top ? 1 : 0);
+    }
 
-    /* ===================== S1 · HERO ===================== */
-    registerScene('jn-s1', function () {
-      const name  = document.getElementById('jn-hero-name');
-      const block = document.getElementById('jn-hero-block');
-      const sub   = document.getElementById('jn-hero-sub');
-      const inter = document.getElementById('jn-hero-inter');
-      const cue   = document.getElementById('jn-cue');
+    /* shared between the hero, the boot sequence and the warp field */
+    const hero = { introAt: Infinity };
+
+    /* ===================== S1 · HERO =====================
+       Boot intro: kicker types, letters decode out of random glyphs and flip
+       up into place, then the viewfinder and cue arrive. On scroll the name
+       detonates — every letter flies off on its own 3D trajectory while the
+       starfield jumps to hyperspace and the globe pulls back below. */
+    registerScene('jn-s1', function (el, stage) {
+      const name   = $id('jn-hero-name');
+      const block  = $id('jn-hero-block');
+      const sub    = $id('jn-hero-sub');
+      const inter  = $id('jn-hero-inter');
+      const cue    = $id('jn-cue');
+      const vf     = $id('jn-vf');
+      const tc     = $id('jn-timecode');
+      const kicker = el.querySelector('.jn-hero-kicker');
       if (!name || !block || !inter) return null;
-      /* Split each display-block line into per-letter spans for the load
-         intro. --jn-frac gives each letter its slice of the shared gradient
-         (per line, so the 115° sweep reads left→right on both lines);
-         --jn-i staggers the boot animation across the whole name. */
-      let gi = 0;
+      const KTXT = kicker ? kicker.textContent : '';
+
+      /* Split each display-block line into per-letter spans. --jn-frac gives
+         each letter its slice of the shared gradient (per line, so the 115°
+         sweep reads left→right on both lines). */
+      const R = rng(1987);
+      const L = [];
       Array.from(name.querySelectorAll('.jn-hero-line')).forEach(function (line) {
         const letters = [];
         splitLetters(line, letters);
         letters.forEach(function (l, i) {
           l.style.setProperty('--jn-frac', letters.length > 1 ? (i / (letters.length - 1)).toFixed(3) : '0');
-          l.style.setProperty('--jn-i', gi++);
+          L.push({
+            el: l, ch: l.textContent, i: L.length, glyph: l.textContent,
+            jx: R() * 2 - 1, jy: R() * 2 - 1, jz: 260 + R() * 900,
+            rx: (R() * 2 - 1) * 150, ry: (R() * 2 - 1) * 200, rz: (R() * 2 - 1) * 110,
+            cx: 0, cy: 0, mx: 0, my: 0
+          });
         });
       });
-      return function (p) {
-        // name zoom-through (p 0 → 0.45) — transform-only (letter-spacing would relayout)
-        const zp = easeOutCubic(seg(p, 0, 0.45));
-        const scale = lerp(1, 1.55, zp);
-        name.style.transform = 'scale(' + scale.toFixed(3) + ')';
-        // name + sub fade out (p 0.35 → 0.55)
-        const fade = 1 - seg(p, 0.35, 0.55);
-        block.style.opacity = fade.toFixed(3);
-        // interstitial rises, then HOLDS through p=1 so it rides the unpin
-        // out of view (fading it out here left a blank viewport sliding
-        // through during the S1 → S2 handoff)
-        const rise = easeOutCubic(seg(p, 0.45, 0.8));
-        inter.style.opacity = rise.toFixed(3);
-        inter.style.transform = 'translateY(' + lerp(50, 0, rise).toFixed(1) + 'px)';
-        // cue fades by p 0.08
-        if (cue) cue.style.opacity = (1 - seg(p, 0, 0.08)).toFixed(3);
-        if (sub) sub.style.opacity = fade.toFixed(3);
-      };
+      let nameCx = F.vw / 2, nameCy = F.vh / 2;
+
+      // interstitial: plain words split per character, the gradient phrase per word
+      const IC = [];
+      splitChars(inter, IC);
+
+      /* Rest positions of every letter (stage-relative), measured with all of
+         the engine's transforms cleared; widths are locked to the final glyph
+         so the decode never reflows the line. */
+      function measureLetters() {
+        const savedName = name.style.transform;
+        name.style.transform = 'none';
+        L.forEach(function (l) {
+          l.saved = l.el.style.transform;
+          l.el.style.transform = 'none';
+          l.el.style.width = '';
+          l.el.textContent = l.ch;
+        });
+        const sr = stage.getBoundingClientRect();
+        const nr = name.getBoundingClientRect();
+        nameCx = nr.left + nr.width / 2 - sr.left;
+        nameCy = nr.top + nr.height / 2 - sr.top;
+        L.forEach(function (l) {
+          const r = l.el.getBoundingClientRect();
+          l.cx = r.left + r.width / 2 - sr.left;
+          l.cy = r.top + r.height / 2 - sr.top;
+          if (r.width > 0) l.el.style.width = r.width.toFixed(2) + 'px';
+        });
+        name.style.transform = savedName;
+        L.forEach(function (l) { l.el.style.transform = l.saved; l.glyph = l.ch; });
+      }
+      measureLetters();
+      el.addEventListener('jn-remeasure', measureLetters);
+
+      let kShown = null, tcShown = '';
+      return { always: true, update: function (p, F) {
+        const t = F.now - hero.introAt;          // ms since the intro started (<0: not yet)
+        const settle = clamp(F.dt / 110, 0, 1);
+
+        // kicker types itself out, then lifts away first
+        if (kicker) {
+          const kIn = clamp(t / 520, 0, 1);
+          const str = KTXT.slice(0, Math.round(kIn * KTXT.length)) + (kIn > 0 && kIn < 1 ? '_' : '');
+          if (str !== kShown) { kicker.textContent = str; kShown = str; }
+          const kOut = seg(p, 0.03, 0.18);
+          css(kicker, 'opacity', (clamp(t / 120, 0, 1) * (1 - kOut)).toFixed(3));
+          css(kicker, 'transform', 'translateY(' + (-34 * easeInCubic(kOut)).toFixed(1) + 'px)');
+        }
+
+        // the name: transform-only zoom (scale stays first — tests key on it)
+        const zp = easeOutCubic(seg(p, 0, 0.5));
+        css(name, 'transform', 'scale(' + lerp(1, 1.16, zp).toFixed(3) + ')');
+        // whole block tilts toward the pointer (fine pointers only)
+        css(block, 'transform', finePointer
+          ? 'perspective(1100px) rotateX(' + (-ptr.sy * 7).toFixed(2) + 'deg) rotateY(' + (ptr.sx * 9).toFixed(2) + 'deg)'
+          : 'none');
+
+        const ex = easeInCubic(seg(p, 0.08, 0.5));      // detonation
+        const fadeL = 1 - seg(p, 0.28, 0.48);
+        const near = finePointer && p < 0.1;
+        const step = Math.floor(F.now / 55);
+        for (let i = 0; i < L.length; i++) {
+          const l = L[i];
+          // intro: each letter decodes through random glyphs, then flips up
+          const li = clamp((t - 140 - l.i * 62) / 720, 0, 1);
+          const g = li > 0 && li < 0.62 ? glyphAt(l.i, step) : l.ch;
+          if (g !== l.glyph) { l.el.textContent = g; l.glyph = g; }
+          const ie = easeOutBack(li);
+          // pointer repel: letters near the cursor shy away from it
+          let tx = 0, ty = 0;
+          if (near) {
+            const dx = l.cx - ptr.x, dy = l.cy - ptr.y;
+            const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
+            const f = Math.max(0, 1 - d / 260);
+            tx = dx / d * f * f * 38; ty = dy / d * f * f * 38;
+          }
+          l.mx += (tx - l.mx) * settle; l.my += (ty - l.my) * settle;
+          // detonation: outward from the name's centre, each on its own path
+          const ox = ((l.cx - nameCx) / (F.vw * 0.5) * 1.5 + l.jx * 0.7) * F.vw * 0.55 * ex;
+          const oy = ((l.cy - nameCy) / (F.vh * 0.5) * 1.3 + l.jy * 0.8) * F.vh * 0.5 * ex;
+          css(l.el, 'transform',
+            'translate3d(' + (ox + l.mx).toFixed(1) + 'px,' + (oy + l.my).toFixed(1) + 'px,' + (l.jz * ex).toFixed(1) + 'px)' +
+            ' translateY(' + ((1 - ie) * 0.55).toFixed(3) + 'em)' +
+            ' rotateX(' + ((1 - ie) * -85 + l.rx * ex).toFixed(1) + 'deg)' +
+            ' rotateY(' + (l.ry * ex).toFixed(1) + 'deg) rotateZ(' + (l.rz * ex).toFixed(1) + 'deg)');
+          css(l.el, 'opacity', (clamp(li * 2.4, 0, 1) * fadeL).toFixed(3));
+        }
+
+        if (sub) {
+          const si = easeOutCubic(clamp((t - 760) / 620, 0, 1));
+          const so = seg(p, 0.04, 0.22);
+          css(sub, 'opacity', (si * (1 - so)).toFixed(3));
+          css(sub, 'transform', 'translateY(' + (lerp(18, 0, si) + 26 * easeInCubic(so)).toFixed(1) + 'px)');
+        }
+
+        // interstitial flips in character by character and HOLDS through p=1,
+        // so it rides the unpin out of view instead of leaving a blank stage
+        const ip = seg(p, 0.44, 0.84);
+        css(inter, 'opacity', ip > 0 ? '1' : '0');
+        const n = IC.length;
+        for (let i = 0; i < n; i++) {
+          const s0 = (i / n) * 0.62;
+          const e = easeOutCubic(clamp((ip - s0) / 0.38, 0, 1));
+          css(IC[i], 'opacity', e.toFixed(3));
+          css(IC[i], 'transform', 'translateY(' + ((1 - e) * 0.9).toFixed(3) + 'em) rotateX(' + ((1 - e) * -95).toFixed(1) + 'deg)');
+        }
+
+        if (vf) css(vf, 'opacity', (easeOutCubic(clamp((t - 950) / 600, 0, 1)) * (1 - seg(p, 0.45, 0.7))).toFixed(3));
+        if (cue) css(cue, 'opacity', (clamp((t - 1400) / 600, 0, 1) * (1 - seg(p, 0, 0.06))).toFixed(3));
+        if (tc) {
+          // a scroll-driven timecode (24 fps), so the "recording" advances as you travel
+          const fr = Math.floor(F.y / 6);
+          const str = pad2(Math.floor(fr / 86400) % 100) + ':' + pad2(Math.floor(fr / 1440) % 60) + ':' + pad2(Math.floor(fr / 24) % 60) + ':' + pad2(fr % 24);
+          if (str !== tcShown) { tc.textContent = str; tcShown = str; }
+        }
+
+        // hyperspace: the intro arrives at warp, the detonation punches back in
+        const burst = t >= 0 ? 9 * (1 - easeOutCubic(clamp(t / 1700, 0, 1))) : 0;
+        F.warp = Math.max(F.warp, burst, 8 * bump(p, 0.05, 0.62));
+      }};
     });
 
-    /* ===================== S2 · STATEMENT ===================== */
+    /* ===================== S2 · STATEMENT =====================
+       The sentence starts as a cloud of words scattered through 3D space and
+       assembles itself as you scroll; keywords land with a glow and a
+       highlighter sweep. Two giant outlined marquees slide in opposite
+       directions behind it, and the whole block flies into the camera on exit. */
     registerScene('jn-s2', function () {
-      const para = document.getElementById('jn-statement');
+      const para = $id('jn-statement');
       if (!para) return null;
-      // Split text nodes into per-word spans, preserving the .jn-key emphasis.
       const words = [];
       splitWords(para, words);
-      const isKey = words.map(function (w) { return w.classList.contains('jn-key'); });
       const n = words.length;
       if (!n) return null;
-      return function (p) {
-        // sequential light-up with slight overlap across p 0.05 → 0.85
-        const lit = seg(p, 0.05, 0.85);
+      const R = rng(4242);
+      const W = words.map(function (w) {
+        return {
+          el: w, key: w.classList.contains('jn-key'),
+          ox: R() * 2 - 1, oy: R() * 2 - 1, oz: -(160 + R() * 1100),
+          rx: (R() * 2 - 1) * 90, ry: (R() * 2 - 1) * 120, rz: (R() * 2 - 1) * 50
+        };
+      });
+      const rows = [$id('jn-mq-a'), $id('jn-mq-b')].filter(Boolean);
+      // fill each marquee row to a few viewports wide so it never runs dry
+      function fillRows() {
+        rows.forEach(function (row) {
+          if (row._src == null) row._src = row.innerHTML;
+          row.innerHTML = row._src;
+          let guard = 0;
+          while (row.scrollWidth < F.vw * 2.6 && guard++ < 10) row.insertAdjacentHTML('beforeend', row._src);
+          row._travel = Math.max(0, row.scrollWidth - F.vw);
+        });
+      }
+      fillRows();
+      $id('jn-s2').addEventListener('jn-remeasure', fillRows);
+
+      return function (p, F) {
+        const lit = seg(p, 0.03, 0.74);
         const span = 1 / n;
         for (let i = 0; i < n; i++) {
-          const start = i * span * 0.85;      // overlap: each word starts before prev fully done
-          const local = clamp((lit - start) / (span * 1.6), 0, 1);
-          words[i].style.opacity = (0.14 + local * 0.86).toFixed(3);
-          // words drift up into place as they light; keywords pop ~6% mid-ramp
-          let tr = 'translateY(' + (0.18 * (1 - local)).toFixed(3) + 'em)';
-          if (isKey[i]) tr += ' scale(' + (1 + 0.06 * Math.sin(local * Math.PI)).toFixed(3) + ')';
-          words[i].style.transform = tr;
+          const w = W[i];
+          const l = clamp((lit - i * span * 0.78) / (span * 3.4), 0, 1);
+          const e = easeOutCubic(l), k = 1 - e;
+          css(w.el, 'transform',
+            'translate3d(' + (w.ox * k * F.vw * 0.42).toFixed(1) + 'px,' + (w.oy * k * F.vh * 0.34).toFixed(1) + 'px,' + (w.oz * k).toFixed(1) + 'px)' +
+            ' rotateX(' + (w.rx * k).toFixed(1) + 'deg) rotateY(' + (w.ry * k).toFixed(1) + 'deg) rotateZ(' + (w.rz * k).toFixed(1) + 'deg)');
+          css(w.el, 'opacity', (0.16 + 0.84 * e).toFixed(3));
+          if (w.key) {
+            const u = easeOutCubic(seg(l, 0.6, 1));
+            const c = w.el._jn;
+            if (c.u !== u) { c.u = u; w.el.style.setProperty('--u', u.toFixed(3)); }
+            const glow = bump(l, 0.55, 1);
+            css(w.el, 'filter', glow > 0.01 ? 'drop-shadow(0 0 ' + (18 * glow).toFixed(1) + 'px var(--accent-glow))' : 'none');
+          }
         }
-        // handoff: whole block scales to .96 + fades to .5 (p 0.9 → 1)
-        const off = seg(p, 0.9, 1);
-        para.style.transform = 'scale(' + lerp(1, 0.96, off).toFixed(3) + ')';
-        para.style.opacity = lerp(1, 0.5, off).toFixed(3);
+        // exit: the sentence flies into the camera
+        const off = easeInCubic(seg(p, 0.84, 1));
+        const sk = clamp(F.vel * 1.1, -6, 6);
+        css(para, 'transform', 'scale(' + lerp(1, 1.75, off).toFixed(3) + ') skewY(' + sk.toFixed(2) + 'deg)');
+        css(para, 'opacity', (1 - seg(p, 0.86, 0.99)).toFixed(3));
+        // marquees slide in opposite directions and lean into the scroll
+        const mo = seg(p, 0, 0.12);
+        rows.forEach(function (row, i) {
+          const travel = row._travel || 0;
+          const x = i === 0 ? -travel * (0.1 + 0.7 * p) : -travel * (0.8 - 0.7 * p);
+          css(row, 'transform', 'translate3d(' + x.toFixed(1) + 'px,0,0) skewX(' + (-sk * 1.6).toFixed(2) + 'deg)');
+          css(row, 'opacity', (mo * (i === 0 ? 0.6 : 0.42)).toFixed(3));
+        });
       };
     });
 
-    /* ===================== S3 · JOURNEY TIMELINE ===================== */
+    /* ===================== S3 · ROUTE =====================
+       The globe (see the FX section) flies Beirut → Paris → Évry/Palaiseau →
+       Beirut; this scene drives the cards in lock-step with it. Each card
+       materialises like a hologram — clipped in from the top while a scan
+       bar sweeps down — and its coordinate label decodes. Without the globe
+       the original SVG route is drawn instead, synced to the same beats. */
+    const ROUTE_BEATS = [0, 0.34, 0.58, 0.93];
     registerScene('jn-s3', function (el) {
-      const path  = document.getElementById('jn-route-path');
       const beats = Array.from(el.querySelectorAll('.jn-beat'));
-      const nodes = Array.from(el.querySelectorAll('.jn-route-node-g'));
-      const spark = document.getElementById('jn-route-spark');
-      const rings = nodes.map(function (g) { return g.querySelector('.jn-route-ring'); });
-      const geos  = beats.map(function (b) { return b.querySelector('.jn-beat-geo'); });
+      if (!beats.length) return null;
+      const geos    = beats.map(function (b) { return b.querySelector('.jn-beat-geo'); });
       const cardEls = beats.map(function (b) { return b.querySelector('.jn-card'); });
-      if (!path || !beats.length) return null;
-      // real geometric length for the spark's getPointAtLength (the path's
-      // pathLength="1" only normalizes dash space, not measured length)
+      const geoS    = geos.map(function (g) { return g ? scrambler(g, { dur: 750 }) : null; });
+      const geoOn   = geos.map(function () { return false; });
+      const scans   = cardEls.map(function (c) {
+        if (!c) return null;
+        const s = document.createElement('span');
+        s.className = 'jn-scan';
+        s.setAttribute('aria-hidden', 'true');
+        c.appendChild(s);
+        return s;
+      });
+
+      // ---- SVG fallback route ----
+      const path  = $id('jn-route-path');
+      const nodes = Array.from(el.querySelectorAll('.jn-route-node-g'));
+      const spark = $id('jn-route-spark');
+      const rings = nodes.map(function (g) { return g.querySelector('.jn-route-ring'); });
       let RL = 0;
-      try { RL = path.getTotalLength(); } catch (e) { RL = 0; }
-      /* Beat + node timing is derived from the path geometry itself: sample
-         each node's fraction of the total length, then map fractions into
-         scroll-space so a card appears exactly as the line reaches its node.
-         (The old hand-tuned centers drifted — dots appeared while the line
-         was still far away.) */
+      try { RL = path ? path.getTotalLength() : 0; } catch (e) { RL = 0; }
       let nodePts = [];
       for (let i = 0; i < nodes.length; i++) {
         const core = nodes[i].querySelector('.jn-route-node-core');
         if (!core) { nodePts = null; break; }
         nodePts.push({ x: parseFloat(core.getAttribute('cx')), y: parseFloat(core.getAttribute('cy')) });
       }
-      const fracs = (nodePts && pathFractions(path, nodePts)) || [0, 0.40, 0.74, 1];
-      /* The draw keeps a small stub visible at p=0 so the scene never slides
-         in as a blank stage (also avoids the round-linecap dot artifact at
-         dashoffset=1). */
-      const STUB = 0.02, DRAW_END = 0.92;
-      const drawAt = function (p) { return STUB + (1 - STUB) * seg(p, 0, DRAW_END); };
-      const pAt = function (f) { return f <= STUB ? 0 : DRAW_END * (f - STUB) / (1 - STUB); };
-      const centers = fracs.map(pAt);
+      const fracs = (path && nodePts && pathFractions(path, nodePts)) || [0, 0.40, 0.74, 1];
+      const STUB = 0.02;
+      // piecewise map scroll → path fraction so the line lands on each node on its beat
+      function drawAt(p) {
+        const knots = ROUTE_BEATS.map(function (b, i) { return [b, i === 0 ? STUB : fracs[i]]; });
+        if (p <= knots[0][0]) return STUB;
+        for (let i = 1; i < knots.length; i++) {
+          if (p <= knots[i][0]) return lerp(knots[i - 1][1], knots[i][1], (p - knots[i - 1][0]) / (knots[i][0] - knots[i - 1][0]));
+        }
+        return 1;
+      }
+
       /* Per-beat windows. Exits are clamped so each card is FULLY gone before
          the next one enters — beats share grid-area 1/1, so any overlap reads
          as two semi-transparent cards stacked on top of each other. The first
          beat enters "before" p=0, i.e. it is already visible while the scene
          slides into view. */
-      const win = centers.map(function (c, i) {
-        const nextEnter = i < centers.length - 1 ? centers[i + 1] - 0.10 : Infinity;
+      const win = ROUTE_BEATS.map(function (c, i) {
+        const nextEnter = i < ROUTE_BEATS.length - 1 ? ROUTE_BEATS[i + 1] - 0.10 : Infinity;
         const exitB = Math.min(c + 0.12, nextEnter - 0.01);
         const exitA = Math.min(c + 0.05, exitB - 0.04);
         return { enterA: c - 0.10, enterB: c - 0.01, exitA: exitA, exitB: exitB };
       });
-      return function (p) {
+
+      return function (p, F) {
         const amp = isMobile() ? 0.6 : 1;
-        const draw = drawAt(p);
-        path.style.strokeDashoffset = (1 - draw).toFixed(4);
-        // spark rides the head of the line, fading out as the draw completes
-        if (spark && RL > 0) {
-          let sp;
-          try { sp = path.getPointAtLength(draw * RL); } catch (e) { sp = null; }
-          if (sp) { spark.setAttribute('cx', sp.x.toFixed(1)); spark.setAttribute('cy', sp.y.toFixed(1)); }
-          spark.style.opacity = (seg(draw, STUB, STUB + 0.04) * (1 - seg(draw, 0.96, 1))).toFixed(3);
+        if (!root.classList.contains('jn-globe-on') && path) {
+          const draw = drawAt(p);
+          css(path, 'strokeDashoffset', (1 - draw).toFixed(4));
+          if (spark && RL > 0) {
+            let sp = null;
+            try { sp = path.getPointAtLength(draw * RL); } catch (e) { sp = null; }
+            if (sp) { spark.setAttribute('cx', sp.x.toFixed(1)); spark.setAttribute('cy', sp.y.toFixed(1)); }
+            css(spark, 'opacity', (seg(draw, STUB, STUB + 0.04) * (1 - seg(draw, 0.96, 1))).toFixed(3));
+          }
+          nodes.forEach(function (g, i) {
+            css(g, 'opacity', easeOutCubic(seg(draw, fracs[i] - 0.035, fracs[i] - 0.005)).toFixed(3));
+            const ring = rings[i];
+            if (ring) {
+              const on = easeOutExpo(seg(draw, fracs[i] - 0.01, fracs[i] + 0.02));
+              const off = seg(draw, fracs[i] + 0.03, fracs[i] + 0.09);
+              css(ring, 'opacity', (on * (1 - off)).toFixed(3));
+              css(ring, 'transform', 'scale(' + lerp(0.6, 1.35, on).toFixed(3) + ')');
+            }
+          });
         }
         beats.forEach(function (beat, i) {
           const w = win[i];
           const e = easeOutCubic(seg(p, w.enterA, w.enterB));
-          const isLast = i === beats.length - 1;
-          const l = isLast ? 0 : easeInOutCubic(seg(p, w.exitA, w.exitB));
-          // geo label leads, card follows — both inside the original window,
-          // so the "fully gone before next enters" clamping still holds
-          const ge = easeOutCubic(seg(p, w.enterA, w.enterA + 0.055));
-          const ce = easeOutCubic(seg(p, w.enterA + 0.03, w.enterB));
+          const l = i === beats.length - 1 ? 0 : easeInOutCubic(seg(p, w.exitA, w.exitB));
+          // geo label leads, card follows — both inside the original window
+          const ge = easeOutCubic(seg(p, w.enterA, w.enterA + 0.05));
+          const ce = easeOutCubic(seg(p, w.enterA + 0.025, w.enterB));
           if (geos[i]) {
-            geos[i].style.opacity = ge.toFixed(3);
-            geos[i].style.transform = 'translateY(' + lerp(10, 0, ge).toFixed(1) + 'px)';
+            css(geos[i], 'opacity', ge.toFixed(3));
+            css(geos[i], 'transform', 'translateY(' + lerp(10, 0, ge).toFixed(1) + 'px)');
+            const on = ge > 0.05 && l < 0.95;
+            if (on && !geoOn[i] && geoS[i]) geoS[i].play();
+            geoOn[i] = on;
           }
-          if (cardEls[i]) cardEls[i].style.opacity = ce.toFixed(3);
-          beat.style.opacity = (1 - l).toFixed(3);
-          // alternating entrance axis: even beats rise in (rotateX), odd
-          // beats slide in from the side (rotateY); exits stay identical
+          const card = cardEls[i];
+          if (card) {
+            css(card, 'opacity', Math.min(1, ce * 1.5).toFixed(3));
+            css(card, 'clipPath', ce >= 1 ? 'none' : 'inset(0 0 ' + ((1 - ce) * 100).toFixed(1) + '% 0 round 24px)');
+            if (scans[i]) {
+              css(scans[i], 'opacity', bump(ce, 0, 1).toFixed(3));
+              css(scans[i], 'transform', 'translateY(' + (ce * 250 - 100).toFixed(1) + '%)');
+            }
+          }
+          css(beat, 'opacity', (1 - l).toFixed(3));
+          // alternating entrance axis: even beats rise in (rotateX), odd beats
+          // slide in from the side (rotateY); everything leans into the scroll
           const sc = 1 - l * 0.05;
+          const sk = clamp(F.vel * 0.8, -4, 4);
           if (i % 2 === 0) {
             const ty = lerp(60 * amp, 0, e) - 34 * l;
-            const rx = lerp(8, 0, e);
-            beat.style.transform = 'perspective(900px) translateY(' + ty.toFixed(1) + 'px) rotateX(' + rx.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
+            beat.style.transform = 'perspective(900px) translateY(' + ty.toFixed(1) + 'px) rotateX(' + lerp(10, 0, e).toFixed(2) + 'deg) skewY(' + sk.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
           } else {
             const dir = (i % 4 === 1) ? 1 : -1;
-            const tx = lerp(64 * amp * dir, 0, e);
-            const ry = lerp(-9 * dir, 0, e);
-            beat.style.transform = 'perspective(900px) translate(' + tx.toFixed(1) + 'px, ' + (-34 * l).toFixed(1) + 'px) rotateY(' + ry.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
-          }
-          // node dot pops exactly as the drawn line arrives at it
-          const g = nodes[i];
-          if (g) g.style.opacity = easeOutCubic(seg(draw, fracs[i] - 0.035, fracs[i] - 0.005)).toFixed(3);
-          // pulse ring fires in draw-space as the line lands on the node
-          const ring = rings[i];
-          if (ring) {
-            const on = easeOutExpo(seg(draw, fracs[i] - 0.01, fracs[i] + 0.02));
-            const off = seg(draw, fracs[i] + 0.03, fracs[i] + 0.09);
-            ring.style.opacity = (on * (1 - off)).toFixed(3);
-            ring.style.transform = 'scale(' + lerp(0.6, 1.35, on).toFixed(3) + ')';
+            beat.style.transform = 'perspective(900px) translate(' + lerp(70 * amp * dir, 0, e).toFixed(1) + 'px, ' + (-34 * l).toFixed(1) + 'px) rotateY(' + lerp(-12 * dir, 0, e).toFixed(2) + 'deg) skewY(' + sk.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
           }
         });
       };
     });
 
-    /* ===================== PHOTO REELS · S3b (Paris) + S5b (the rest of it) =====================
-       One builder, two scenes. Full-bleed dissolve + slow Ken Burns.
+    /* ===================== PHOTO REELS · S3b / S4b / S5b =====================
+       One builder, three transition grammars chosen by data-fx:
+         iris   — each photo opens through an expanding aperture, ringed in light
+         blinds — shutter slats slide in from alternate edges with a glitch flash
+         fly    — the photo flies in as a tilted print and blooms to full-bleed
+                  while the previous one is pushed back into the dark
+       All three share slow Ken Burns, a light leak across each transition,
+       decoding stamps and word-by-word captions.
 
-       Stacking, not crossfading: frame i sits at z-index i and only ever fades
-       IN over the frame below, which stays fully opaque until it is completely
-       covered. Fading one out while fading the next in would show the navy
-       backdrop through both at the midpoint — a visible dip on every
-       transition. This has none.
+       Stacking, not crossfading: frame i sits at z-index i and only ever
+       reveals over the frame below, which stays fully painted until it is
+       completely covered — no transition ever dips to the backdrop. Frames
+       buried under a fully revealed one are hidden, so at most two photos
+       are composited at a time.
 
        Everything is derived from the frame count in the DOM (windows, counter,
        tick strip), so adding a photo is a markup-only change. */
-    function buildReel(el) {
+    function buildReel(el, stage) {
       const frames = Array.from(el.querySelectorAll('.jn-frame'));
       if (!frames.length) return null;
+      const reel     = el.querySelector('.jn-reel') || stage;
+      const fx       = el.dataset.fx || 'iris';
       const imgs     = frames.map(function (f) { return f.querySelector('img'); });
-      const caps     = frames.map(function (f) { return f.querySelector('.jn-cap'); });
       const head     = el.querySelector('.jn-reel-head');
       const numEl    = el.querySelector('.jn-reel-num');
       const totEl    = el.querySelector('.jn-reel-total');
       const tickWrap = el.querySelector('.jn-reel-ticks');
       const N = frames.length;
-      const pad = function (n) { return (n < 10 ? '0' : '') + n; };
 
       frames.forEach(function (f, i) { f.style.zIndex = String(i); });
 
       // HUD is built from the frame count rather than hard-coded in the markup
-      if (totEl) totEl.textContent = pad(N);
+      if (totEl) totEl.textContent = pad2(N);
       const ticks = [];
       if (tickWrap) {
         tickWrap.textContent = '';
@@ -1570,82 +2205,221 @@
         }
       }
 
-      /* Each frame owns the p-window [i/N, (i+1)/N]. CF is the dissolve
+      // chapter head: kicker decodes, title words flip up, sub rises
+      const kick  = head && head.querySelector('.jn-reel-kicker');
+      const kickS = kick ? scrambler(kick, { dur: 850 }) : null;
+      const title = head && head.querySelector('.jn-reel-title');
+      const tw = [];
+      if (title) splitWords(title, tw);
+      const subEl = head && head.querySelector('.jn-reel-sub');
+
+      // captions: stamp decodes, line rises word by word
+      const C = frames.map(function (f) {
+        const cap = f.querySelector('.jn-cap');
+        if (!cap) return null;
+        const stamp = cap.querySelector('.jn-cap-stamp');
+        const line = cap.querySelector('.jn-cap-line');
+        const words = [];
+        if (line) splitWords(line, words);
+        return { cap: cap, stamp: stamp, stampS: stamp ? scrambler(stamp, { dur: 700 }) : null, words: words, on: false, key: '' };
+      });
+
+      // light leak + (iris only) the aperture ring
+      const flash = document.createElement('span');
+      flash.className = 'jn-reel-flash';
+      flash.setAttribute('aria-hidden', 'true');
+      reel.appendChild(flash);
+      const NS = 'http://www.w3.org/2000/svg';
+      let ring = null, ringGlow = null, ringCore = null;
+      if (fx === 'iris') {
+        ring = document.createElementNS(NS, 'svg');
+        ring.setAttribute('class', 'jn-iris-ring');
+        ring.setAttribute('aria-hidden', 'true');
+        ringGlow = document.createElementNS(NS, 'circle'); ringGlow.setAttribute('class', 'jn-ir-glow');
+        ringCore = document.createElementNS(NS, 'circle'); ringCore.setAttribute('class', 'jn-ir-core');
+        ring.appendChild(ringGlow); ring.appendChild(ringCore);
+        reel.appendChild(ring);
+      }
+      let SW = F.vw, SH = F.vh;
+      el.addEventListener('jn-remeasure', function () {
+        SW = stage.offsetWidth || F.vw;
+        SH = stage.offsetHeight || F.vh;
+        if (ring) ring.setAttribute('viewBox', '0 0 ' + SW + ' ' + SH);
+      });
+
+      /* Each frame owns the p-window [i/N, (i+1)/N]. CF is the transition
          half-width straddling each boundary, so SOLID is the span in which
          this frame is the only one on screen; the caption's ramps have to fit
-         inside SOLID twice over, or it starts fading out before it has
-         finished fading in (which is exactly what a flat `min(0.05, k/N)`
-         does once N gets past four). Deriving both from the frame's own share
-         of the scene keeps a real hold at any frame count. */
+         inside SOLID twice over. Deriving both from the frame's own share of
+         the scene keeps a real hold at any frame count. */
       const W     = 1 / N;
-      const CF    = Math.min(0.05, 0.22 * W);
+      const CF    = Math.min(0.065, 0.26 * W);
       const SOLID = W - 2 * CF;
-      const CAP   = Math.min(0.045, SOLID * 0.30);
-      let lastIdx = -1;
+      const CAP   = Math.min(0.05, SOLID * 0.3);
+      const ORIGINS = [[0.5, 0.5], [0.72, 0.38], [0.3, 0.62], [0.64, 0.7], [0.34, 0.32], [0.7, 0.55]];
+      const NB = 9;
+      // shutter slats: even slats drop from the top, odd ones rise from the bottom,
+      // staggered left → right; one polygon, joined along the bottom edge
+      function blinds(t) {
+        const pts = ['0% 100%'];
+        for (let k = 0; k < NB; k++) {
+          const h = clamp(t * 1.8 - (k / (NB - 1)) * 0.8, 0, 1) * 100;
+          const x0 = (k / NB * 100).toFixed(2) + '%', x1 = ((k + 1) / NB * 100).toFixed(2) + '%';
+          if (k % 2 === 0) pts.push(x0 + ' 100%', x0 + ' 0%', x1 + ' 0%', x1 + ' ' + h.toFixed(2) + '%', x0 + ' ' + h.toFixed(2) + '%', x0 + ' 100%');
+          else pts.push(x0 + ' 100%', x0 + ' ' + (100 - h).toFixed(2) + '%', x1 + ' ' + (100 - h).toFixed(2) + '%', x1 + ' 100%');
+        }
+        pts.push('100% 100%');
+        return 'polygon(' + pts.join(',') + ')';
+      }
+      const tArr = new Array(N).fill(0);
+      let lastIdx = -1, headOn = false;
 
-      return function (p) {
+      return { covers: true, update: function (p, F) {
         // chapter head rises with the scene, lifts away as the reel ends
         if (head) {
-          const he = easeOutCubic(seg(p, 0.01, 0.11));
-          const ho = easeInOutCubic(seg(p, 0.90, 1));
-          head.style.opacity = (he * (1 - ho)).toFixed(3);
-          head.style.transform = 'translateY(' + (lerp(20, 0, he) - 16 * ho).toFixed(1) + 'px)';
+          const hp = seg(p, 0.004, 0.12);
+          const ho = easeInOutCubic(seg(p, 0.9, 1));
+          css(head, 'opacity', ((hp > 0 ? 1 : 0) * (1 - ho)).toFixed(3));
+          css(head, 'transform', 'translateY(' + (-16 * ho).toFixed(1) + 'px)');
+          const on = hp > 0.02 && ho < 0.98;
+          if (on && !headOn && kickS) kickS.play();
+          headOn = on;
+          if (kick) css(kick, 'opacity', Math.min(1, hp * 4).toFixed(3));
+          const tn = tw.length, ts = Math.min(0.14, 0.8 / Math.max(1, tn));
+          for (let i = 0; i < tn; i++) {
+            const k = easeOutCubic(clamp(hp * (1 + (tn - 1) * ts) - i * ts, 0, 1));
+            css(tw[i], 'opacity', k.toFixed(3));
+            css(tw[i], 'transform', 'translateY(' + ((1 - k) * 0.7).toFixed(3) + 'em) rotateX(' + ((1 - k) * -80).toFixed(1) + 'deg)');
+          }
+          if (subEl) {
+            const se = easeOutCubic(seg(p, 0.05, 0.14));
+            css(subEl, 'opacity', se.toFixed(3));
+            css(subEl, 'transform', 'translateY(' + lerp(12, 0, se).toFixed(1) + 'px)');
+          }
         }
 
+        for (let i = 0; i < N; i++) tArr[i] = i === 0 ? 1 : easeInOutCubic(seg(p, i / N - CF, i / N + CF));
+        let tCur = -1, ringOn = false;
         for (let i = 0; i < N; i++) {
           const a = i / N, b = (i + 1) / N;
-          // fade IN only; frame 0 is lit from p=0 so the stage is never blank
-          frames[i].style.opacity =
-            (i === 0 ? 1 : easeInOutCubic(seg(p, a - CF, a + CF))).toFixed(3);
+          const f = frames[i], t = tArr[i];
+          const nextT = i < N - 1 ? tArr[i + 1] : 0;
+          if (i > 0 && t > 0 && t < 1) tCur = t;
+          // buried under a fully revealed frame (or not started) → not painted
+          if (t <= 0 || nextT >= 1) { css(f, 'opacity', '0'); continue; }
+          css(f, 'opacity', '1');
+          if (t >= 1) {
+            css(f, 'clipPath', 'none');
+            // fly: the outgoing photo is pushed back into the dark as the next one arrives
+            if (fx === 'fly' && nextT > 0) {
+              css(f, 'transform', 'scale(' + lerp(1, 0.88, nextT).toFixed(4) + ')');
+              css(f, 'filter', 'brightness(' + lerp(1, 0.4, nextT).toFixed(3) + ')');
+            } else { css(f, 'transform', 'none'); css(f, 'filter', 'none'); }
+          } else if (fx === 'iris') {
+            const o = ORIGINS[i % ORIGINS.length];
+            const ox = o[0] * SW, oy = o[1] * SH;
+            const r = t * Math.hypot(Math.max(ox, SW - ox), Math.max(oy, SH - oy)) * 1.02;
+            css(f, 'clipPath', 'circle(' + r.toFixed(1) + 'px at ' + ox.toFixed(1) + 'px ' + oy.toFixed(1) + 'px)');
+            if (ring) {
+              ringOn = true;
+              const cx = ox.toFixed(1), cy = oy.toFixed(1), rr = r.toFixed(1);
+              ringGlow.setAttribute('cx', cx); ringGlow.setAttribute('cy', cy); ringGlow.setAttribute('r', rr);
+              ringCore.setAttribute('cx', cx); ringCore.setAttribute('cy', cy); ringCore.setAttribute('r', rr);
+              css(ring, 'opacity', Math.min(1, bump(t, 0, 1) * 1.6).toFixed(3));
+            }
+          } else if (fx === 'blinds') {
+            css(f, 'clipPath', blinds(t));
+            const g = bump(t, 0, 1);
+            css(f, 'filter', 'saturate(' + (1 + g * 1.3).toFixed(2) + ') contrast(' + (1 + g * 0.3).toFixed(2) + ') hue-rotate(' + (g * 50).toFixed(1) + 'deg)');
+            css(f, 'transform', 'translateX(' + (Math.sin(t * 40) * 1.4 * g).toFixed(2) + '%)');
+          } else {
+            const k = 1 - t, ins = k * 27;
+            css(f, 'clipPath', 'inset(' + (ins * 1.05).toFixed(2) + '% ' + ins.toFixed(2) + '% ' + (ins * 0.95).toFixed(2) + '% ' + ins.toFixed(2) + '% round ' + (k * 34).toFixed(1) + 'px)');
+            css(f, 'transform', 'translateY(' + (k * 16).toFixed(2) + '%) rotate(' + (k * (i % 2 ? 8 : -8)).toFixed(2) + 'deg)');
+            css(f, 'filter', 'none');
+          }
 
-          // Ken Burns runs across the frame's whole visible span (both
-          // dissolves included), alternating pan direction so no two
-          // consecutive frames drift the same way
+          // Ken Burns runs across the frame's whole visible span, alternating
+          // pan direction (and a hint of roll) so consecutive frames differ
           const img = imgs[i];
           if (img) {
-            const k = clamp((p - (a - CF)) / (b + CF - (a - CF)), 0, 1);
+            const kb = clamp((p - (a - CF)) / (b + CF - (a - CF)), 0, 1);
             const dir = (i % 2 === 0) ? 1 : -1;
-            img.style.transform =
-              'scale(' + lerp(1.12, 1.01, k).toFixed(4) + ') ' +
-              'translate3d(' + (lerp(2, -2, k) * dir).toFixed(2) + '%, ' +
-                               lerp(1.2, -1.2, k).toFixed(2) + '%, 0)';
+            css(img, 'transform',
+              'scale(' + lerp(1.15, 1.02, kb).toFixed(4) + ') ' +
+              'translate3d(' + (lerp(2.4, -2.4, kb) * dir).toFixed(2) + '%, ' + lerp(1.4, -1.4, kb).toFixed(2) + '%, 0) ' +
+              'rotate(' + (lerp(-1.1, 1.1, kb) * dir).toFixed(3) + 'deg)');
           }
+        }
+        if (ring && !ringOn) css(ring, 'opacity', '0');
+        // light leak sweeps across whichever transition is playing
+        css(flash, 'opacity', tCur > 0 ? (bump(tCur, 0, 1) * 0.75).toFixed(3) : '0');
+        if (tCur > 0) css(flash, 'transform', 'translateX(' + lerp(-55, 55, tCur).toFixed(1) + '%)');
 
-          const cap = caps[i];
-          if (cap) {
-            const ci = easeOutCubic(i === 0 ? seg(p, 0.02, 0.02 + CAP)
-                                            : seg(p, a + CF, a + CF + CAP));
-            const co = i === N - 1 ? easeInOutCubic(seg(p, 0.94, 1))
-                                   : easeInOutCubic(seg(p, b - CF - CAP, b - CF));
-            cap.style.opacity = (ci * (1 - co)).toFixed(3);
-            cap.style.transform = 'translateY(' + (lerp(18, 0, ci) + 12 * co).toFixed(1) + 'px)';
+        // captions: only touched while their ramps actually change
+        for (let i = 0; i < N; i++) {
+          const c = C[i];
+          if (!c) continue;
+          const a = i / N, b = (i + 1) / N;
+          const ci = easeOutCubic(i === 0 ? seg(p, 0.02, 0.02 + CAP) : seg(p, a + CF, a + CF + CAP));
+          const co = i === N - 1 ? easeInOutCubic(seg(p, 0.94, 1)) : easeInOutCubic(seg(p, b - CF - CAP, b - CF));
+          const key = ci.toFixed(3) + '|' + co.toFixed(3) + '|' + Math.round(F.vel * 20);
+          if (key === c.key) continue;
+          c.key = key;
+          css(c.cap, 'opacity', ci > 0 ? (1 - co).toFixed(3) : '0');
+          css(c.cap, 'transform', 'translateY(' + (12 * co).toFixed(1) + 'px) skewY(' + clamp(F.vel * 0.7, -3, 3).toFixed(2) + 'deg)');
+          if (c.stamp) css(c.stamp, 'opacity', Math.min(1, ci * 3).toFixed(3));
+          const wn = c.words.length, ws = Math.min(0.08, 0.85 / Math.max(1, wn));
+          for (let j = 0; j < wn; j++) {
+            const k = easeOutCubic(clamp(ci * (1 + (wn - 1) * ws) - j * ws, 0, 1));
+            css(c.words[j], 'opacity', k.toFixed(3));
+            css(c.words[j], 'transform', 'translateY(' + ((1 - k) * 0.65).toFixed(3) + 'em)');
           }
+          const on = ci > 0.05 && co < 0.95;
+          if (on && !c.on && c.stampS) c.stampS.play();
+          c.on = on;
         }
 
         // HUD touches the DOM only when the dominant frame actually changes
         const idx = clamp(Math.floor(p * N - 1e-9), 0, N - 1);
         if (idx !== lastIdx) {
           lastIdx = idx;
-          if (numEl) numEl.textContent = pad(idx + 1);
+          if (numEl) numEl.textContent = pad2(idx + 1);
           ticks.forEach(function (t, i) { t.classList.toggle('jn-rtick-on', i === idx); });
         }
-      };
+      }};
     }
-    registerScene('jn-s3b', function (el) { return buildReel(el); });
-    registerScene('jn-s4b', function (el) { return buildReel(el); });
-    registerScene('jn-s5b', function (el) { return buildReel(el); });
+    registerScene('jn-s3b', buildReel);
+    registerScene('jn-s4b', buildReel);
+    registerScene('jn-s5b', buildReel);
 
-    /* ===================== S4 · CRAFT GALLERY ===================== */
+    /* ===================== S4 · CRAFT — 3D coverflow =====================
+       Vertical scroll drives a horizontal track; cards swing round in 3D
+       (side cards turn to face the centre and sink back), the centred card
+       wears a spinning conic border, tilts toward the pointer and its tag
+       decodes into the giant word behind the gallery. */
     registerScene('jn-s4', function (el) {
-      const track = document.getElementById('jn-track');
+      const track = $id('jn-track');
       const cards = Array.from(el.querySelectorAll('.jn-gcard'));
       const vis   = Array.from(el.querySelectorAll('.jn-gcard-vis'));
       const ticks = Array.from(el.querySelectorAll('.jn-tick'));
       const nums  = Array.from(el.querySelectorAll('.jn-gstat-num'));
-      const links = cards.map(function (c) { return c.querySelector('.jn-gcard-link'); });
       if (!track || !cards.length) return null;
-      // until the scrub runs, only the first (centred) card's link is a tab stop
-      links.forEach(function (l, i) { if (l) l.tabIndex = i === 0 ? 0 : -1; });
+      const bg  = el.querySelector('.jn-craft-bg');
+      const bgS = bg ? scrambler(bg, { decorative: true, dur: 650 }) : null;
+      const tags = cards.map(function (c) {
+        const t = c.querySelector('.jn-gcard-tag');
+        return t ? t.textContent.trim().toUpperCase() : '';
+      });
+      /* Every card link stays a tab stop: focusing one scrolls to the point
+         where its card is centred (inverting the track's easeInOutCubic). */
+      function focusP(target) {
+        const i = cards.findIndex(function (c) { return c.contains(target); });
+        if (i < 0) return null;
+        const y = cards.length > 1 ? i / (cards.length - 1) : 0;
+        const t = y < 0.5 ? Math.cbrt(y / 4) : 1 - Math.cbrt(2 * (1 - y)) / 2;
+        return 0.05 + 0.9 * t;
+      }
       /* Self-drawing mini-diagrams: measure each stroked element's true
          length once and set its dash to that length (pathLength on lines/
          circles is still patchy, so dash space uses measured units). */
@@ -1658,13 +2432,14 @@
         });
       });
       let maxShift = 0, centers = [], cardW = 1, vpW = window.innerWidth;
-      // recompute the horizontal travel distance on demand (cached via measure)
+      // horizontal travel + card centres, measured with the 3D transforms cleared
       function calcShift() {
-        // scrollWidth includes the symmetric edge padding → last card lands centered
         vpW = window.innerWidth;
-        const trackW = track.scrollWidth;
-        maxShift = Math.max(0, trackW - vpW);
-        // card centers in un-shifted track space (rect deltas cancel the
+        const saved = cards.map(function (c) { return c.style.transform; });
+        cards.forEach(function (c) { c.style.transform = 'none'; });
+        // scrollWidth includes the symmetric edge padding → last card lands centred
+        maxShift = Math.max(0, track.scrollWidth - vpW);
+        // card centres in un-shifted track space (rect deltas cancel the
         // track's current translateX, so this is safe mid-scrub)
         const tr = track.getBoundingClientRect();
         centers = cards.map(function (c) {
@@ -1672,225 +2447,913 @@
           return r.left - tr.left + r.width / 2;
         });
         cardW = cards[0].getBoundingClientRect().width || 1;
+        cards.forEach(function (c, i) { c.style.transform = saved[i]; });
       }
       calcShift();
       el.addEventListener('jn-remeasure', calcShift);
       const cardCount = cards.length;
-      return function (p) {
-        // horizontal scrub (p 0.05 → 0.95) with easeInOut
+      let lastIdx = -1;
+      return { always: finePointer, focusP: focusP, update: function (p, F) {
+        // horizontal scrub (p 0.05 → 0.95) with easeInOut; the track leans into the scroll
         const t = easeInOutCubic(seg(p, 0.05, 0.95));
         const shift = maxShift * t;
-        track.style.transform = 'translateX(' + (-shift).toFixed(1) + 'px)';
-        // which card is centered → light its tick
+        const sk = clamp(-F.vel * 1.4, -7, 7);
+        css(track, 'transform', 'translate3d(' + (-shift).toFixed(1) + 'px,0,0) skewX(' + sk.toFixed(2) + 'deg)');
+        // which card is centred → light its tick, decode its word behind the gallery
         const centerIdx = clamp(Math.round(t * (cardCount - 1)), 0, cardCount - 1);
-        ticks.forEach(function (tk, i) { tk.classList.toggle('jn-tick-on', i === centerIdx); });
+        if (centerIdx !== lastIdx) {
+          lastIdx = centerIdx;
+          ticks.forEach(function (tk, i) { tk.classList.toggle('jn-tick-on', i === centerIdx); });
+          if (bgS) bgS.play(tags[centerIdx]);
+        }
+        if (bg) css(bg, 'transform', 'translate3d(' + ((0.5 - t) * F.vw * 0.2).toFixed(1) + 'px,-50%,0)');
         // inner visuals parallax slightly slower than the track (subtle depth)
-        vis.forEach(function (v) { v.style.transform = 'translateX(' + (maxShift * t * 0.06).toFixed(1) + 'px)'; });
-        // center focus: off-center cards recede and dim slightly
+        vis.forEach(function (v) { css(v, 'transform', 'translateX(' + (shift * 0.06).toFixed(1) + 'px)'); });
         cards.forEach(function (card, i) {
-          const d = Math.min(1, Math.abs(centers[i] - shift - vpW / 2) / (cardW * 1.15));
-          card.style.transform = 'scale(' + (1 - 0.05 * d).toFixed(3) + ')';
-          card.style.opacity = (1 - 0.32 * d).toFixed(3);
-          // off-centre cards are dimmed and pushed aside — keep their link out of the tab order
-          const link = links[i], ti = d < 0.5 ? 0 : -1;
-          if (link && link.tabIndex !== ti) link.tabIndex = ti;
+          const d = clamp((centers[i] - shift - vpW / 2) / (cardW * 1.05), -2.2, 2.2);
+          const ad = Math.abs(d);
+          const ry = -clamp(d, -1.2, 1.2) * 40;
+          const tz = -Math.min(ad, 2) * 240;
+          const tx = -Math.sign(d) * Math.max(0, ad - 0.4) * cardW * 0.18;
+          let tilt = '';
+          if (finePointer && ad < 0.5) {
+            const w = 1 - ad * 2;
+            tilt = ' rotateX(' + (-ptr.sy * 7 * w).toFixed(2) + 'deg) rotateY(' + (ptr.sx * 9 * w).toFixed(2) + 'deg)';
+          }
+          css(card, 'transform', 'translate3d(' + tx.toFixed(1) + 'px,0,' + tz.toFixed(1) + 'px) rotateY(' + ry.toFixed(2) + 'deg)' + tilt);
+          css(card, 'opacity', (1 - 0.55 * Math.min(ad, 1.3) / 1.3).toFixed(3));
+          card.classList.toggle('jn-focus', ad < 0.5);
         });
-        // each card's mini-diagram traces itself in as it approaches center
+        // each card's mini-diagram traces itself in as it approaches centre
         arts.forEach(function (strokes, idx) {
           const tc = idx / (cardCount - 1);
           const dp = easeOutCubic(idx === 0 ? seg(t, 0, 0.10) : seg(t, tc - 0.22, tc - 0.04));
           const m = strokes.length;
           strokes.forEach(function (s, j) {
             if (!(s.len > 0)) return;
-            const elP = clamp(dp * m - j, 0, 1);   // sequential trace
-            s.el.style.strokeDashoffset = (s.len * (1 - elP)).toFixed(1);
+            css(s.el, 'strokeDashoffset', (s.len * (1 - clamp(dp * m - j, 0, 1))).toFixed(1));
           });
         });
         // scroll-scrubbed counters, keyed to the eased track position so each
-        // one finishes counting just as its card reaches center (card idx is
-        // centered at t = idx / (cardCount - 1))
+        // one finishes counting just as its card reaches centre
         nums.forEach(function (numEl) {
           const idx = parseInt(numEl.dataset.cardidx || '0', 10);
           const target = parseInt(numEl.dataset.count || '0', 10);
-          const suffix = numEl.dataset.suffix || '';
           const tc = idx / (cardCount - 1);
           const val = Math.round(target * (idx === 0 ? seg(t, 0, 0.09) : seg(t, tc - 0.18, tc - 0.02)));
-          numEl.textContent = val + suffix;
+          const str = val + (numEl.dataset.suffix || '');
+          if (numEl.textContent !== str) numEl.textContent = str;
         });
-      };
+      }};
     });
 
-    /* ===================== S5 · PACKET FLOW ===================== */
+    /* ===================== S5 · PACKET FLOW =====================
+       A comet of a packet rides the wire while the handshake streams along
+       it. Every landing fires a shockwave, a spray of sparks and a camera
+       shake; the header readout counts TTL down hop by hop, and the closing
+       line arrives with a chromatic glitch. */
     registerScene('jn-s5', function (el) {
-      const trail   = document.getElementById('jn-flow-trail');
-      const route   = document.getElementById('jn-flow-route');
-      const packet  = document.getElementById('jn-packet');
-      const caption = document.getElementById('jn-flow-caption');
+      const svg     = $id('jn-flow-svg');
+      const trail   = $id('jn-flow-trail');
+      const route   = $id('jn-flow-route');
+      const packet  = $id('jn-packet');
+      const halo    = $id('jn-packet-halo');
+      const caption = $id('jn-flow-caption');
+      const stream  = $id('jn-flow-stream');
+      const inner   = el.querySelector('.jn-flow-inner');
       const rings   = Array.from(el.querySelectorAll('.jn-flow-ring'));
       const notes   = Array.from(el.querySelectorAll('.jn-hop-note'));
       const nodeEls = Array.from(el.querySelectorAll('.jn-flow-node'));
       const labels  = Array.from(el.querySelectorAll('.jn-flow-node-lbl'));
       const cores   = Array.from(el.querySelectorAll('.jn-flow-core'));
-      const ghosts  = [document.getElementById('jn-ghost-1'), document.getElementById('jn-ghost-2')];
-      const GHOST_LAG = [0.035, 0.07], GHOST_OP = [0.45, 0.22];
-      if (!trail || !route || !packet) return null;
+      const ttlEl = $id('jn-pkt-ttl'), hopEl = $id('jn-pkt-hop'), stEl = $id('jn-pkt-st');
+      const stS = stEl ? scrambler(stEl, { decorative: true, dur: 500 }) : null;
+      if (!svg || !trail || !route || !packet) return null;
+      const NS = 'http://www.w3.org/2000/svg';
       let L = 0;
       try { L = route.getTotalLength(); } catch (e) { L = 0; }
-      /* Hop timing follows the PACKET, not fixed scroll constants — the old
-         p-based hops ignored the travel easing, so rings pulsed long before
-         (or after) the packet actually reached their node. Fractions come
-         from the geometry itself. */
+      /* Hop timing follows the PACKET, not fixed scroll constants; fractions
+         come from the geometry itself. */
       const hopPts = nodeEls.map(function (n) {
         return { x: parseFloat(n.getAttribute('cx')), y: parseFloat(n.getAttribute('cy')) };
       });
       const hops = pathFractions(route, hopPts) || [0, 0.33, 0.65, 1];
-      return function (p) {
+
+      // comet-trail ghosts, layered under the packet
+      const GHOST_LAG = [0.02, 0.04, 0.062, 0.088, 0.115], GHOST_OP = [0.6, 0.42, 0.28, 0.17, 0.09], GHOST_R = [4.8, 4, 3.3, 2.6, 2];
+      const ghosts = GHOST_LAG.map(function (lag, i) {
+        const g = document.createElementNS(NS, 'circle');
+        g.setAttribute('class', 'jn-packet jn-ghost');
+        g.setAttribute('r', String(GHOST_R[i]));
+        g.setAttribute('cx', '110'); g.setAttribute('cy', '250');
+        svg.insertBefore(g, halo || packet);
+        return g;
+      });
+      // landing shockwaves (a second, wider ring per node) and spark sprays
+      const waves = rings.map(function (r) {
+        const w = r.cloneNode(false);
+        w.setAttribute('class', 'jn-flow-wave');
+        r.parentNode.insertBefore(w, r);
+        return w;
+      });
+      const sparks = hopPts.map(function (pt, h) {
+        if (h === 0) return [];
+        const out = [];
+        for (let k = 0; k < 12; k++) {
+          const s = document.createElementNS(NS, 'circle');
+          s.setAttribute('class', 'jn-spark');
+          s.setAttribute('r', (1.4 + (k % 3) * 0.7).toFixed(1));
+          s.setAttribute('cx', String(pt.x)); s.setAttribute('cy', String(pt.y));
+          svg.insertBefore(s, ghosts[0]);
+          const ang = (k / 12) * Math.PI * 2 + h;
+          out.push({ el: s, ax: Math.cos(ang), ay: Math.sin(ang), d: 26 + (k % 4) * 11, x: pt.x, y: pt.y });
+        }
+        return out;
+      });
+
+      // the handshake stream: repeat until it overfills the wire, then loop by one repetition
+      const STREAM_SRC = stream ? stream.textContent : '';
+      let REP = 0, streamOff = 0;
+      if (stream) {
+        let txt = STREAM_SRC;
+        const need = (L > 0 ? L : 900) * 2.2;
+        while (txt.length * 8 < need) txt += STREAM_SRC;
+        stream.textContent = txt;
+        try { REP = stream.parentNode.getSubStringLength(0, STREAM_SRC.length); } catch (e) { REP = 0; }
+        if (!(REP > 0)) REP = STREAM_SRC.length * 8.1;
+      }
+
+      let ttlShown = '', hopShown = '', stShown = '';
+      return { always: true, update: function (p, F) {
         // packet travels p 0.05 → 0.9 (eased); visible from p=0, parked on
         // the CLIENT node, so the scene never slides in without an actor
         const travel = easeInOutCubic(seg(p, 0.05, 0.9));
         if (L > 0) {
-          let pt;
+          let pt = null;
           try { pt = route.getPointAtLength(travel * L); } catch (e) { pt = null; }
-          if (pt) { packet.setAttribute('cx', pt.x.toFixed(1)); packet.setAttribute('cy', pt.y.toFixed(1)); }
+          if (pt) {
+            packet.setAttribute('cx', pt.x.toFixed(1)); packet.setAttribute('cy', pt.y.toFixed(1));
+            if (halo) { halo.setAttribute('cx', pt.x.toFixed(1)); halo.setAttribute('cy', pt.y.toFixed(1)); }
+          }
           // comet trail: ghosts lag the packet, fading in once it moves and
           // merging back into it as it lands on the last node
           const gvis = seg(travel, 0.01, 0.05) * (1 - seg(travel, 0.96, 1));
-          GHOST_LAG.forEach(function (lag, gi) {
-            const g = ghosts[gi];
-            if (!g) return;
-            let gp;
-            try { gp = route.getPointAtLength(clamp(travel - lag, 0, 1) * L); } catch (e) { gp = null; }
+          ghosts.forEach(function (g, gi) {
+            let gp = null;
+            try { gp = route.getPointAtLength(clamp(travel - GHOST_LAG[gi], 0, 1) * L); } catch (e) { gp = null; }
             if (gp) { g.setAttribute('cx', gp.x.toFixed(1)); g.setAttribute('cy', gp.y.toFixed(1)); }
-            g.style.opacity = (GHOST_OP[gi] * gvis).toFixed(3);
+            css(g, 'opacity', (GHOST_OP[gi] * gvis).toFixed(3));
           });
         }
-        packet.style.opacity = '1';
+        css(packet, 'opacity', '1');
+        if (halo) css(halo, 'opacity', (0.35 + 0.25 * Math.sin(F.now * 0.008)).toFixed(3));
         // trail draws under the packet and completes with it at the last node
-        trail.style.strokeDashoffset = (1 - travel).toFixed(4);
-        // hop pulses + notes, in travel-space (monotonic in p, so reversible)
+        css(trail, 'strokeDashoffset', (1 - travel).toFixed(4));
+        if (stream && REP > 0) {
+          streamOff = (streamOff + F.dt * (0.035 + Math.abs(F.vel) * 0.05)) % REP;
+          stream.setAttribute('startOffset', (-streamOff).toFixed(1));
+        }
+
+        let reached = 0, shake = 0;
         hops.forEach(function (h, i) {
           // notes share one overlay slot — each fades FULLY out before the
-          // next starts (crossfading text in the same slot reads as garble);
-          // hop 0 is "on" at travel=0 so the scene enters with its first line
+          // next starts; hop 0 is "on" at travel=0 so the scene enters with it
           const on = seg(travel, h - 0.05, h);
           const offp = seg(travel, h + 0.06, h + 0.14);
           const ring = rings[i];
           if (ring) {
             const e = easeOutExpo(on);
-            ring.style.opacity = (e * (1 - offp)).toFixed(3);
-            ring.style.transform = 'scale(' + lerp(0.6, 1.25, e).toFixed(3) + ')';
+            css(ring, 'opacity', (e * (1 - offp)).toFixed(3));
+            css(ring, 'transform', 'scale(' + lerp(0.6, 1.25, e).toFixed(3) + ')');
           }
           const note = notes[i];
-          if (note) note.style.opacity = (easeOutCubic(on) * (1 - offp)).toFixed(3);
-          // node + label light up as the packet lands, and stay lit (the
-          // CLIENT node is lit from the start — the packet parks on it)
+          if (note) {
+            css(note, 'opacity', (easeOutCubic(on) * (1 - offp)).toFixed(3));
+            css(note, 'transform', 'translateY(' + lerp(10, 0, easeOutCubic(on)).toFixed(1) + 'px)');
+          }
+          // node + label light up as the packet lands, and stay lit
           const lit = i === 0 ? 1 : easeOutCubic(seg(travel, h - 0.02, h + 0.02));
-          if (nodeEls[i]) nodeEls[i].style.opacity = (0.55 + 0.45 * lit).toFixed(3);
-          if (labels[i])  labels[i].style.opacity = (0.5 + 0.5 * lit).toFixed(3);
-          if (cores[i])   cores[i].style.opacity = lit.toFixed(3);
+          if (nodeEls[i]) css(nodeEls[i], 'opacity', (0.55 + 0.45 * lit).toFixed(3));
+          if (labels[i])  css(labels[i], 'opacity', (0.5 + 0.5 * lit).toFixed(3));
+          if (cores[i])   css(cores[i], 'opacity', lit.toFixed(3));
+          if (i === 0) return;
+          if (travel >= h - 0.004) reached = i;
+          // landing: shockwave + sparks + a jolt
+          const land = seg(travel, h - 0.004, h + 0.11);
+          const le = easeOutCubic(land);
+          if (waves[i]) {
+            css(waves[i], 'opacity', (land > 0 && land < 1 ? (1 - land) * 0.9 : 0).toFixed(3));
+            css(waves[i], 'transform', 'scale(' + lerp(1, 3.4, le).toFixed(3) + ')');
+          }
+          sparks[i].forEach(function (s) {
+            const vis = land > 0 && land < 1;
+            css(s.el, 'opacity', vis ? (1 - land).toFixed(3) : '0');
+            if (vis) { s.el.setAttribute('cx', (s.x + s.ax * s.d * le).toFixed(1)); s.el.setAttribute('cy', (s.y + s.ay * s.d * le).toFixed(1)); }
+          });
+          shake += bump(travel, h - 0.004, h + 0.05);
         });
-        // end caption (p 0.88 → 1)
+        if (inner) css(inner, 'transform', shake > 0.002
+          ? 'translate(' + (Math.sin(travel * 2300) * 6 * shake).toFixed(2) + 'px,' + (Math.cos(travel * 1900) * 4.5 * shake).toFixed(2) + 'px)'
+          : 'none');
+
+        // header readout
+        const ttl = String(64 - Math.min(reached, 2));
+        const hop = reached + ' / 3';
+        const st = travel <= 0.002 ? 'queued' : reached < 3 ? 'in flight →' : 'delivered · 200 OK';
+        if (ttlEl && ttl !== ttlShown) { ttlEl.textContent = ttl; ttlShown = ttl; }
+        if (hopEl && hop !== hopShown) { hopEl.textContent = hop; hopShown = hop; }
+        if (stS && st !== stShown) { stShown = st; stS.play(st); }
+
+        // end caption (p 0.86 → 1) — rises in through a chromatic glitch
         if (caption) {
-          const cp = easeOutCubic(seg(p, 0.88, 1));
-          caption.style.opacity = cp.toFixed(3);
-          caption.style.transform = 'translateY(' + lerp(24, 0, cp).toFixed(1) + 'px) scale(' + lerp(0.94, 1, cp).toFixed(3) + ')';
+          const cp = easeOutCubic(seg(p, 0.86, 1));
+          const g = bump(cp, 0, 1);
+          css(caption, 'opacity', cp.toFixed(3));
+          css(caption, 'transform', 'translate(' + (Math.sin(F.now * 0.09) * 7 * g).toFixed(1) + 'px,' + lerp(24, 0, cp).toFixed(1) + 'px) scale(' + lerp(0.94, 1, cp).toFixed(3) + ')');
+          css(caption, 'filter', g > 0.02
+            ? 'drop-shadow(' + (4 * g).toFixed(1) + 'px 0 0 rgba(255,50,100,0.75)) drop-shadow(' + (-4 * g).toFixed(1) + 'px 0 0 rgba(40,230,255,0.75))'
+            : 'none');
         }
-      };
+      }};
     });
 
-    /* ===================== S6 · FINALE ===================== */
+    /* ===================== S6 · FINALE =====================
+       The portrait irises open out of grayscale inside a ring of sonar
+       pulses and an orbiting name-ring, a burst of packets sprays out of it,
+       the headline flips up word by word and the CTAs cascade in. */
     registerScene('jn-s6', function (el) {
-      const fin = el.querySelector('.jn-finale');
-      const portrait = document.getElementById('jn-portrait');
-      const cta = document.getElementById('jn-finale-cta');
-      const nameK = el.querySelector('.jn-finale-name');
-      const subEl = el.querySelector('.jn-finale-sub');
-      const line = el.querySelector('.jn-finale-line');
+      const fin      = el.querySelector('.jn-finale');
+      const portrait = $id('jn-portrait');
+      const img      = portrait && portrait.querySelector('img');
+      const cta      = $id('jn-finale-cta');
+      const nameK    = el.querySelector('.jn-finale-name');
+      const subEl    = el.querySelector('.jn-finale-sub');
+      const line     = el.querySelector('.jn-finale-line');
+      const sonar    = el.querySelector('.jn-sonar');
+      const orbit    = el.querySelector('.jn-orbit');
+      const burst    = el.querySelector('.jn-burst');
+      const replay   = $id('jn-replay');
       if (!portrait) return null;
-      // headline splits into words (keeps .jn-grad on its words) and rises in
+      // headline splits into words (keeps .jn-grad on its words)
       const fwords = [];
       if (line) splitWords(line, fwords);
-      const ctaKids = cta ? Array.from(cta.children) : [];
-      ctaKids.forEach(function (k) { k.tabIndex = -1; });   // invisible until the finale plays
-      return function (p) {
+      // the CTAs stay tab stops; focusing one jumps to the finale's end (p=1),
+      // where everything has fully arrived
+      const kids = (cta ? Array.from(cta.children) : []).concat(replay ? [replay] : []);
+      // packet burst particles
+      const B = [];
+      if (burst) {
+        const R = rng(606), colors = ['var(--accent)', 'var(--accent-2)', 'var(--accent-3)'];
+        for (let k = 0; k < 42; k++) {
+          const i = document.createElement('i');
+          const ang = R() * Math.PI * 2, sz = 3 + R() * 6;
+          i.style.width = i.style.height = sz.toFixed(1) + 'px';
+          i.style.margin = (-sz / 2).toFixed(1) + 'px 0 0 ' + (-sz / 2).toFixed(1) + 'px';
+          i.style.background = colors[k % 3];
+          i.style.color = colors[k % 3];
+          if (k % 4 === 0) i.style.borderRadius = '2px';
+          burst.appendChild(i);
+          B.push({ el: i, ax: Math.cos(ang), ay: Math.sin(ang), d: 120 + R() * 300, rot: R() * 720 });
+        }
+      }
+      return { focusP: function () { return 1; }, update: function (p) {
         // whole block settles upward as the scene pins — content builds up
-        // from p=0 so the handoff from S5 never shows an empty stage
-        if (fin) fin.style.transform = 'translateY(' + lerp(30, 0, easeOutCubic(seg(p, 0, 0.3))).toFixed(1) + 'px)';
-        // portrait scales 0.86 → 1 + fades in (p 0 → 0.35)
-        const e = easeOutCubic(seg(p, 0, 0.35));
-        portrait.style.opacity = e.toFixed(3);
-        portrait.style.transform = 'scale(' + lerp(0.86, 1, e).toFixed(3) + ')';
+        // from p=0 so the handoff from the reel never shows an empty stage
+        if (fin) css(fin, 'transform', 'translateY(' + lerp(30, 0, easeOutCubic(seg(p, 0, 0.3))).toFixed(1) + 'px)');
+        const pe = seg(p, 0, 0.32), e = easeOutCubic(pe);
+        css(portrait, 'opacity', Math.min(1, e * 2).toFixed(3));
+        css(portrait, 'transform', 'scale(' + lerp(0.55, 1, easeOutBack(pe)).toFixed(3) + ') rotate(' + lerp(-14, 0, e).toFixed(2) + 'deg)');
+        css(portrait, 'clipPath', e >= 1 ? 'none' : 'circle(' + (e * 75).toFixed(1) + '% at 50% 50%)');
+        if (img) css(img, 'filter', e >= 1 ? 'none' : 'grayscale(' + (1 - e).toFixed(3) + ') brightness(' + (0.55 + 0.45 * e).toFixed(3) + ')');
+        if (orbit) {
+          const oe = easeOutCubic(seg(p, 0.1, 0.42));
+          css(orbit, 'opacity', oe.toFixed(3));
+          css(orbit, 'transform', 'translate(-50%,-50%) scale(' + lerp(0.45, 1, oe).toFixed(3) + ') rotate(' + lerp(-140, 0, oe).toFixed(1) + 'deg)');
+        }
+        if (sonar) css(sonar, 'opacity', seg(p, 0.22, 0.42).toFixed(3));
+        const bp = seg(p, 0.16, 0.62), bk = easeOutCubic(bp);
+        for (let i = 0; i < B.length; i++) {
+          const b = B[i];
+          const o = bp > 0 && bp < 1 ? (1 - bp) * Math.min(1, bp * 8) : 0;
+          css(b.el, 'opacity', o.toFixed(3));
+          if (o > 0) css(b.el, 'transform', 'translate(' + (b.ax * b.d * bk).toFixed(1) + 'px,' + (b.ay * b.d * bk).toFixed(1) + 'px) rotate(' + (b.rot * bk).toFixed(0) + 'deg) scale(' + (1 - 0.6 * bp).toFixed(3) + ')');
+        }
         // name kicker → headline words → sub, in sequence
         if (nameK) {
           const ke = easeOutCubic(seg(p, 0.06, 0.18));
-          nameK.style.opacity = ke.toFixed(3);
-          nameK.style.transform = 'translateY(' + lerp(10, 0, ke).toFixed(1) + 'px)';
+          css(nameK, 'opacity', ke.toFixed(3));
+          css(nameK, 'transform', 'translateY(' + lerp(10, 0, ke).toFixed(1) + 'px)');
         }
         const n = fwords.length;
         for (let i = 0; i < n; i++) {
           const start = 0.12 + (i / n) * 0.26;
           const we = easeOutCubic(seg(p, start, start + 0.14));
-          fwords[i].style.opacity = we.toFixed(3);
-          fwords[i].style.transform = 'translateY(' + (0.32 * (1 - we)).toFixed(3) + 'em)';
+          css(fwords[i], 'opacity', we.toFixed(3));
+          css(fwords[i], 'transform', 'translateY(' + (0.3 * (1 - we)).toFixed(3) + 'em) rotateX(' + ((1 - we) * -90).toFixed(1) + 'deg)');
         }
         if (subEl) {
           const se = easeOutCubic(seg(p, 0.36, 0.52));
-          subEl.style.opacity = se.toFixed(3);
-          subEl.style.transform = 'translateY(' + lerp(12, 0, se).toFixed(1) + 'px)';
+          css(subEl, 'opacity', se.toFixed(3));
+          css(subEl, 'transform', 'translateY(' + lerp(12, 0, se).toFixed(1) + 'px)');
         }
         // CTAs cascade in (opacity only — their .btn transitions + magnetic
         // transforms must stay untouched), fully interactive at rest
-        ctaKids.forEach(function (k, i) {
-          const o = easeOutCubic(seg(p, 0.42 + i * 0.055, 0.56 + i * 0.055));
-          k.style.opacity = o.toFixed(3);
-          const ti = o > 0.9 ? 0 : -1;             // invisible buttons are not tab stops
-          if (k.tabIndex !== ti) k.tabIndex = ti;
+        kids.forEach(function (k, i) {
+          css(k, 'opacity', easeOutCubic(seg(p, 0.42 + i * 0.05, 0.56 + i * 0.05)).toFixed(3));
         });
+      }};
+    });
+
+    /* ============================ FX LAYERS ============================
+       Built after the scenes; each is isolated — if its canvas API is
+       missing or throws, that layer alone switches itself off. */
+    const fx = [];
+    function addFx(make, onFail) {
+      try {
+        const f = make();
+        if (f) { f.onFail = onFail; fx.push(f); return f; }
+      } catch (e) { if (onFail) onFail(e); }
+      return null;
+    }
+    function runFx(f, F) {
+      if (f.dead) return;
+      try { f.draw(F); }
+      catch (e) { f.dead = true; if (f.onFail) f.onFail(e); }
+    }
+
+    /* ---- warp starfield: a 3D field flying at the camera. Scroll velocity
+       (signed — scrolling back pulls the stars away) and the hero's warp
+       requests stretch the points into hyperspace streaks. ---- */
+    addFx(function () {
+      const cv = $id('jn-warp');
+      const ctx = cv && cv.getContext && cv.getContext('2d');
+      if (!ctx) return null;
+      const R = rng(99);
+      let W = 0, H = 0, dpr = 1, N = 0, S = null, cleared = false, speed = 0;
+      function reset(i, z) {
+        S[i * 4] = (R() * 2 - 1) * 1.25;
+        S[i * 4 + 1] = (R() * 2 - 1) * 1.25;
+        S[i * 4 + 2] = z;
+        S[i * 4 + 3] = (R() * 3) | 0;
+      }
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        W = window.innerWidth; H = window.innerHeight;
+        cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+        N = clamp(Math.round(W * H / 4000), 150, 400);
+        S = new Float32Array(N * 4);
+        for (let i = 0; i < N; i++) reset(i, 0.02 + R() * 0.98);
+      }
+      resize();
+      const WIDTH = [2.1, 1.35, 0.8], ALPHA = [0.95, 0.6, 0.32], ZB = [0, 0.3, 0.62, 2];
+      return {
+        resize: resize,
+        draw: function (F) {
+          // a full-bleed photo is pinned over everything — nothing to draw
+          if (F.covered) {
+            if (!cleared) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); cleared = true; }
+            return;
+          }
+          cleared = false;
+          const target = 0.00005 + clamp(F.vel, -9, 9) * 0.00016 + F.warp * 0.00024;
+          speed += (target - speed) * Math.min(1, F.dt / 150);
+          const dz = speed * F.dt;
+          const f = Math.max(W, H) * 0.42;
+          const cx = W * 0.5 - ptr.sx * 28, cy = H * 0.5 - ptr.sy * 22;
+          for (let i = 0; i < N; i++) {
+            const z = S[i * 4 + 2] - dz;
+            if (z < 0.02) reset(i, 1);
+            else if (z > 1.05) reset(i, 0.05);
+            else S[i * 4 + 2] = z;
+          }
+          const tail = dz * 7 + (dz >= 0 ? 0.0015 : -0.0015);
+          const cols = [COL.a2, COL.a1, F.light ? COL.a3 : COL.ink];
+          const la = F.light ? 0.6 : 1;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, W, H);
+          ctx.lineCap = 'round';
+          for (let band = 0; band < 3; band++) {
+            ctx.lineWidth = WIDTH[band];
+            for (let c = 0; c < 3; c++) {
+              ctx.strokeStyle = rgba(cols[c], ALPHA[band] * la);
+              ctx.beginPath();
+              for (let i = 0; i < N; i++) {
+                if (S[i * 4 + 3] !== c) continue;
+                const z = S[i * 4 + 2];
+                if (z < ZB[band] || z >= ZB[band + 1]) continue;
+                const x = S[i * 4], y = S[i * 4 + 1];
+                const px = cx + x / z * f, py = cy + y / z * f;
+                if (px < -60 || px > W + 60 || py < -60 || py > H + 60) continue;
+                const zt = clamp(z + tail, 0.02, 1.4);
+                ctx.moveTo(cx + x / zt * f, cy + y / zt * f);
+                ctx.lineTo(px, py);
+              }
+              ctx.stroke();
+            }
+          }
+        }
       };
     });
 
+    /* ---- dotted globe ----
+       12k land dots (1° grid, decoded from the run-length string below), an
+       atmosphere, a graticule, city markers and great-circle flight arcs.
+       The camera is one continuous move across S1 → S2 → S3:
+         S1  an "Earthrise" horizon under the name that pulls back to the whole planet
+         S2  the planet dims and keeps turning behind the statement
+         S3  it swings to Beirut and flies the route: Paris, a zoom into
+             Évry/Palaiseau, and home again, with live telemetry in the HUD.
+       Land mask derived from Natural Earth (public domain) via world-atlas
+       land-50m, rasterised to 1° rows; each character is a run length
+       (base64 alphabet), alternating sea/land and starting with sea. */
+    const LAND = 'ADAJAQAWAcABBhBnBDMBdCENDeDFMCBBBCgDDBBOFBCjEFOBBBBDBCoDFBBQJqBBCISJtEIBBTLuEQDCKMxEXEBBBEM0EYBHBBCOYBeDhCBCPBBYBfDkDXBBCENBeGlEkKDdHpBnLDaBBJqCsGHXO/AdDRDBCEBBDRwB/AlzB/Ao2C/Aq/A/Ao/A/Au/A/Az/A/A5/A/A+/A/A/AE/A/A/AK/A/A/AP/DRB/A+/CBB/A/AV/ABD/A/Aa/ADDFC/A/AW/AEE/A/Ag/AFF/A/Aj/AGG/A/Am/AIG/A/Ao/AJG/A/AkBH/ALF/A/AmDG/AMH/A/AoDG/APF/A/AbBRCF/AQH/A/AbCRCF/ARG/A/AgCSDD/ASJ/A/A0BBBD/ATJ/A/A4DC/AUM/A/AgBBBWDB/AVO/A/AeIUBD/AXN/A/AgIY/AYN/A/AhKTBE/AaLBD8B/AQDNBCKY/AbQ7I/AKHJCBLY/AdQ7J/ALIHQX/AdR8K/AKgX/AeT6L/AKhX/AfT6N/AJiX/AgU5O/AKiX/AiU4P/AKjX/AjT6P/AJkY/AkU5QLB8lY/AlV4TID8kZ/AlY2TIE8ja/Amb0TIE9ib/AnbzUIE/gOBN/AocyUJE/ACdOBBBM/AodyVIF/AEZf/ApdxXHF/AGXg/AofxYGG/AGXeBB/AogxbEF/AIODEgB/AmjxcFD/AJMFEUBM/AmkxcHC/AKDBGGDiHB/AekybIC/AOGGCj/AmlzaIB/AQGFBk/Amnya/AZBBBJBQBT/Alpxb/AsBd/Alqwb/APBEBWCKBT/Alrwa/AKBEEDCNDDCIBW/Alsvb/AEFaJg/Aktvb/ADDZBEJHBY/Ajuvb/ACBOBRIECc/Ajsxc/DOBPKi/Akqxd+EJCDCEBDBCLk/Akk3f8FEHCDOFn/AkcBDBD2h7DBBEHCDBBDBECu/AaBKg5h6DBBEJJBCBBBv/Ald8i4EGJECEBz/Amd7j3DBBFJJCz/Amc9k0CCCHHKBz/Anb8lyDBDJF+/Ana5CBnwCDDKF9/AnYrKFr0CND9/AnUu8fBSCPBEBBD1/AjBCTu+eCRBYC1/AgEBTu/aBCBRCYC1/AfCDBDOv/ABZCBBYBMBDBCB1/AeCIJCBw/ACYESBFDLBCB4/AdCLBCB06GCYESBEFNBBC1/AbE/AC7KBUFRCCHLCCB1/AZG/AC5BEbFMBFKLC4/AWJVBq5BGZFRL/AG/AVI/AC3DJVGRKLC4/APK/AG1DKUIMCBKMC3/AMM/AG1DMRKLLNC3/AJJBFNBBEBBBBt0DOQKKLDBKB3XBvIFDODyzDQOMILDC/AC/AHIGDJD2yDSNNFNDB/ACUBxHICDBDCDB0yCTJREPCB/AB/AGHNBBC6xDTJp9/ABBCIUB2wCTJsDB2+BDJ/AMuCNCDJvCB19BCLOB7tCNH328BCLNC7sBNG426CBMNC8pCMD816BBNMC9oBMC+z4CBPDCFC+yC/y3BCb+YB/AYz2CBb9WEFDCC/ALIBp1f8VEDJ/AKIBp0g7QU/AJEBCEmxk6OV/AGGBDCBBkwl8KV/AFFDDGgvl3CEIJBFBBCB/AGECGDguk2GLCFCDSD2ECHCfsm0HMBDDCREyGDICernyHCBDBFBDCDRDzCBCBKCdqnxHGBEDBDBBCQC0BFICdqouJHDDGDDEGCBB4mpnuJEBBCDHKFD6GDboosDCEBCCCCJIGD8FDZooBCtJCKDBDGC+EBanpBCqWCCBHE7enosWBDBID6dmoGCi/AgCBZloEDg/AiajmDBCDj/AcBCXhsBBgBD/AaBBXhshCC/AYIBNBdBBdCOcCBEB/AUBBIBNHBUeCObCCCD/ATICMcdBNdBBCKBB/AFLDLKBQbEKfCHCE/ACLEKLBNaEBBIfCGCBBD/ACKEJMBBBJXIIeDHCBBBBB9KDJMCIBBVIIeBFCBDC/JCJJEBBFXJECBjHDBB9CBDCIDBDjIEMBYGCDB+DDGHiIDLDWGC/ACBBBFDHhEBCBDBIEWFC/ACBFBBEBDgCBCBCEGEWFB/AIGkCBBDGFIDLFB/ADBBDBiFDGFGFLEBEC6AEDeFFEHHBLIBCCKBrACEVBHBCBBBDEITKCzABETCCECBBCEEKQICBCJBlGICDBBBFBBBBCBBEFLPFJEBhBCBGDODCBBHFJSBMCBcHABRBBEFFFLXCDUCFJQFCDBEGKXBEBBQDCKQCEBBBBDGKVBFBBHBDBBEBKPBIBIKUBHGTQDBBBDFKTCEBBGGCJOBBBBBBECLUBHDQSCBBDKHBSBQNBBDBCBKGCQBPPECIGBBBMBPOBBCBIKBBBTNKBBcNCCEaQBYjcWQJD';
+    const GEO = { BEI: [33.8938, 35.5018], PAR: [48.8566, 2.3522], PAL: [48.7145, 2.2457], EVR: [48.6243, 2.4407] };
+    function v3(lat, lon) { const la = lat * DEG, lo = lon * DEG, c = Math.cos(la); return [c * Math.sin(lo), Math.sin(la), c * Math.cos(lo)]; }
+    function toLL(v) { const r = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) || 1; return [Math.asin(clamp(v[1] / r, -1, 1)) / DEG, Math.atan2(v[0], v[2]) / DEG]; }
+    function dot3(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+    function norm3(v) { const r = Math.sqrt(dot3(v, v)) || 1; return [v[0] / r, v[1] / r, v[2] / r]; }
+    function cross3(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+    function slerp3(a, b, t) {
+      const om = Math.acos(clamp(dot3(a, b), -1, 1));
+      if (om < 1e-6) return a.slice();
+      const s = Math.sin(om), ka = Math.sin((1 - t) * om) / s, kb = Math.sin(t * om) / s;
+      return [a[0] * ka + b[0] * kb, a[1] * ka + b[1] * kb, a[2] * ka + b[2] * kb];
+    }
+    const gcKm = (a, b) => 6371 * Math.acos(clamp(dot3(a, b), -1, 1));
+
+    const globe = addFx(function () {
+      const cv = $id('jn-globe');
+      const ctx = cv && cv.getContext && cv.getContext('2d');
+      if (!ctx) return null;
+      // ---- decode the land mask into unit vectors ----
+      const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      const ll = [];
+      let ci = 0;
+      for (let r = 0; r < 180; r++) {
+        const lat = -89.5 + r;
+        const n = Math.max(1, Math.round(360 * Math.cos(lat * DEG)));
+        let k = 0, land = 0;
+        while (k < n) {
+          const run = B64.indexOf(LAND.charAt(ci++));
+          if (run < 0) throw new Error('globe: land data truncated');
+          if (land) for (let j = 0; j < run; j++) ll.push(lat, -180 + (k + j + 0.5) * 360 / n);
+          k += run;
+          land ^= 1;
+        }
+        if (k !== n) throw new Error('globe: land row ' + r + ' overflows');
+      }
+      const ND = ll.length / 2;
+      const D = new Float32Array(ND * 3);
+      for (let i = 0; i < ND; i++) { const v = v3(ll[2 * i], ll[2 * i + 1]); D[3 * i] = v[0]; D[3 * i + 1] = v[1]; D[3 * i + 2] = v[2]; }
+      // graticule polylines (30° meridians/parallels)
+      const grat = [];
+      for (let lon = -180; lon < 180; lon += 30) { const l = []; for (let lat = -80; lat <= 80; lat += 4) l.push(v3(lat, lon)); grat.push(l); }
+      for (let lat = -60; lat <= 60; lat += 30) { const l = []; for (let lon = -180; lon <= 180; lon += 4) l.push(v3(lat, lon)); grat.push(l); }
+      // local tactical grid around Paris for the close zoom (0.5°)
+      const local = [];
+      for (let lat = 46; lat <= 51.5; lat += 0.5) { const l = []; for (let lon = -1.5; lon <= 6.5; lon += 0.25) l.push(v3(lat, lon)); local.push(l); }
+      for (let lon = -1.5; lon <= 6.5; lon += 0.5) { const l = []; for (let lat = 46; lat <= 51.5; lat += 0.25) l.push(v3(lat, lon)); local.push(l); }
+
+      const BEI = v3(GEO.BEI[0], GEO.BEI[1]), PAR = v3(GEO.PAR[0], GEO.PAR[1]);
+      const PAL = v3(GEO.PAL[0], GEO.PAL[1]), EVR = v3(GEO.EVR[0], GEO.EVR[1]);
+      const ZOOMC = norm3([PAR[0] + PAL[0] + EVR[0], PAR[1] + PAL[1] + EVR[1], PAR[2] + PAL[2] + EVR[2]]);
+      const LEG_KM = gcKm(BEI, PAR);
+      const NRM = norm3(cross3(BEI, PAR));
+      /* a flight arc: great circle bent sideways by `bend` and lifted by `alt` */
+      function arcPt(a, b, t, bend, alt) {
+        const s = slerp3(a, b, t), w = Math.sin(Math.PI * t);
+        const v = norm3([s[0] + NRM[0] * bend * w, s[1] + NRM[1] * bend * w, s[2] + NRM[2] * bend * w]);
+        const h = 1 + alt * w;
+        return [v[0] * h, v[1] * h, v[2] * h];
+      }
+      const ARC1 = { a: BEI, b: PAR, bend: 0.05, alt: 0.11 };
+      const ARC2 = { a: PAR, b: BEI, bend: 0.07, alt: 0.08 };
+
+      let W = 0, H = 0, dpr = 1, shown = -1;
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = window.innerWidth; H = window.innerHeight;
+        cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+        shown = -1;
+      }
+      resize();
+
+      // ---- camera ----
+      const C = { sl: 0, cl: 1, sp: 0, cp: 1, sr: 0, cr: 1, R: 100, cx: 0, cy: 0 };
+      function setCam(lat, lon, roll, R, cx, cy) {
+        C.sl = Math.sin(lon * DEG); C.cl = Math.cos(lon * DEG);
+        C.sp = Math.sin(lat * DEG); C.cp = Math.cos(lat * DEG);
+        C.sr = Math.sin(roll * DEG); C.cr = Math.cos(roll * DEG);
+        C.R = R; C.cx = cx; C.cy = cy;
+      }
+      const P = { x: 0, y: 0, z: 0, vis: false };
+      function proj(v) {
+        const x1 = v[0] * C.cl - v[2] * C.sl, z1 = v[0] * C.sl + v[2] * C.cl;
+        const y2 = v[1] * C.cp - z1 * C.sp, z2 = v[1] * C.sp + z1 * C.cp;
+        const x3 = x1 * C.cr - y2 * C.sr, y3 = x1 * C.sr + y2 * C.cr;
+        P.x = C.cx + C.R * x3; P.y = C.cy - C.R * y3; P.z = z2;
+        P.vis = z2 > 0 || (x3 * x3 + y3 * y3) > 1;
+        return P;
+      }
+      /* scroll position → one continuous timeline across the three scenes:
+         S1 [0,1] · hand-off [1,1.5] · S2 [1.5,2.5] · hand-off [2.5,3] · S3 [3,4] · out [4,4.5] */
+      function timeline(y) {
+        const S = [byId['jn-s1'], byId['jn-s2'], byId['jn-s3']];
+        if (!S[0] || !S[1] || !S[2]) return 5;
+        for (let i = 0; i < 3; i++) {
+          const s = S[i], a = s.top, b = s.top + Math.max(0, s.height - s.stageH);
+          if (y < a) {
+            if (i === 0) return 0;
+            const pb = S[i - 1].top + Math.max(0, S[i - 1].height - S[i - 1].stageH);
+            return i * 1.5 - 0.5 + clamp((y - pb) / Math.max(1, a - pb), 0, 1) * 0.5;
+          }
+          if (y <= b) return i * 1.5 + (b > a ? (y - a) / (b - a) : 1);
+        }
+        const l = S[2], lb = l.top + Math.max(0, l.height - l.stageH);
+        return 4 + clamp((y - lb) / Math.max(1, l.stageH), 0, 1) * 0.5;
+      }
+      const lnR = (a, b, t) => Math.exp(lerp(Math.log(a), Math.log(b), t));
+      function camera(u, F) {
+        const vw = F.vw, vh = F.vh, base = Math.min(vw, vh), mob = vw < 769;
+        const s3x = mob ? 0.5 : 0.64, s3y = mob ? 0.34 : 0.5;
+        const spin = ((F.now * 0.004) % 360);
+        const R1 = base * (mob ? 0.42 : 0.34), cy1 = vh * 0.56;
+        const c = { center: null, R: R1, cx: vw / 2, cy: cy1, roll: 0, alpha: 1, spinW: 0, q: -1 };
+        if (u <= 1.5) {
+          // Earthrise: a huge planet whose horizon sits under the name, pulling back
+          const e = easeInOutCubic(seg(u, 0.05, 1));
+          const R0 = Math.max(vw, vh) * 1.08;
+          c.R = lnR(R0, R1, e);
+          c.cy = lerp(vh * 0.8, cy1 - R1, e) + c.R;
+          c.center = v3(lerp(-14, 22, e), lerp(26, 30, e));
+          c.roll = lerp(-8, 0, e);
+          c.alpha = lerp(0.95, 0.8, seg(u, 0.6, 1.2));
+          c.spinW = 1;
+        } else if (u <= 2.5) {
+          const e = easeInOutCubic(seg(u, 1.5, 2.0));
+          c.center = v3(22, 30);
+          c.R = lerp(R1, R1 * 0.9, e);
+          c.cy = lerp(cy1, vh * 0.5, e);
+          c.alpha = lerp(0.8, 0.3, e);
+          c.spinW = 1;
+        } else if (u <= 3) {
+          const e = easeInOutCubic(seg(u, 2.5, 3));
+          c.center = slerp3(v3(22, 30), BEI, e);
+          c.R = lerp(R1 * 0.9, base * 0.5, e);
+          c.cx = lerp(vw / 2, vw * s3x, e);
+          c.cy = lerp(vh * 0.5, vh * s3y, e);
+          c.alpha = lerp(0.3, 1, e);
+          c.spinW = 1 - e;
+          c.q = 0;
+        } else {
+          const q = clamp(u - 3, 0, 1);
+          c.q = q;
+          c.cx = vw * s3x; c.cy = vh * s3y;
+          c.alpha = 1 - seg(u, 4.05, 4.45);
+          const f1 = easeInOutCubic(seg(q, 0.06, 0.34)), f2 = easeInOutCubic(seg(q, 0.68, 0.93));
+          // close zoom into Évry/Palaiseau between the two flights
+          const zf = easeInOutCubic(seg(q, 0.4, 0.52)) * (1 - easeInOutCubic(seg(q, 0.6, 0.68)));
+          let rf = 0.56;
+          if (q < 0.06) { c.center = BEI; rf = lerp(0.5, 0.56, q / 0.06); }
+          else if (q < 0.4) { const v = arcPt(BEI, PAR, f1, ARC1.bend, 0); c.center = norm3(v); rf = 0.56 - 0.2 * Math.sin(Math.PI * f1); c.roll = -6 * Math.sin(Math.PI * f1); }
+          else if (q < 0.68) { c.center = slerp3(PAR, ZOOMC, zf); }
+          else { const v = arcPt(PAR, BEI, f2, ARC2.bend, 0); c.center = norm3(v); rf = 0.56 - 0.2 * Math.sin(Math.PI * f2) + 0.06 * seg(q, 0.9, 1); c.roll = 6 * Math.sin(Math.PI * f2); }
+          c.R = base * lnR(rf, mob ? 2.2 : 2.6, zf);
+          c.f1 = f1; c.f2 = f2; c.zf = zf;
+        }
+        // the idle spin, wrapped so it never spins more than half a turn on release
+        c.spin = (spin > 180 ? spin - 360 : spin) * c.spinW;
+        return c;
+      }
+
+      // ---- telemetry HUD ----
+      const hud = $id('jn-route-hud');
+      const hLat = $id('jn-hud-lat'), hLon = $id('jn-hud-lon'), hKm = $id('jn-hud-km'), hYear = $id('jn-hud-year'), hSt = $id('jn-hud-status');
+      const hStS = hSt ? scrambler(hSt, { decorative: true, dur: 600 }) : null;
+      const shownH = {};
+      function setH(el, key, val) { if (el && shownH[key] !== val) { shownH[key] = val; el.textContent = val; } }
+      const fmtLat = v => Math.abs(v).toFixed(2) + '°' + (v >= 0 ? 'N' : 'S');
+      const fmtLon = v => Math.abs(v).toFixed(2) + '°' + (v >= 0 ? 'E' : 'W');
+
+      // ---- drawing helpers ----
+      function polyline(pts, alt) {
+        let pen = false;
+        for (let i = 0; i < pts.length; i++) {
+          const v = pts[i];
+          const q = alt ? proj([v[0] * alt, v[1] * alt, v[2] * alt]) : proj(v);
+          if (!q.vis || (!alt && q.z <= 0)) { pen = false; continue; }
+          if (!pen) { ctx.moveTo(q.x, q.y); pen = true; } else ctx.lineTo(q.x, q.y);
+        }
+      }
+      function ringAt(x, y, r, a, w) {
+        if (a <= 0.01) return;
+        ctx.strokeStyle = rgba(COL.a2, a);
+        ctx.lineWidth = w || 2;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+      }
+      function marker(v, label, a, now, opts) {
+        if (a <= 0.01) return;
+        const q = proj(v);
+        if (q.z <= 0.02) return;
+        const x = q.x, y = q.y;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 22);
+        g.addColorStop(0, rgba(COL.a2, 0.55 * a)); g.addColorStop(1, rgba(COL.a2, 0));
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill();
+        // idle pulse
+        const pt = ((now / 1600) + (opts && opts.phase || 0)) % 1;
+        ringAt(x, y, 5 + pt * 18, (1 - pt) * 0.6 * a, 1.4);
+        ctx.fillStyle = rgba(F.light ? COL.a1 : COL.ink, a);
+        ctx.beginPath(); ctx.arc(x, y, 3.6, 0, Math.PI * 2); ctx.fill();
+        if (label) {
+          const dx = (opts && opts.dx) || 12, dy = (opts && opts.dy) || -10;
+          if (opts && opts.leader) {
+            ctx.strokeStyle = rgba(COL.a2, 0.6 * a); ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + dx * 0.85, y + dy * 0.85); ctx.stroke();
+          }
+          ctx.fillStyle = rgba(F.light ? COL.a1 : COL.ink, 0.95 * a);
+          ctx.textAlign = dx < 0 ? 'right' : 'left';
+          ctx.fillText(label, x + dx, y + dy);
+        }
+      }
+      const tmp = [0, 0, 0];
+      function drawArc(A, d, a, now, head) {
+        if (d <= 0 || a <= 0.01) return;
+        const M = 72, end = Math.max(1, Math.round(M * d));
+        const xs = [], ys = [], vs = [];
+        for (let k = 0; k <= end; k++) {
+          const v = arcPt(A.a, A.b, Math.min(d, k / M), A.bend, A.alt);
+          const q = proj(v);
+          xs.push(q.x); ys.push(q.y); vs.push(q.vis);
+        }
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        const passes = [[9, 0.14], [2.4, 0.95]];
+        for (let pi = 0; pi < passes.length; pi++) {
+          ctx.lineWidth = passes[pi][0];
+          const gr = ctx.createLinearGradient(xs[0], ys[0], xs[end], ys[end]);
+          gr.addColorStop(0, rgba(COL.a1, passes[pi][1] * a * 0.35));
+          gr.addColorStop(1, rgba(COL.a2, passes[pi][1] * a));
+          ctx.strokeStyle = gr;
+          ctx.beginPath();
+          let pen = false;
+          for (let k = 0; k <= end; k++) {
+            if (!vs[k]) { pen = false; continue; }
+            if (!pen) { ctx.moveTo(xs[k], ys[k]); pen = true; } else ctx.lineTo(xs[k], ys[k]);
+          }
+          ctx.stroke();
+        }
+        // the plane: a glowing head + arrowhead aligned with the arc
+        if (head && d < 1 && vs[end]) {
+          const x = xs[end], y = ys[end];
+          const px = xs[Math.max(0, end - 2)], py = ys[Math.max(0, end - 2)];
+          const ang = Math.atan2(y - py, x - px);
+          const g = ctx.createRadialGradient(x, y, 0, x, y, 26);
+          g.addColorStop(0, rgba(COL.a2, 0.85 * a)); g.addColorStop(1, rgba(COL.a2, 0));
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(x, y, 26, 0, Math.PI * 2); ctx.fill();
+          ctx.save();
+          ctx.translate(x, y); ctx.rotate(ang);
+          ctx.fillStyle = rgba(F.light ? COL.a1 : COL.ink, a);
+          ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-7, -7); ctx.lineTo(-3, 0); ctx.lineTo(-7, 7); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      return {
+        resize: resize,
+        draw: function (F) {
+          const u = timeline(F.y);
+          const cam = camera(u, F);
+          const alpha = u >= 4.5 ? 0 : cam.alpha;
+          if (alpha <= 0.004) {
+            if (shown !== 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); css(cv, 'opacity', '0'); shown = 0; }
+            if (hud) css(hud, 'opacity', '0');
+            return;
+          }
+          shown = 1;
+          css(cv, 'opacity', alpha.toFixed(3));
+          const llc = toLL(cam.center);
+          setCam(llc[0], llc[1] + cam.spin, cam.roll, cam.R, cam.cx + ptr.sx * -10, cam.cy + ptr.sy * -8);
+          const R = C.R, cx = C.cx, cy = C.cy, now = F.now, light = F.light;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, W, H);
+
+          // atmosphere + ocean + rim
+          let g = ctx.createRadialGradient(cx, cy, R * 0.94, cx, cy, R * 1.22);
+          g.addColorStop(0, rgba(COL.a1, light ? 0.22 : 0.34)); g.addColorStop(1, rgba(COL.a1, 0));
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(cx, cy, R * 1.22, 0, Math.PI * 2); ctx.fill();
+          g = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.05, cx, cy, R);
+          g.addColorStop(0, rgba(COL.a1, light ? 0.1 : 0.2));
+          g.addColorStop(0.7, rgba(COL.bg2, light ? 0.5 : 0.6));
+          g.addColorStop(1, rgba(COL.bg, light ? 0.6 : 0.9));
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = rgba(COL.a2, light ? 0.35 : 0.45); ctx.lineWidth = 1.4;
+          ctx.stroke();
+
+          // graticule
+          ctx.strokeStyle = rgba(light ? COL.a1 : COL.ink, light ? 0.1 : 0.07); ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < grat.length; i++) polyline(grat[i], 0);
+          ctx.stroke();
+
+          // land: three depth bands batched into three paths
+          const spacing = R * DEG;
+          const size = clamp(spacing * 0.46, 1.1, 4.4), hs = size / 2;
+          const p0 = new Path2D(), p1 = new Path2D(), p2 = new Path2D();
+          const sl = C.sl, cl = C.cl, sp = C.sp, cp = C.cp, sr = C.sr, cr = C.cr;
+          for (let i = 0, j = 0; i < ND; i++, j += 3) {
+            const x = D[j], y = D[j + 1], z = D[j + 2];
+            const x1 = x * cl - z * sl, z1 = x * sl + z * cl;
+            const z2 = y * sp + z1 * cp;
+            if (z2 <= 0) continue;
+            const y2 = y * cp - z1 * sp;
+            const X = cx + R * (x1 * cr - y2 * sr), Y = cy - R * (x1 * sr + y2 * cr);
+            if (X < -6 || X > W + 6 || Y < -6 || Y > H + 6) continue;
+            if (z2 > 0.55) p0.rect(X - hs, Y - hs, size, size);
+            else if (z2 > 0.22) p1.rect(X - hs * 0.9, Y - hs * 0.9, size * 0.9, size * 0.9);
+            else p2.rect(X - hs * 0.75, Y - hs * 0.75, size * 0.75, size * 0.75);
+          }
+          ctx.fillStyle = rgba(light ? COL.a1 : COL.a2, light ? 0.85 : 0.92); ctx.fill(p0);
+          ctx.fillStyle = rgba(COL.a1, light ? 0.6 : 0.68); ctx.fill(p1);
+          ctx.fillStyle = rgba(COL.a3, light ? 0.35 : 0.36); ctx.fill(p2);
+
+          ctx.font = '600 11px "JetBrains Mono", ui-monospace, monospace';
+          ctx.textBaseline = 'middle';
+          if ('letterSpacing' in ctx) ctx.letterSpacing = '2px';
+          const q = cam.q;
+          if (q >= 0) {
+            const f1 = cam.f1 || 0, f2 = cam.f2 || 0, zf = cam.zf || 0;
+            const mA = seg(u, 2.6, 3);
+            // close-zoom tactical grid + targeting reticle around Paris
+            if (zf > 0.02) {
+              ctx.strokeStyle = rgba(COL.a2, 0.22 * zf); ctx.lineWidth = 1;
+              ctx.beginPath();
+              for (let i = 0; i < local.length; i++) polyline(local[i], 0);
+              ctx.stroke();
+              const zc = proj(ZOOMC);
+              const rr = 74 + 10 * Math.sin(now * 0.004);
+              ctx.save();
+              ctx.translate(zc.x, zc.y); ctx.rotate(now * 0.0009);
+              ctx.strokeStyle = rgba(COL.a2, 0.8 * zf); ctx.lineWidth = 1.5;
+              ctx.setLineDash([6, 9]);
+              ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+              ctx.setLineDash([]);
+              for (let k = 0; k < 4; k++) { ctx.rotate(Math.PI / 2); ctx.beginPath(); ctx.moveTo(rr + 6, 0); ctx.lineTo(rr + 18, 0); ctx.stroke(); }
+              ctx.restore();
+            }
+            drawArc(ARC1, f1, (f2 > 0 ? 0.55 : 1) * mA, now, true);
+            drawArc(ARC2, f2, 1, now, true);
+            // arrival shockwaves
+            const wB0 = seg(q, 0, 0.06), wP = seg(q, 0.33, 0.42), wZ = seg(q, 0.5, 0.58), wB1 = seg(q, 0.92, 1);
+            let m = proj(BEI);
+            if (m.z > 0) { ringAt(m.x, m.y, lerp(6, 60, easeOutCubic(wB0)), (wB0 > 0 && wB0 < 1 ? 1 - wB0 : 0) * 0.8 * mA, 2); ringAt(m.x, m.y, lerp(6, 120, easeOutCubic(wB1)), (wB1 > 0 && wB1 < 1 ? 1 - wB1 : 0), 3); ringAt(m.x, m.y, lerp(6, 70, easeOutCubic(wB1)), (wB1 > 0 && wB1 < 1 ? 1 - wB1 : 0) * 0.7, 1.5); }
+            m = proj(PAR);
+            if (m.z > 0) ringAt(m.x, m.y, lerp(6, 90, easeOutCubic(wP)), (wP > 0 && wP < 1 ? 1 - wP : 0), 2.5);
+            m = proj(ZOOMC);
+            if (m.z > 0) ringAt(m.x, m.y, lerp(10, 140, easeOutCubic(wZ)), (wZ > 0 && wZ < 1 ? 1 - wZ : 0) * 0.8, 2);
+            // cities
+            marker(BEI, q > 0.93 ? 'HOME · BEIRUT' : 'BEIRUT', mA, now, { dx: 14, dy: -14 });
+            marker(PAR, 'PARIS', mA * lerp(0.55, 1, seg(f1, 0.8, 1)), now, zf > 0.2 ? { dx: 34, dy: -40, leader: true, phase: 0.3 } : { dx: 14, dy: -14, phase: 0.3 });
+            marker(PAL, 'PALAISEAU', zf, now, { dx: -44, dy: 16, leader: true, phase: 0.6 });
+            marker(EVR, 'ÉVRY', zf, now, { dx: 40, dy: 38, leader: true, phase: 0.8 });
+
+            // telemetry
+            if (hud) {
+              css(hud, 'opacity', (mA * (1 - seg(u, 4.02, 4.3))).toFixed(3));
+              let pos = cam.center;
+              if (f1 > 0 && f1 < 1) pos = norm3(arcPt(BEI, PAR, f1, ARC1.bend, 0));
+              else if (f2 > 0 && f2 < 1) pos = norm3(arcPt(PAR, BEI, f2, ARC2.bend, 0));
+              const pll = toLL(pos);
+              setH(hLat, 'lat', fmtLat(pll[0]));
+              setH(hLon, 'lon', fmtLon(pll[1]));
+              setH(hKm, 'km', Math.round(LEG_KM * (f1 + f2)).toLocaleString('en-US') + ' km');
+              const yr = q < 0.4 ? lerp(2018, 2023, seg(q, 0, 0.34)) : q < 0.68 ? lerp(2023, 2024, seg(q, 0.42, 0.56)) : lerp(2024, 2026, f2);
+              setH(hYear, 'year', String(Math.round(yr)));
+              const st = q < 0.06 ? 'Holding · Beirut' : f1 < 1 ? 'In transit · BEY → PAR' : q < 0.42 ? 'Arrived · Paris' : q < 0.68 ? 'Zoom · Évry / Palaiseau' : f2 < 1 ? 'In transit · PAR → BEY' : 'Home · Beirut';
+              if (st !== shownH.st) { shownH.st = st; if (hStS) hStS.play(st); }
+            }
+          } else if (hud) {
+            css(hud, 'opacity', '0');
+          }
+        }
+      };
+    }, function (err) {
+      // no canvas globe: the SVG route takes over S3
+      root.classList.remove('jn-globe-on');
+      const cv = $id('jn-globe');
+      if (cv) cv.style.display = 'none';
+      if (err && window.console) console.warn('journey globe disabled:', err);
+    });
+    if (globe) root.classList.add('jn-globe-on');
+
     /* ---------------------------- measurement ---------------------------- */
     function measure() {
+      F.vw = window.innerWidth; F.vh = window.innerHeight;
       // re-apply scene lengths first (mobile/desktop breakpoint may have flipped)
       scenes.forEach(applyLen);
-      const scrollY = window.pageYOffset || root.scrollTop;
+      const sy = scrollTop();
       scenes.forEach(function (s) {
         const r = s.el.getBoundingClientRect();
-        s.top = r.top + scrollY;
+        s.top = r.top + sy;
         s.height = s.el.offsetHeight;
         // stages are 100svh, which ≠ innerHeight while the mobile URL bar
         // moves — measure the real stage height so p hits 1 exactly at unpin
         s.stageH = s.stage.offsetHeight;
+        s.p = -1;
         s.el.dispatchEvent(new Event('jn-remeasure'));
       });
-      dirty = true;
+      fx.forEach(function (f) { if (!f.dead && f.resize) { try { f.resize(); } catch (e) { f.dead = true; if (f.onFail) f.onFail(e); } } });
     }
+
+    /* ---------------------------- boot sequence ---------------------------- */
+    // type widths for the terminal lines, measured before the boot class arms them
+    Array.from(document.querySelectorAll('.jn-tl')).forEach(function (l) {
+      l.style.setProperty('--n', String(l.textContent.length + (l.querySelector('.jn-term-cursor') ? 1 : 0)));
+    });
+    const BOOT_MS = 1900;                 // matches the iris delay in the CSS
+    const boot = { done: false };
+    const bootT0 = clock();
+    hero.introAt = bootT0 + BOOT_MS - 120;
+    const SKIP_EVENTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+    function unbindSkip() { SKIP_EVENTS.forEach(function (ev) { window.removeEventListener(ev, skipBoot); }); }
+    function skipBoot() {
+      if (boot.done) return;
+      boot.done = true;
+      unbindSkip();
+      root.classList.add('jn-loader-skip');
+      hero.introAt = Math.min(hero.introAt, clock() + 140);
+      setTimeout(function () { root.classList.add('jn-loader-done'); }, 700);
+    }
+    SKIP_EVENTS.forEach(function (ev) { window.addEventListener(ev, skipBoot, { passive: true }); });
+    setTimeout(function () {
+      if (!boot.done) { boot.done = true; unbindSkip(); }
+      root.classList.add('jn-loader-done');
+    }, BOOT_MS + 1200);
+
+    /* ---------------------------- replay / rewind ---------------------------- */
+    const replayBtn = $id('jn-replay');
+    let rewinding = false, rewindTimer = 0;
+    function endRewind() {
+      if (!rewinding) return;
+      rewinding = false;
+      clearTimeout(rewindTimer);
+      root.classList.remove('jn-rewinding');
+      hero.introAt = clock();               // the name decodes in again
+    }
+    if (replayBtn) replayBtn.addEventListener('click', function () {
+      rewinding = true;
+      root.classList.add('jn-rewinding');
+      clearTimeout(rewindTimer);
+      rewindTimer = setTimeout(endRewind, 8000);
+      const main = $id('main');
+      if (main) main.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 
     /* ---------------------------- rAF loop ---------------------------- */
     // rail progress rings (filled by the rail module below): scene id → circle
     const railRings = {};
     const RAIL_C = 2 * Math.PI * 9; // ring circumference in its 24-unit viewBox
-    let dirty = true, ticking = false;
-    function onScroll() { dirty = true; requestTick(); }
-    function requestTick() {
-      if (!ticking) { ticking = true; requestAnimationFrame(frame); }
-    }
-    function frame() {
-      ticking = false;
-      if (!dirty) return;
-      dirty = false;
-      const y = window.pageYOffset || root.scrollTop;
-      for (let i = 0; i < scenes.length; i++) {
-        const s = scenes[i];
-        // rail rings update for EVERY scene (cheap math, no DOM reads) so a
-        // fast rail-click jump can't strand an off-screen ring mid-state
-        const denom = s.height - s.stageH;
-        const p = denom > 0 ? clamp((y - s.top) / denom, 0, 1) : (y >= s.top ? 1 : 0);
-        const ring = railRings[s.el.id];
-        if (ring) ring.style.strokeDashoffset = (RAIL_C * (1 - p)).toFixed(2);
-        if (!s.active) continue;
-        s.update(p);
-      }
+    let raf = 0, lastT = 0, lastY = null, wasMoving = false;
+    function wake() { if (!raf && !failed && !document.hidden) raf = requestAnimationFrame(frame); }
+    function frame(ts) {
+      raf = 0;
+      if (failed || document.hidden) return;
+      try {
+        const t = (typeof ts === 'number' && ts > 0) ? ts : clock();
+        F.dt = lastT ? clamp(t - lastT, 1, 64) : 16;
+        lastT = t; F.now = t;
+        const y = scrollTop();
+        if (lastY === null) lastY = y;
+        const v = (y - lastY) / F.dt;
+        lastY = y; F.y = y;
+        F.vel += (clamp(v, -12, 12) - F.vel) * Math.min(1, F.dt / 110);
+        if (Math.abs(F.vel) < 0.002) F.vel = 0;
+        const moving = F.vel !== 0;
+        F.moving = moving || wasMoving;     // one extra frame settles skews back to 0
+        wasMoving = moving;
+        const kp = Math.min(1, F.dt / 140);
+        ptr.sx += (ptr.nx - ptr.sx) * kp; ptr.sy += (ptr.ny - ptr.sy) * kp;
+        F.covered = false; F.warp = 0;
+        if (!boot.done && y > 40) skipBoot();
+        for (let i = 0; i < scenes.length; i++) {
+          const s = scenes[i];
+          // rail rings update for EVERY scene (cheap math, no DOM reads) so a
+          // fast rail-click jump can't strand an off-screen ring mid-state
+          const p = progressOf(s, y);
+          const ring = railRings[s.el.id];
+          if (ring) css(ring, 'strokeDashoffset', (RAIL_C * (1 - p)).toFixed(2));
+          if (!s.active) continue;
+          if (s.covers && p > 0.002 && p < 0.998) F.covered = true;
+          if (s.always || F.moving || p !== s.p) { s.p = p; s.update(p, F); }
+        }
+        tickScramblers(t);
+        if (rewinding && y < 4) endRewind();
+        for (let i = 0; i < fx.length; i++) runFx(fx[i], F);
+      } catch (err) { fail(err); return; }
+      raf = requestAnimationFrame(frame);
     }
 
     /* ---------------------------- active set (IO) ---------------------------- */
@@ -1898,28 +3361,35 @@
       const io = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {
           const s = scenes.find(function (x) { return x.el === en.target; });
-          if (s) { s.active = en.isIntersecting; s.el.classList.toggle('jn-live', s.active); }
+          if (s) { s.active = en.isIntersecting; s.p = -1; s.el.classList.toggle('jn-live', s.active); }
         });
-        dirty = true; requestTick();
+        wake();
       }, { rootMargin: '50% 0px 50% 0px', threshold: 0 });
       scenes.forEach(function (s) { io.observe(s.el); });
     } else {
       scenes.forEach(function (s) { s.active = true; s.el.classList.add('jn-live'); });
     }
 
-    /* Keyboard focus inside a pinned scene: bring that scene to the top of the
-       viewport so the focused control is the one being animated on screen
-       (the browser cannot scroll a link inside a sticky, overflow:hidden stage). */
+    /* Keyboard focus inside a pinned scene: scroll to where the focused control
+       is fully on screen — the scene's own focusP if it names one, otherwise
+       just pin the scene (the browser cannot scroll a link inside a sticky,
+       overflow:hidden stage, so it would otherwise stay off-screen). */
     document.addEventListener('focusin', function (e) {
       const s = scenes.find(function (x) { return x.el.contains(e.target); });
       if (!s) return;
-      const y = window.pageYOffset || root.scrollTop;
-      if (y < s.top - 2 || y > s.top + s.height - s.stageH + 2) window.scrollTo({ top: s.top, behavior: 'auto' });
+      const y = scrollTop(), span = Math.max(0, s.height - s.stageH);
+      const fp = s.focusP ? s.focusP(e.target) : null;
+      if (fp != null) {
+        const ty = s.top + clamp(fp, 0, 1) * span;
+        if (Math.abs(y - ty) > 2) window.scrollTo({ top: ty, behavior: 'auto' });
+      } else if (y < s.top - 2 || y > s.top + span + 2) {
+        window.scrollTo({ top: s.top, behavior: 'auto' });
+      }
     });
 
     /* ---------------------------- chapter dot-rail ---------------------------- */
     (function rail() {
-      const railEl = document.getElementById('jn-rail');
+      const railEl = $id('jn-rail');
       if (!railEl) return;
       const buttons = Array.from(railEl.querySelectorAll('button'));
       const NS = 'http://www.w3.org/2000/svg';
@@ -1927,10 +3397,16 @@
         btn.addEventListener('click', function () {
           const target = document.getElementById(btn.dataset.target);
           if (!target) return;
-          const scrollY = window.pageYOffset || root.scrollTop;
-          const top = target.getBoundingClientRect().top + scrollY;
-          window.scrollTo({ top: top, behavior: 'smooth' });
+          window.scrollTo({ top: target.getBoundingClientRect().top + scrollTop(), behavior: 'smooth' });
         });
+        // the label decodes whenever its chapter becomes active; the button
+        // keeps the real words as its accessible name
+        const lbl = btn.querySelector('.jn-rail-lbl');
+        if (lbl) {
+          btn.setAttribute('aria-label', lbl.textContent.trim());
+          lbl.setAttribute('aria-hidden', 'true');
+          btn._jnS = scrambler(lbl, { decorative: true, dur: 520 });
+        }
         // inject the scene-progress ring around the dot (engine mode only,
         // so the static page keeps its plain dots)
         const dot = btn.querySelector('.jn-rail-dot');
@@ -1947,7 +3423,7 @@
         dot.appendChild(svg);
         railRings[btn.dataset.target] = c;
       });
-      // sync active dot with the scene nearest viewport center
+      // sync active dot with the scene nearest viewport centre
       if ('IntersectionObserver' in window) {
         const io = new IntersectionObserver(function (entries) {
           entries.forEach(function (en) {
@@ -1955,6 +3431,7 @@
             const id = en.target.id;
             buttons.forEach(function (b) {
               const on = b.dataset.target === id;
+              if (on && !b.classList.contains('jn-rail-active') && b._jnS) b._jnS.play();
               b.classList.toggle('jn-rail-active', on);
               if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
             });
@@ -1964,42 +3441,59 @@
       }
     })();
 
-    /* ---------------------------- word splitter ---------------------------- */
+    /* ---------------------------- text splitters ---------------------------- */
     /* Walk the container's child nodes: wrap each word of a text node in a
        <span class="jn-w">; for element children (the .jn-key emphasis, the
-       finale's .jn-grad) wrap their words too, carrying the element's classes
+       .jn-grad accents) wrap their words too, carrying the element's classes
        onto each word span so the accent styling survives the split. */
     function splitWords(container, out) {
       const kids = Array.from(container.childNodes);
       container.textContent = '';
       kids.forEach(function (node) {
-        if (node.nodeType === 3) {
-          appendWords(container, node.textContent, out, '');
-        } else if (node.nodeType === 1) {
-          appendWords(container, node.textContent, out, node.className || '');
-        }
+        if (node.nodeType === 3) appendWords(container, node.textContent, out, '');
+        else if (node.nodeType === 1) appendWords(container, node.textContent, out, node.className || '');
       });
     }
     function appendWords(container, text, out, extraClass) {
       // split on spaces but keep the spaces as plain text between spans
-      const parts = text.split(/(\s+)/);
-      parts.forEach(function (part) {
+      text.split(/(\s+)/).forEach(function (part) {
         if (part === '') return;
-        if (/^\s+$/.test(part)) {
-          container.appendChild(document.createTextNode(part));
-        } else {
-          const span = document.createElement('span');
-          span.className = extraClass ? 'jn-w ' + extraClass : 'jn-w';
-          span.textContent = part;
-          container.appendChild(span);
-          out.push(span);
+        if (/^\s+$/.test(part)) { container.appendChild(document.createTextNode(part)); return; }
+        const span = document.createElement('span');
+        span.className = extraClass ? 'jn-w ' + extraClass : 'jn-w';
+        span.textContent = part;
+        container.appendChild(span);
+        out.push(span);
+      });
+    }
+    /* Per-character split for the hero interstitial. Each word's characters
+       sit inside a nowrap .jn-cw so a line can never break mid-word; the
+       gradient phrase is split per word (each keeps its own gradient slice). */
+    function splitChars(container, out) {
+      const kids = Array.from(container.childNodes);
+      container.textContent = '';
+      kids.forEach(function (node) {
+        if (node.nodeType === 3) {
+          node.textContent.split(/(\s+)/).forEach(function (part) {
+            if (part === '') return;
+            if (/^\s+$/.test(part)) { container.appendChild(document.createTextNode(part)); return; }
+            const w = document.createElement('span');
+            w.className = 'jn-cw';
+            for (let i = 0; i < part.length; i++) {
+              const s = document.createElement('span');
+              s.className = 'jn-c';
+              s.textContent = part.charAt(i);
+              w.appendChild(s);
+              out.push(s);
+            }
+            container.appendChild(w);
+          });
+        } else if (node.nodeType === 1) {
+          appendWords(container, node.textContent, out, (node.className || '') + ' jn-c');
         }
       });
     }
-
-    /* ---------------------------- letter splitter ---------------------------- */
-    /* Wrap each character of a hero name line in a <span class="jn-l"> for
-       the staggered load intro (see the jn-boot rules in the page CSS). */
+    /* Wrap each character of a hero name line in a <span class="jn-l">. */
     function splitLetters(lineEl, out) {
       const text = lineEl.textContent;
       lineEl.textContent = '';
@@ -2016,26 +3510,30 @@
     let resizeTimer = null;
     function onResize() {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(measure, 150);
+      resizeTimer = setTimeout(function () { measure(); wake(); }, 150);
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', wake, { passive: true });
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onResize);
-    window.addEventListener('load', function () { measure(); requestTick(); });
+    window.addEventListener('load', function () { measure(); wake(); });
+    document.addEventListener('visibilitychange', wake);
+    document.addEventListener('pf:motion', wake);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!failed) measure(); });
+    // print: hand the page back to the static layout, restore it afterwards
+    window.addEventListener('beforeprint', function () { root.classList.remove('jn-on'); });
+    window.addEventListener('afterprint', function () { if (!failed) { root.classList.add('jn-on'); measure(); } });
 
     // initial pass (fonts may still be loading; the load handler re-measures)
     measure();
-    requestTick();
+    wake();
 
-    // arm the load intro (kicker → letters → sub → cue) — added last, after
-    // the letter split, so the boot animations start on the first paint
+    // arm the boot sequence + load intro — added last, after every split, so
+    // the CSS-timed loader and the engine's intro start together
     root.classList.add('jn-boot');
+    if (scrollTop() > 40) skipBoot();       // restored mid-page: no boot screen
 
     } catch (err) {
-      root.classList.remove('jn-on', 'jn-boot');
-      Array.from(document.querySelectorAll('.jn-scene.jn-live')).forEach(function (el) { el.classList.remove('jn-live'); });
-      wireRailStaticFallback();
-      if (window.console) console.error('journey engine failed, static layout kept:', err);
+      fail(err);
     }
 
   })();

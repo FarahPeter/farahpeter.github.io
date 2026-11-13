@@ -8,6 +8,79 @@ deployed state.
 
 ## [Unreleased]
 
+### Changed — Homepage motion: quiet telemetry, typeset (3 October 2026)
+
+`index.html` borrows the Journey's visual vocabulary at a much lower volume:
+motion that rewards attention without competing with the content. Copy,
+structure, ids and every fallback are unchanged.
+
+- **Hero boot.** The glass panel is there at first paint and its lines rise in
+  sequence; the name settles with a slight scale; the "now" tile rises, the
+  stats strip fades in. The portrait, the page's largest paint (LCP), is never
+  faded: it is visible from the first frame and only settles 14 px. The role
+  types with a human cadence and an inline caret that sits right after the last
+  character (no more tall bar at the box edge on phones), blinks four times,
+  then rests dimmed.
+- **Stats.** The figures count 90 ms apart (easeOutQuart, tabular numerals) once
+  the strip is visible, and the hairline dividers draw with them. The authored
+  values no longer fade in and then reset to zero.
+- **One heartbeat.** The "now" dot and the current timeline hop share a sonar
+  ping instead of blinking and pulsing.
+- **Section heads.** The kicker's dash draws and its label decodes once (the
+  real words stay readable to screen readers, and the label is back to plain
+  text afterwards); the title rises past a fixed edge; the hairline rule is
+  revealed in place with a packet on its visible tip; the ghost number and the
+  intro follow.
+- **Career route trace.** A brighter line fills down the timeline rail with the
+  reader, a packet on its tip, lighting each hop it passes. On phones it stays
+  hidden until the cards have landed, so it never draws over them.
+- **Hover and arrival.** Glass rings catch the light at the cursor (and along the
+  top edge for a keyboard-focused card), with per-theme strength so dark and
+  light read alike; a soft glare follows the pointer over the portrait;
+  case-study images open through an aperture and zoom slightly on hover; skills
+  ports power on; certificate chips glint once.
+- **Fixes.** Project and skill cards lift on hover again: the grid entrance now
+  uses `translate`, leaving `transform` to the hover lift. A card reached by
+  keyboard enters at once.
+- **Fallbacks.** Without JS nothing is hidden or animated. Print shows the real
+  figures, the full role and identical timeline hops, and nothing injected.
+  Hidden tabs pause the cascade, the typing and the caret, which resume when
+  visible. Full motion is unconditional, per `AGENTS.md`.
+
+### Changed — Journey redesign: maximum motion (3 October 2026)
+
+`journey.html` was rebuilt around a single continuous "flight". The nine scenes,
+the copy, the 13 photos and every fallback are kept; the motion is new.
+
+- **Boot sequence.** A terminal types `traceroute --life peter.farah` (Beirut
+  2018 → Paris 2023 → Palaiseau 2024 → Beirut 2026), then an iris opens onto the
+  hero. CSS-timed and `pointer-events: none`, so it always clears itself; any
+  wheel, touch, key or click fast-forwards it, and it is skipped when the page
+  is restored mid-scroll.
+- **Two full-page canvases.** A 3D warp starfield whose streaks follow scroll
+  velocity (scrolling back reverses them), and a dotted Earth: 12k land dots
+  from a 2.3 KB run-length mask derived from Natural Earth (public domain) via
+  world-atlas. Its camera is one move across three chapters: an "Earthrise"
+  horizon under the name, the whole planet behind the statement, then a flight
+  Beirut → Paris → a zoom into Évry/Palaiseau → home, with great-circle arcs,
+  arrival shockwaves and live lat/lon, km and year telemetry.
+- **Every chapter has its own motion.** The hero name decodes out of random
+  glyphs, shies away from the pointer and detonates letter by letter into
+  hyperspace; the statement assembles from a 3D cloud of words over two
+  scroll-driven marquees; route cards materialise like holograms; the three
+  photo reels use three different transitions (iris aperture, glitch shutter,
+  fly-in prints) with light leaks and decoding stamps; the craft gallery is a 3D
+  coverflow with a spinning conic border; the packet flow gains a streaming
+  handshake, sparks, shockwaves, camera shake and a TTL readout; the finale adds
+  sonar rings, an orbiting name ring, a packet burst and a "Replay the journey"
+  button that rewinds the whole page VHS-style.
+- **Keyboard and fallbacks.** Every coverflow link and every finale button is
+  now a tab stop: focusing one scrolls to where it is centred and fully visible
+  (previously only the centred card's link and already-revealed buttons were
+  reachable). No canvas → the SVG route returns; engine failure → the static
+  article with the engine's inline states stripped; print drops the pinned
+  layout. Full motion is unconditional, per `AGENTS.md`.
+
 ### Fixed — restore full motion (14 September 2026)
 
 - Removed OS reduced-motion gates, save-data / low-hardware static backgrounds,
